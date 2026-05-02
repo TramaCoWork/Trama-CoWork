@@ -1,0 +1,31 @@
+---
+import logoSrc from '../assets/images/logo-trama-apaisado.png';
+---
+
+<footer class="w-full border-t border-outline-variant/15 bg-surface-container-lowest mt-20">
+  <div class="max-w-7xl mx-auto py-12 px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+    <div class="flex flex-col items-center md:items-start gap-4">
+      <a href="/" class="flex items-center">
+        <img alt="TRAMA CoWork" class="h-8 w-auto object-contain" src={logoSrc.src} />
+      </a>
+      <p class="text-xs tracking-widest uppercase text-on-surface-variant">
+        &copy; 2025 TRAMA Professional. Todos los derechos reservados.
+      </p>
+    </div>
+    <div class="flex flex-wrap justify-center gap-8 text-xs tracking-widest uppercase">
+      <a class="text-on-surface-variant hover:text-primary transition-colors" href="/about">Sobre nosotros</a>
+      <a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Política de privacidad</a>
+      <a class="text-on-surface-variant hover:text-primary transition-colors" href="/terminos">Términos de servicio</a>
+      <a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Centro de ayuda</a>
+      <a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Contacto</a>
+    </div>
+    <div class="flex gap-4">
+      <button class="text-on-surface-variant hover:text-primary transition-colors" aria-label="Cambiar idioma">
+        <span class="material-symbols-outlined" aria-hidden="true">language</span>
+      </button>
+      <button class="text-on-surface-variant hover:text-primary transition-colors" aria-label="Compartir">
+        <span class="material-symbols-outlined" aria-hidden="true">share</span>
+      </button>
+    </div>
+  </div>
+</footer>

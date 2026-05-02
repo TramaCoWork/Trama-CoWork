@@ -1,0 +1,22 @@
+---
+import '../styles/global.css';
+import LoginHero from '../components/LoginHero.astro';
+import LoginForm from '../components/LoginForm.astro';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Iniciar Sesion | TRAMA</title>
+    <meta name="description" content="Inicia sesion en TRAMA y accede a tu panel profesional." />
+  </head>
+  <body class="bg-surface font-body text-on-surface antialiased overflow-x-hidden">
+    <main class="min-h-screen flex flex-col md:flex-row overflow-hidden">
+      <LoginHero />
+      <LoginForm />
+    </main>
+  </body>
+</html>

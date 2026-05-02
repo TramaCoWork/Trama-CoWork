@@ -1,0 +1,77 @@
+---
+const currentPath = Astro.url.pathname;
+
+const sidebarLinks = [
+  { href: '/dashboard', icon: 'dashboard', label: 'Resumen' },
+  { href: '/dashboard/perfil', icon: 'edit', label: 'Editar perfil' },
+  { href: '/dashboard/contactos', icon: 'contacts', label: 'Contactos' },
+  { href: '/dashboard/comunidad', icon: 'groups', label: 'Comunidad' },
+  { href: '/dashboard/trabajos', icon: 'work', label: 'Trabajos' },
+  { href: '/dashboard/contenido', icon: 'article', label: 'Contenido' },
+];
+
+function isActive(href: string): boolean {
+  if (href === '/dashboard') return currentPath === '/dashboard' || currentPath === '/dashboard/';
+  return currentPath.startsWith(href);
+}
+
+// Placeholder – real data loaded client-side
+const mockUser = {
+  name: '',
+  role: '',
+  avatar: '',
+};
+---
+
+<aside class="h-screen w-64 border-r border-outline-variant/15 bg-surface-container-low flex flex-col py-6 gap-2 sticky top-0 shrink-0">
+  <!-- Header -->
+  <div class="px-6 mb-8">
+    <a href="/" class="text-lg font-bold text-on-surface tracking-tighter hover:text-primary transition-colors">
+      Portal Profesional
+    </a>
+    <p class="text-xs font-semibold text-on-surface-variant uppercase tracking-widest mt-1">
+      Gestiona tu perfil
+    </p>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="flex-1 space-y-1" aria-label="Panel de control">
+    {sidebarLinks.map((link) => (
+      <a
+        href={link.href}
+        class={isActive(link.href)
+          ? 'bg-primary/10 text-primary rounded-lg mx-2 flex items-center px-4 py-3 gap-3 transition-transform duration-200 hover:translate-x-1 text-sm font-bold'
+          : 'text-on-surface-variant hover:bg-surface-container mx-2 flex items-center px-4 py-3 gap-3 transition-transform duration-200 hover:translate-x-1 text-sm font-semibold rounded-lg'}
+        aria-current={isActive(link.href) ? 'page' : undefined}
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">{link.icon}</span>
+        <span>{link.label}</span>
+      </a>
+    ))}
+  </nav>
+
+  <!-- User Card -->
+  <div class="px-4 mt-auto">
+    <div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm border border-outline-variant/10">
+      <div class="flex items-center gap-3 mb-3">
+        <img
+          id="sidebar-user-avatar"
+          alt="Foto de perfil"
+          class="w-10 h-10 rounded-full object-cover"
+          src={mockUser.avatar}
+        />
+        <div>
+          <p id="sidebar-user-name" class="text-sm font-bold text-on-surface">{mockUser.name}</p>
+          <p id="sidebar-user-role" class="text-[10px] text-on-surface-variant uppercase tracking-tighter">{mockUser.role}</p>
+        </div>
+      </div>
+      <a
+        id="sidebar-profile-link"
+        href="/profesionales/perfil?id=1"
+        class="block w-full text-center bg-primary-container text-on-primary text-xs font-bold py-2 rounded-lg hover:opacity-90 active:scale-95 transition-all"
+      >
+        Ver perfil público
+      </a>
+    </div>
+  </div>
+</aside>

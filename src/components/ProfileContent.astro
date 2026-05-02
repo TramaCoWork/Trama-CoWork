@@ -1,0 +1,67 @@
+---
+import type { Professional } from '../data/mock';
+
+interface Props {
+  professional: Professional;
+}
+
+const { professional } = Astro.props;
+---
+
+<div class="md:col-span-8 space-y-12">
+  <!-- Sobre mi -->
+  {professional.bio && (
+    <section class="space-y-4">
+      <h2 class="text-3xl font-bold tracking-tight font-headline">Sobre mi</h2>
+      <p class="text-on-surface-variant leading-relaxed text-lg">
+        {professional.bio}
+      </p>
+    </section>
+  )}
+
+  <!-- Servicios -->
+  {professional.services && professional.services.length > 0 && (
+    <section class="space-y-6">
+      <h2 class="text-3xl font-bold tracking-tight font-headline">Servicios</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {professional.services.map((service) => (
+          <div class="p-6 bg-surface-container-lowest rounded-xl border border-outline-variant/10 hover:shadow-md transition-shadow">
+            <span class="material-symbols-outlined text-tertiary mb-4 text-3xl" aria-hidden="true">{service.icon}</span>
+            <h4 class="font-bold text-lg mb-2">{service.title}</h4>
+            <p class="text-sm text-on-surface-variant">{service.description}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- Portafolio -->
+  {professional.portfolio && professional.portfolio.length > 0 && (
+    <section class="space-y-8">
+      <div class="flex justify-between items-end">
+        <h2 class="text-3xl font-bold tracking-tight font-headline">Portafolio</h2>
+      </div>
+      <div class="grid grid-cols-2 gap-6">
+        {professional.portfolio.map((project) => (
+          <div class={`group cursor-pointer ${project.featured ? 'col-span-2' : ''}`}>
+            <div class={`${project.featured ? 'aspect-[21/9]' : 'aspect-square'} rounded-xl overflow-hidden mb-4`}>
+              <img
+                alt={project.title}
+                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                src={project.image}
+                loading="lazy"
+              />
+            </div>
+            <div class="flex justify-between items-start">
+              <div>
+                <h4 class={`font-bold ${project.featured ? 'text-xl' : 'text-lg'}`}>{project.title}</h4>
+                <p class="text-sm text-on-surface-variant">{project.category} &middot; {project.year}</p>
+              </div>
+              <span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors" aria-hidden="true">north_east</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+</div>

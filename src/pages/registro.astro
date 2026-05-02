@@ -1,0 +1,34 @@
+---
+import '../styles/global.css';
+import RegistrationHero from '../components/RegistrationHero.astro';
+import RegistrationForm from '../components/RegistrationForm.astro';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Registro | TRAMA</title>
+    <meta name="description" content="Crea tu cuenta profesional en TRAMA y accede a una red exclusiva de talento en diseno, arquitectura y tecnologia." />
+  </head>
+  <body class="bg-surface font-body text-on-surface antialiased overflow-x-hidden">
+    <main class="min-h-screen flex flex-col md:flex-row">
+      <RegistrationHero />
+      <RegistrationForm />
+    </main>
+
+    <!-- Footer simplificado para flujos de autenticacion -->
+    <footer class="w-full bg-surface-container-low border-t border-outline-variant/15 py-8 px-8 flex flex-col md:flex-row justify-between items-center text-xs font-label uppercase tracking-widest text-outline">
+      <div class="mb-4 md:mb-0">
+        &copy; 2025 TRAMA Professional Platform
+      </div>
+      <nav class="flex space-x-8" aria-label="Enlaces legales">
+        <a class="hover:text-primary transition-colors" href="/ayuda">Ayuda</a>
+        <a class="hover:text-primary transition-colors" href="/privacidad">Privacidad</a>
+        <a class="hover:text-primary transition-colors" href="/terminos">Terminos</a>
+      </nav>
+    </footer>
+  </body>
+</html>

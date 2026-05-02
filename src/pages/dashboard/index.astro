@@ -1,0 +1,249 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+
+// TODO: Replace with real stats from API
+const stats = [
+  { value: 123, label: 'Visualizaciones', variant: 'default' as const },
+  { value: 56, label: 'Conexiones', variant: 'secondary' as const },
+  { value: 12, label: 'Propuestas', variant: 'primary' as const },
+];
+
+// TODO: Replace with real tasks from API
+const quickActions = [
+  { text: 'Completar portafolio de arquitectura', done: false },
+  { text: 'Responder a 3 mensajes nuevos', done: false },
+  { text: 'Actualizar foto de perfil', done: true },
+];
+
+// TODO: Replace with real contacts from API
+const recentContacts = [
+  {
+    name: 'Julian M.',
+    role: 'Diseñador de interiores',
+    time: 'Hace 2h',
+    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCdDmJT2ZfPGSV570SpT0WH494GWn2LS8jorNQPgYX7ag2MUeGtq-o8FEvtvpgMEjgBsTwfKDtsbxvoG2ug5VEpRyY8TJQkbBAtdvCgZWkF744eCkRlm__wMgVTIvODbHHTS1D8d0-iQ3J_0ObJUiWA3nQbBoTiN9S2a3z8SMwkFI_flz_TUPjEPUyonvch5mqad1JGx3fot0BZeRZOne1LtP-_hEa0dUufIdUAbO4q8LyYt3m7DAYYM_ww9z57VAXGpC6dnMlvRw',
+  },
+  {
+    name: 'Elena Sorres',
+    role: 'Gerente de proyecto',
+    time: 'Hace 5h',
+    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD8OijlIMx9mSqZEue9ay_Gofk-DJqjqxFIeTzlDROQvQ-Hx2eW5KLe0BML7jTXwx3hQN10LCPgAMcJl8iByp0JDtja1Ghjn0a91DbufxtrbpXgQcbmhC2Mfc8YnH1hd1Q2ti_CvUcJCgcZkpd4laEyiMvTGHsVD4AFpzRiUYyHhu8gxk_hkQilTaaDztvktzltJ-8ILVORWvYamMXojVV2PbjbsHKDceZbYD3w0gzgePC-EWHUgxrnYDIifUu2X1pBxibE4tNpxg',
+  },
+  {
+    name: 'Marc Dupont',
+    role: 'Consultor',
+    time: 'Ayer',
+    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBwa5r8oJnCTy37qrN_DW1hGfWsB61ZWY49-lEscJHvM2jk5z3m0Vt94KM5gpp8HeE5CQIL1_gNLRnHXIZYyNwF56S4-vAa5DEHft30OV1ij1x1on4MCAWpOnieYANF8Ht94zdwsI-_mxXhC5xZgb3UJOpYynNBEicTAHHZuXVKAnYj0U7ur6vpRmIntuIy9n6dpIvCfZS8LJRNoegq1Ltczq0lOsWC2vn1M_Kq8N0hpvWFnWwqNiMOgl7bDV7ggQdsf8BaMwI96g',
+  },
+];
+
+const communityImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCITJ3VjJo1DRy1JJ1u1dpIeG0MFKMHUbPUKZMCEnIbndHZoiDA_p7EjtdwXbemMTF5tsG2SOL0VZkSOUdcW--_ly-yiXCEP1w9YpFvxwRLNAlgqj3aH5IleW-aSW3s6hy4581_vIkdduPle0iLQ61CTfv_ETbSf2lZXlIv4sF8foJJ2QjAdXEcA4oob0zhEl1b4SYoZY5m7xu9BTiFeREdx_am2xvwJVcVH6ovOoRLPgdjmjUgnODOQCs89wKA62s5pG8oTCvWGw';
+---
+
+<DashboardLayout title="TRAMA - Panel de control">
+  <!-- Header -->
+  <header class="mb-12 flex justify-between items-end">
+    <div>
+      <h1 id="dashboard-greeting" class="text-4xl font-black text-on-surface tracking-tighter">
+        ¡Hola!
+      </h1>
+      <p class="text-on-surface-variant font-medium mt-2">
+        Aquí tienes un resumen de tu actividad profesional hoy.
+      </p>
+    </div>
+    <div class="flex items-center gap-4">
+      <button
+        class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-colors"
+        aria-label="Notificaciones"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+      </button>
+      <button
+        class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-colors"
+        aria-label="Buscar"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">search</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+    {stats.map((stat) => {
+      const baseClasses = 'p-8 rounded-full flex flex-col items-center justify-center text-center group transition-colors duration-300 border border-outline-variant/5 shadow-sm relative overflow-hidden';
+      const variantClasses = {
+        default: 'md:col-span-4 bg-surface-container-lowest hover:bg-primary-container',
+        secondary: 'md:col-span-4 bg-surface-container-lowest hover:bg-secondary',
+        primary: 'md:col-span-4 bg-primary-container',
+      };
+      const valueClasses = {
+        default: 'text-4xl font-black text-primary group-hover:text-on-primary-container tracking-tighter mb-1',
+        secondary: 'text-4xl font-black text-secondary group-hover:text-on-secondary tracking-tighter mb-1',
+        primary: 'text-4xl font-black text-on-primary tracking-tighter mb-1 relative z-10',
+      };
+      const labelClasses = {
+        default: 'text-xs font-bold uppercase tracking-widest text-on-surface-variant group-hover:text-primary-fixed',
+        secondary: 'text-xs font-bold uppercase tracking-widest text-on-surface-variant group-hover:text-secondary-fixed',
+        primary: 'text-xs font-bold uppercase tracking-widest text-primary-fixed relative z-10',
+      };
+      return (
+        <div class={`${baseClasses} ${variantClasses[stat.variant]}`}>
+          {stat.variant === 'primary' && (
+            <div class="absolute inset-0 bg-gradient-to-br from-primary to-primary-container opacity-50 rounded-full"></div>
+          )}
+          <span class={valueClasses[stat.variant]}>{stat.value}</span>
+          <span class={labelClasses[stat.variant]}>{stat.label}</span>
+        </div>
+      );
+    })}
+
+    <!-- Quick Actions -->
+    <div class="md:col-span-7 bg-surface-container-low p-8 rounded-3xl">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Acciones rápidas</h2>
+        <span class="text-[10px] font-bold bg-secondary-fixed text-on-secondary-fixed px-2 py-1 rounded-full uppercase tracking-tighter">
+          Pendiente
+        </span>
+      </div>
+      <div class="space-y-4">
+        {quickActions.map((action) => (
+          <div class={`flex items-center gap-4 bg-surface-container-lowest p-4 rounded-xl transition-transform ${action.done ? 'opacity-50' : 'hover:translate-x-1 cursor-pointer'}`}>
+            <div class={`w-6 h-6 rounded-lg flex items-center justify-center ${action.done ? 'bg-primary text-on-primary' : 'border-2 border-primary/20 text-transparent hover:text-primary transition-colors'}`}>
+              <span class="material-symbols-outlined text-sm filled" aria-hidden="true">check</span>
+            </div>
+            <span class={`font-semibold text-on-surface ${action.done ? 'line-through' : ''}`}>
+              {action.text}
+            </span>
+            <span class="ml-auto material-symbols-outlined text-outline-variant" aria-hidden="true">chevron_right</span>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Recent Contacts -->
+    <div class="md:col-span-5 bg-surface-container-lowest p-8 rounded-3xl shadow-sm">
+      <h2 class="text-xl font-extrabold text-on-surface tracking-tight mb-8">Contactos recientes</h2>
+      <div class="space-y-6">
+        {recentContacts.map((contact) => (
+          <div class="flex items-center gap-4 group cursor-pointer">
+            <img
+              alt={`Foto de ${contact.name}`}
+              class="w-12 h-12 rounded-full object-cover group-hover:ring-2 ring-primary ring-offset-2 transition-all"
+              src={contact.avatar}
+            />
+            <div class="flex-1 border-b border-outline-variant/10 pb-4">
+              <p class="text-sm font-bold text-on-surface">{contact.name}</p>
+              <p class="text-xs text-on-surface-variant">{contact.role} &bull; {contact.time}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <a
+        href="/dashboard/contactos"
+        class="block w-full mt-6 py-3 text-xs font-bold text-primary hover:text-primary-container transition-colors uppercase tracking-widest text-center"
+      >
+        Ver todos los contactos
+      </a>
+    </div>
+
+    <!-- Community Banner -->
+    <div class="md:col-span-12 relative overflow-hidden rounded-3xl aspect-[21/9] flex items-end">
+      <img
+        alt="Espacio de estudio moderno con ventanales y luz natural"
+        class="absolute inset-0 w-full h-full object-cover"
+        src={communityImage}
+      />
+      <div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-inverse-surface/20 to-transparent"></div>
+      <div class="relative z-10 p-12 text-inverse-on-surface max-w-2xl">
+        <span class="text-[10px] font-bold bg-tertiary-container text-on-tertiary px-3 py-1 rounded-full uppercase tracking-widest mb-4 inline-block">
+          Comunidad Trama
+        </span>
+        <h3 class="text-3xl font-black tracking-tighter mb-4 leading-tight">
+          Descubre cómo los arquitectos locales están redefiniendo el espacio urbano en 2025.
+        </h3>
+        <div class="flex items-center gap-6">
+          <a
+            href="#"
+            class="bg-surface-container-lowest text-on-surface px-6 py-3 rounded-full text-xs font-bold hover:bg-primary-fixed transition-colors"
+          >
+            Leer artículo
+          </a>
+          <span class="text-xs font-medium text-inverse-on-surface/70">15 min lectura &bull; Publicado ayer</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import { getUserIdFromToken, getToken, logout } from '../../services/authService';
+    import { api } from '../../services/apiClient';
+
+    const DEFAULT_AVATAR = '/images/default-avatar.svg';
+
+    interface ProfessionalData {
+      id: number;
+      userId: string;
+      name: string;
+      bio: string;
+      photo: string;
+      services: string[];
+      priceMin: number;
+      priceMax: number;
+      city: string;
+      whatsapp: string;
+      emailContact: string;
+      isActive: boolean;
+      categories: { id: number; slug: string; name: string }[];
+    }
+
+    async function loadProfessionalData() {
+      const userId = getUserIdFromToken();
+      const token = getToken();
+      if (!userId || !token) return;
+
+      api.setHeader('Authorization', `Bearer ${token}`);
+
+      try {
+        const data = await api.get<ProfessionalData>(`/professionals/by-user/${userId}`);
+
+        // Update greeting with real name
+        const greeting = document.getElementById('dashboard-greeting');
+        if (greeting) {
+          greeting.textContent = `¡Hola, ${data.name}!`;
+        }
+
+        // Update sidebar user card
+        const sidebarName = document.getElementById('sidebar-user-name');
+        if (sidebarName) {
+          sidebarName.textContent = data.name;
+        }
+
+        const sidebarRole = document.getElementById('sidebar-user-role');
+        if (sidebarRole && data.services.length > 0) {
+          sidebarRole.textContent = data.services[0];
+        }
+
+        const photo = data.photo || DEFAULT_AVATAR;
+        const sidebarAvatar = document.getElementById('sidebar-user-avatar') as HTMLImageElement | null;
+        if (sidebarAvatar) {
+          sidebarAvatar.src = photo;
+          sidebarAvatar.alt = `Foto de perfil de ${data.name}`;
+        }
+
+        // Update "Ver perfil público" link
+        const profileLink = document.getElementById('sidebar-profile-link') as HTMLAnchorElement | null;
+        if (profileLink) {
+          profileLink.href = `/profesionales/perfil?id=${data.id}`;
+        }
+      } catch (err: any) {
+        if (err?.status === 401) {
+          logout();
+          return;
+        }
+        console.error('Error loading professional data:', err);
+      }
+    }
+
+    loadProfessionalData();
+  </script>
+</DashboardLayout>

@@ -1,0 +1,223 @@
+---
+---
+
+<section class="w-full md:w-1/2 lg:w-2/5 flex items-center justify-center p-6 sm:p-12 md:p-20 bg-surface relative">
+  <!-- Link para volver -->
+  <a
+    href="/"
+    class="absolute top-6 left-6 md:top-8 md:left-8 flex items-center gap-1.5 text-sm font-medium text-on-surface-variant hover:text-primary transition-colors"
+  >
+    <span class="material-symbols-outlined text-lg" aria-hidden="true">arrow_back</span>
+    Volver al inicio
+  </a>
+
+  <div class="w-full max-w-md space-y-12">
+    <!-- Logo y titulo -->
+    <div class="flex flex-col items-center md:items-start space-y-4">
+      <span class="font-headline text-3xl font-extrabold tracking-tighter text-primary mb-2">TRAMA</span>
+      <div class="space-y-1 text-center md:text-left">
+        <h2 class="text-3xl font-bold tracking-tight text-on-surface">Bienvenido de nuevo</h2>
+        <p class="text-on-surface-variant text-sm">Accede a tu panel profesional de TRAMA.</p>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <form id="login-form" class="space-y-8" novalidate>
+      <div class="space-y-6">
+        <!-- Email -->
+        <div class="space-y-2">
+          <label class="block text-xs font-bold tracking-widest uppercase text-on-surface-variant" for="login-email">
+            Correo electronico
+          </label>
+          <div class="group relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline">
+              <span class="material-symbols-outlined text-xl" aria-hidden="true">mail</span>
+            </div>
+            <input
+              autocomplete="email"
+              class="block w-full pl-12 pr-4 py-4 bg-surface-container-low border-0 border-b-2 border-transparent focus:border-primary focus:ring-0 transition-all rounded-t-xl text-on-surface placeholder:text-outline/50"
+              id="login-email"
+              name="email"
+              placeholder="nombre@ejemplo.com"
+              required
+              type="email"
+            />
+          </div>
+        </div>
+
+        <!-- Contrasena -->
+        <div class="space-y-2">
+          <label class="block text-xs font-bold tracking-widest uppercase text-on-surface-variant" for="login-password">
+            Contrasena
+          </label>
+          <div class="group relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline">
+              <span class="material-symbols-outlined text-xl" aria-hidden="true">lock</span>
+            </div>
+            <input
+              autocomplete="current-password"
+              class="block w-full pl-12 pr-4 py-4 bg-surface-container-low border-0 border-b-2 border-transparent focus:border-primary focus:ring-0 transition-all rounded-t-xl text-on-surface placeholder:text-outline/50"
+              id="login-password"
+              name="password"
+              placeholder="********"
+              required
+              type="password"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones auxiliares -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <input
+            class="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary-fixed/30 bg-surface-container-low"
+            id="recordarme"
+            name="recordarme"
+            type="checkbox"
+          />
+          <label class="ml-2 block text-sm text-on-surface-variant font-medium" for="recordarme">
+            Recordarme
+          </label>
+        </div>
+        <a class="text-sm font-bold text-primary hover:text-primary-container transition-colors" href="/recuperar-contrasena">
+          Olvidaste tu contrasena?
+        </a>
+      </div>
+
+      <!-- Boton principal -->
+      <button
+        id="btn-login"
+        class="w-full py-4 px-6 bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold text-sm tracking-widest uppercase rounded-xl shadow-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+        type="submit"
+      >
+        <span id="btn-login-text">Iniciar Sesion</span>
+        <span class="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform" aria-hidden="true">arrow_forward</span>
+      </button>
+    </form>
+
+    <!-- Toast de error -->
+    <div
+      id="login-toast"
+      class="fixed top-6 right-6 z-50 max-w-sm transform translate-x-[120%] transition-transform duration-300 ease-in-out"
+      role="alert"
+    >
+      <div class="flex items-center gap-3 px-5 py-4 bg-error-container text-on-error-container rounded-xl shadow-2xl border border-error/20">
+        <span class="material-symbols-outlined text-error text-2xl shrink-0" aria-hidden="true">error</span>
+        <div>
+          <p class="font-bold text-sm">No se pudo iniciar sesion</p>
+          <p id="login-toast-message" class="text-xs opacity-80 mt-0.5">Verifique sus datos e intente nuevamente.</p>
+        </div>
+        <button
+          id="login-toast-close"
+          type="button"
+          class="ml-2 shrink-0 text-on-error-container/60 hover:text-on-error-container transition-colors"
+          aria-label="Cerrar"
+        >
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Seccion inferior -->
+    <div class="pt-8 space-y-6">
+      <!-- Separador -->
+      <div class="relative" role="separator">
+        <div class="absolute inset-0 flex items-center" aria-hidden="true">
+          <div class="w-full border-t border-outline-variant/15"></div>
+        </div>
+        <div class="relative flex justify-center text-sm">
+          <span class="px-4 bg-surface text-outline text-xs uppercase tracking-widest">O continuar con</span>
+        </div>
+      </div>
+
+      <!-- Login social -->
+      <div class="grid grid-cols-2 gap-4">
+        <button
+          class="flex w-full items-center justify-center gap-3 px-4 py-3 bg-surface-container-lowest border border-outline-variant/15 rounded-xl hover:bg-surface-container-low transition-colors"
+          type="button"
+          aria-label="Iniciar sesion con Google"
+        >
+          <svg class="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.65l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          <span class="text-sm font-bold text-on-surface">Google</span>
+        </button>
+        <button
+          class="flex w-full items-center justify-center gap-3 px-4 py-3 bg-surface-container-lowest border border-outline-variant/15 rounded-xl hover:bg-surface-container-low transition-colors"
+          type="button"
+          aria-label="Iniciar sesion con GitHub"
+        >
+          <svg class="h-5 w-5 fill-on-surface" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z"/>
+          </svg>
+          <span class="text-sm font-bold text-on-surface">GitHub</span>
+        </button>
+      </div>
+
+      <!-- Link a registro -->
+      <p class="text-center text-sm text-on-surface-variant">
+        No tenes una cuenta?
+        <a class="font-bold text-secondary hover:underline ml-1" href="/registro">Registrate gratis</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { login } from '../services/authService';
+
+  const loginForm = document.getElementById('login-form') as HTMLFormElement | null;
+  const btnLogin = document.getElementById('btn-login') as HTMLButtonElement | null;
+  const btnLoginText = document.getElementById('btn-login-text');
+  const toast = document.getElementById('login-toast');
+  const toastMessage = document.getElementById('login-toast-message');
+  const toastClose = document.getElementById('login-toast-close');
+
+  let toastTimeout: ReturnType<typeof setTimeout>;
+
+  function showToast(message: string) {
+    if (toastMessage) toastMessage.textContent = message;
+    toast?.classList.remove('translate-x-[120%]');
+    toast?.classList.add('translate-x-0');
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(hideToast, 5000);
+  }
+
+  function hideToast() {
+    toast?.classList.remove('translate-x-0');
+    toast?.classList.add('translate-x-[120%]');
+  }
+
+  toastClose?.addEventListener('click', hideToast);
+
+  loginForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(loginForm);
+    const email = (formData.get('email') as string)?.trim();
+    const password = formData.get('password') as string;
+
+    if (!email || !password) {
+      showToast('Complete todos los campos para continuar.');
+      return;
+    }
+
+    if (btnLogin) btnLogin.disabled = true;
+    if (btnLoginText) btnLoginText.textContent = 'Ingresando...';
+
+    try {
+      await login({ email, password });
+      window.location.href = '/dashboard';
+    } catch (err: any) {
+      const message = err?.body?.error || 'Verifique sus datos e intente nuevamente.';
+      showToast(message);
+    } finally {
+      if (btnLogin) btnLogin.disabled = false;
+      if (btnLoginText) btnLoginText.textContent = 'Iniciar Sesion';
+    }
+  });
+</script>

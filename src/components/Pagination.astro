@@ -1,0 +1,66 @@
+---
+interface Props {
+  currentPage: number;
+  totalPages: number;
+  baseUrl: string;
+}
+
+const { currentPage, totalPages, baseUrl } = Astro.props;
+
+const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+const showEllipsis = totalPages > 5;
+---
+
+<nav class="pt-12 flex justify-center items-center gap-4" aria-label="Paginacion">
+  {currentPage > 1 ? (
+    <a
+      href={`${baseUrl}?page=${currentPage - 1}`}
+      class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-highest text-on-surface hover:bg-outline-variant transition-colors"
+      aria-label="Pagina anterior"
+    >
+      <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+    </a>
+  ) : (
+    <span class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-highest text-outline/50 cursor-not-allowed">
+      <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+    </span>
+  )}
+
+  <div class="flex gap-2">
+    {pages.map((page) => {
+      if (showEllipsis && page > 3 && page < totalPages) {
+        return page === 4 ? (
+          <span class="w-12 h-12 flex items-center justify-center text-outline" aria-hidden="true">...</span>
+        ) : null;
+      }
+      return (
+        <a
+          href={`${baseUrl}?page=${page}`}
+          class={`w-12 h-12 flex items-center justify-center rounded-full font-bold transition-colors ${
+            page === currentPage
+              ? 'bg-primary text-on-primary'
+              : 'bg-surface-container-lowest text-on-surface hover:bg-surface-variant'
+          }`}
+          aria-current={page === currentPage ? 'page' : undefined}
+          aria-label={`Pagina ${page}`}
+        >
+          {page}
+        </a>
+      );
+    })}
+  </div>
+
+  {currentPage < totalPages ? (
+    <a
+      href={`${baseUrl}?page=${currentPage + 1}`}
+      class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-highest text-on-surface hover:bg-outline-variant transition-colors"
+      aria-label="Pagina siguiente"
+    >
+      <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+    </a>
+  ) : (
+    <span class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-highest text-outline/50 cursor-not-allowed">
+      <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+    </span>
+  )}
+</nav>

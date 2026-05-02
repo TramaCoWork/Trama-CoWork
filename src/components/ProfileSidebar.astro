@@ -1,0 +1,80 @@
+---
+import type { Professional } from '../data/mock';
+
+interface Props {
+  professional: Professional;
+}
+
+const { professional } = Astro.props;
+---
+
+<aside class="md:col-span-4 space-y-8">
+  <!-- Informacion rapida -->
+  <div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-outline-variant/10">
+    <h3 class="text-xs font-bold uppercase tracking-widest text-secondary mb-6 font-label">Informacion</h3>
+    <div class="space-y-6">
+      {professional.location && (
+        <div class="flex items-start gap-4">
+          <span class="material-symbols-outlined text-primary" aria-hidden="true">location_on</span>
+          <div>
+            <p class="text-sm font-bold">Ubicacion</p>
+            <p class="text-on-surface-variant text-sm">
+              {professional.location}
+              {professional.remoteAvailable && ' (Disponible remoto)'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {professional.languages && professional.languages.length > 0 && (
+        <div class="flex items-start gap-4">
+          <span class="material-symbols-outlined text-primary" aria-hidden="true">translate</span>
+          <div>
+            <p class="text-sm font-bold">Idiomas</p>
+            <p class="text-on-surface-variant text-sm">{professional.languages.join(', ')}</p>
+          </div>
+        </div>
+      )}
+
+      {professional.certifications && professional.certifications.length > 0 && (
+        <div class="flex items-start gap-4">
+          <span class="material-symbols-outlined text-primary" aria-hidden="true">verified</span>
+          <div>
+            <p class="text-sm font-bold">Certificaciones</p>
+            <p class="text-on-surface-variant text-sm">{professional.certifications.join(', ')}</p>
+          </div>
+        </div>
+      )}
+
+      <div class="flex items-start gap-4">
+        <span class="material-symbols-outlined text-primary" aria-hidden="true">payments</span>
+        <div>
+          <p class="text-sm font-bold">Tarifa por hora</p>
+          <p class="text-on-surface-variant text-sm">Desde ${professional.hourlyRate}/hr</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Competencias -->
+  {professional.competencies && professional.competencies.length > 0 && (
+    <div class="bg-surface-container-low p-8 rounded-xl">
+      <h3 class="text-xs font-bold uppercase tracking-widest text-on-surface mb-6 font-label">Competencias</h3>
+      <div class="flex flex-wrap gap-2">
+        {professional.competencies.map((comp, i) => {
+          const styles = [
+            'bg-primary-fixed text-on-primary-fixed-variant',
+            'bg-secondary-fixed text-on-secondary-fixed-variant',
+            'bg-tertiary-fixed text-on-tertiary-fixed-variant',
+            'bg-surface-container-highest text-on-surface-variant',
+          ];
+          return (
+            <span class={`px-4 py-2 rounded-full text-xs font-medium ${styles[i % styles.length]}`}>
+              {comp}
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  )}
+</aside>

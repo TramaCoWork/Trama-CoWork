@@ -1,0 +1,90 @@
+---
+import logoSrc from '../assets/images/logo-trama-apaisado.png';
+
+const currentPath = Astro.url.pathname;
+
+const navLinks = [
+  { href: '/categorias', label: 'Especialidades' },
+  { href: '/profesionales', label: 'Profesionales' },
+  { href: '/about', label: 'Sobre nosotros' },
+];
+
+function isActive(href: string): boolean {
+  if (href === '/') return currentPath === '/';
+  return currentPath.startsWith(href);
+}
+---
+
+<nav class="sticky top-0 z-50 w-full bg-surface-container-lowest/80 backdrop-blur-xl shadow-sm">
+  <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+    <div class="flex items-center gap-12">
+      <a href="/" class="flex items-center">
+        <img alt="TRAMA CoWork" class="h-10 w-auto object-contain" src={logoSrc.src} />
+      </a>
+      <div class="hidden md:flex items-center gap-8 tracking-tight font-medium">
+        {navLinks.map((link) => (
+          <a
+            href={link.href}
+            class={isActive(link.href)
+              ? 'text-primary font-bold border-b-2 border-primary pb-1'
+              : 'text-on-surface-variant hover:text-primary transition-colors duration-200'}
+            aria-current={isActive(link.href) ? 'page' : undefined}
+          >
+            {link.label}
+          </a>
+        ))}
+        <a
+          id="nav-dashboard"
+          href="/dashboard"
+          class={`hidden ${isActive('/dashboard')
+            ? 'text-primary font-bold border-b-2 border-primary pb-1'
+            : 'text-on-surface-variant hover:text-primary transition-colors duration-200'}`}
+          aria-current={isActive('/dashboard') ? 'page' : undefined}
+        >
+          Dashboard
+        </a>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <div id="nav-guest" class="flex items-center gap-4">
+        <a href="/login" class="px-5 py-2 text-sm font-semibold text-primary hover:bg-surface-container-low transition-colors duration-200 active:scale-95 transform">
+          Iniciar sesion
+        </a>
+        <a href="/registro" class="px-5 py-2 text-sm font-semibold bg-primary text-on-primary rounded-full hover:opacity-90 transition-all active:scale-95 transform shadow-md">
+          Registrarse
+        </a>
+      </div>
+      <div id="nav-auth" class="hidden items-center gap-4">
+        <button
+          id="btn-logout"
+          type="button"
+          class="px-5 py-2 text-sm font-semibold text-on-surface-variant hover:text-error hover:bg-error-container/30 transition-colors duration-200 rounded-lg"
+        >
+          Cerrar sesion
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script>
+  import { isAuthenticated, logout, restoreSession } from '../services/authService';
+
+  restoreSession();
+
+  const navDashboard = document.getElementById('nav-dashboard');
+  const navGuest = document.getElementById('nav-guest');
+  const navAuth = document.getElementById('nav-auth');
+  const btnLogout = document.getElementById('btn-logout');
+
+  if (isAuthenticated()) {
+    navDashboard?.classList.remove('hidden');
+    navGuest?.classList.add('hidden');
+    navAuth?.classList.remove('hidden');
+    navAuth?.classList.add('flex');
+  }
+
+  btnLogout?.addEventListener('click', () => {
+    logout();
+  });
+</script>

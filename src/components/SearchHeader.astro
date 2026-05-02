@@ -1,0 +1,99 @@
+---
+---
+
+<header class="bg-surface-container-low py-12 px-6">
+  <div class="max-w-5xl mx-auto space-y-8">
+    <div class="space-y-2">
+      <h1 class="text-4xl font-extrabold tracking-tight text-on-surface">Encontra la experiencia indicada.</h1>
+      <p class="text-on-surface-variant font-medium">Explora profesionales verificados en tu zona o especializados globalmente.</p>
+    </div>
+
+    <!-- Barra de busqueda -->
+    <form id="search-form" class="relative group" role="search" aria-label="Buscar profesionales">
+      <div class="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-2xl blur opacity-25 group-focus-within:opacity-100 transition duration-1000" aria-hidden="true"></div>
+      <div class="relative flex flex-col md:flex-row gap-2 bg-surface-container-lowest p-2 rounded-2xl shadow-sm">
+        <div class="flex-1 flex items-center px-4 gap-3">
+          <span class="material-symbols-outlined text-primary" aria-hidden="true">search</span>
+          <label for="search-query" class="sr-only">Servicio profesional</label>
+          <input
+            id="search-query"
+            class="w-full border-none focus:ring-0 bg-transparent py-4 text-lg font-medium placeholder:text-outline-variant"
+            placeholder="Que servicio profesional necesitas?"
+            type="search"
+            name="q"
+          />
+        </div>
+        <div class="h-12 w-px bg-surface-variant hidden md:block self-center" aria-hidden="true"></div>
+        <div class="flex-1 flex items-center px-4 gap-3">
+          <span class="material-symbols-outlined text-primary" aria-hidden="true">location_on</span>
+          <label for="search-location" class="sr-only">Ubicacion</label>
+          <input
+            id="search-location"
+            class="w-full border-none focus:ring-0 bg-transparent py-4 text-lg font-medium placeholder:text-outline-variant"
+            placeholder="Ubicacion (Opcional)"
+            type="text"
+            name="location"
+          />
+        </div>
+        <button
+          type="submit"
+          class="bg-primary hover:bg-primary-container text-on-primary font-bold px-8 py-4 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
+        >
+          Buscar
+        </button>
+      </div>
+    </form>
+
+    <!-- Filtros -->
+    <div class="flex flex-wrap gap-3 overflow-x-auto pb-2">
+      <button class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-full text-sm font-bold" type="button">
+        <span class="material-symbols-outlined text-lg" aria-hidden="true">tune</span>
+        Todos los filtros
+      </button>
+      <button class="flex items-center gap-2 px-5 py-2.5 bg-surface-container-highest text-on-surface rounded-full text-sm font-semibold hover:bg-outline-variant transition-colors" type="button">
+        Rango de precio
+        <span class="material-symbols-outlined text-lg" aria-hidden="true">expand_more</span>
+      </button>
+      <button class="flex items-center gap-2 px-5 py-2.5 bg-surface-container-highest text-on-surface rounded-full text-sm font-semibold hover:bg-outline-variant transition-colors" type="button">
+        Rating
+        <span class="material-symbols-outlined text-lg" aria-hidden="true">star</span>
+      </button>
+      <button class="flex items-center gap-2 px-5 py-2.5 bg-surface-container-highest text-on-surface rounded-full text-sm font-semibold hover:bg-outline-variant transition-colors" type="button">
+        Disponibilidad
+      </button>
+      <div class="flex-grow"></div>
+      <div class="flex items-center gap-2 text-sm font-bold text-on-surface-variant uppercase tracking-widest">
+        <label for="sort-by" class="sr-only">Ordenar por</label>
+        <span aria-hidden="true">Ordenar:</span>
+        <select id="sort-by" class="bg-transparent border-none focus:ring-0 text-sm font-bold text-primary py-0 pl-0">
+          <option>Recomendados</option>
+          <option>Mas recientes</option>
+          <option>Precio: menor a mayor</option>
+          <option>Mejor rating</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  const searchForm = document.getElementById('search-form') as HTMLFormElement | null;
+
+  searchForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(searchForm);
+    const query = formData.get('q')?.toString().trim() ?? '';
+    const location = formData.get('location')?.toString().trim() ?? '';
+
+    console.log('Busqueda:', { query, location });
+
+    // TODO: Reemplazar con fetch a API real
+    // const params = new URLSearchParams();
+    // if (query) params.set('q', query);
+    // if (location) params.set('location', location);
+    // const res = await fetch(`/api/professionals?${params}`);
+    // const results = await res.json();
+    // renderResults(results);
+  });
+</script>

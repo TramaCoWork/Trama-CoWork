@@ -1,0 +1,78 @@
+---
+import type { Professional } from '../data/mock';
+
+interface Props {
+  professional: Professional;
+}
+
+const { professional } = Astro.props;
+
+const fullStars = Math.floor(professional.rating);
+const emptyStars = 5 - fullStars;
+---
+
+<section class="w-full px-8 py-16 bg-surface-container-low">
+  <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-12 items-end">
+    <!-- Foto de perfil -->
+    <div class="relative group">
+      <div class="w-64 h-80 rounded-xl overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]">
+        <img
+          alt={`Foto de perfil de ${professional.name}`}
+          class="w-full h-full object-cover"
+          src={professional.image}
+          loading="eager"
+        />
+      </div>
+      {professional.topRated && (
+        <div class="absolute -bottom-4 -right-4 bg-secondary-container text-on-secondary-container px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase font-label shadow-lg">
+          Expert
+        </div>
+      )}
+    </div>
+
+    <!-- Info principal -->
+    <div class="flex-grow space-y-4">
+      <div class="inline-flex items-center gap-2 px-3 py-1 bg-secondary-fixed text-on-secondary-fixed-variant rounded-full text-xs font-bold uppercase tracking-wider font-label">
+        {professional.category}
+      </div>
+
+      <h1 class="text-5xl md:text-6xl font-extrabold tracking-tighter text-on-surface font-headline leading-tight">
+        {professional.name}
+      </h1>
+
+      <!-- Rating -->
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-0.5" role="img" aria-label={`${professional.rating} de 5 estrellas`}>
+          {Array.from({ length: fullStars }).map(() => (
+            <span class="material-symbols-outlined text-base filled text-star" aria-hidden="true">star</span>
+          ))}
+          {Array.from({ length: emptyStars }).map(() => (
+            <span class="material-symbols-outlined text-base text-star-empty" aria-hidden="true">star</span>
+          ))}
+        </div>
+        <span class="text-sm font-bold text-on-surface-variant">
+          {professional.rating} ({professional.reviewCount} resenas)
+        </span>
+      </div>
+
+      <p class="text-lg text-on-surface-variant max-w-2xl font-light">
+        {professional.bio}
+      </p>
+
+      <div class="flex gap-4 pt-4">
+        <a
+          href="#contactar"
+          class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-8 py-3 rounded-lg font-bold shadow-lg active:opacity-80 transition-all hover:shadow-xl"
+        >
+          Contactar
+        </a>
+        <button
+          class="bg-surface-container-highest text-on-surface px-8 py-3 rounded-lg font-bold transition-all hover:bg-surface-variant/30"
+          type="button"
+        >
+          Compartir perfil
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

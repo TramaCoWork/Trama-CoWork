@@ -1,0 +1,42 @@
+---
+import '../styles/global.css';
+import DashboardSidebar from '../components/DashboardSidebar.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Portal profesional TRAMA - Gestiona tu perfil y actividad.' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+  </head>
+  <body class="bg-surface font-body text-on-surface antialiased">
+    <div class="flex min-h-screen">
+      <DashboardSidebar />
+      <main class="flex-1 min-h-screen p-8 lg:p-12 overflow-y-auto">
+        <slot />
+      </main>
+    </div>
+    <Footer />
+
+    <script>
+      import { isAuthenticated, restoreSession } from '../services/authService';
+
+      restoreSession();
+
+      if (!isAuthenticated()) {
+        window.location.href = '/login';
+      }
+    </script>
+  </body>
+</html>

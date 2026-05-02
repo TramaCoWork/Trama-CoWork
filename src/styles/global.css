@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-surface-container: #ebeeee;
+  --color-on-tertiary-fixed-variant: #7e2c00;
+  --color-surface-bright: #f7fafa;
+  --color-tertiary-container: #b84500;
+  --color-on-primary-fixed-variant: #004f53;
+  --color-primary: #01767C;
+  --color-surface-tint: #00696e;
+  --color-outline: #6e797a;
+  --color-outline-variant: #bdc9c9;
+  --color-on-background: #181c1d;
+  --color-on-surface: #181c1d;
+  --color-surface-container-low: #f1f4f4;
+  --color-background: #f7fafa;
+  --color-on-primary: #ffffff;
+  --color-surface-container-lowest: #ffffff;
+  --color-secondary-fixed: #ffd9e1;
+  --color-on-secondary-fixed: #3f001b;
+  --color-error-container: #ffdad6;
+  --color-tertiary: #903400;
+  --color-on-primary-container: #a8f9ff;
+  --color-primary-fixed: #99f1f7;
+  --color-on-tertiary-container: #ffe7de;
+  --color-surface-dim: #d7dbdb;
+  --color-surface-container-highest: #e0e3e3;
+  --color-on-secondary: #ffffff;
+  --color-tertiary-fixed-dim: #ffb597;
+  --color-inverse-on-surface: #eef1f1;
+  --color-inverse-primary: #7dd4db;
+  --color-primary-container: #01767c;
+  --color-on-tertiary: #ffffff;
+  --color-primary-fixed-dim: #7dd4db;
+  --color-on-error-container: #93000a;
+  --color-secondary-fixed-dim: #ffb1c5;
+  --color-on-secondary-fixed-variant: #8f0045;
+  --color-tertiary-fixed: #ffdbcd;
+  --color-on-surface-variant: #3e4949;
+  --color-on-secondary-container: #590028;
+  --color-secondary: #b90a5c;
+  --color-surface: #f7fafa;
+  --color-on-tertiary-fixed: #360f00;
+  --color-surface-variant: #e0e3e3;
+  --color-surface-container-high: #e5e9e9;
+  --color-inverse-surface: #2d3131;
+  --color-error: #ba1a1a;
+  --color-secondary-container: #fd4c8e;
+  --color-on-error: #ffffff;
+  --color-on-primary-fixed: #002022;
+
+  --color-star: #ca8a04;
+  --color-star-empty: rgba(110, 121, 122, 0.3);
+
+  --radius-2xl: 2rem;
+
+  --font-family-headline: 'Manrope', sans-serif;
+  --font-family-body: 'Manrope', sans-serif;
+  --font-family-label: 'Manrope', sans-serif;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+}
+
+.material-symbols-outlined.filled {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
