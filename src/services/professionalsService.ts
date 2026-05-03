@@ -38,10 +38,7 @@ export interface PaginatedProfessionals {
 
 // ─── Fetch ─────────────────────────────────────────────────────
 
-export async function fetchProfessionals(
-  page = 1,
-  sizePage = 10,
-): Promise<PaginatedProfessionals> {
+export async function fetchProfessionals(page = 1, sizePage = 10): Promise<PaginatedProfessionals> {
   return api.get<PaginatedProfessionals>('/professionals', { page, sizePage });
 }
 
@@ -139,7 +136,8 @@ function renderPagination(page: number, totalPages: number): string {
   let pagesHtml = '';
   for (let i = 1; i <= totalPages; i++) {
     if (totalPages > 5 && i > 3 && i < totalPages) {
-      if (i === 4) pagesHtml += `<span class="w-12 h-12 flex items-center justify-center text-outline" aria-hidden="true">...</span>`;
+      if (i === 4)
+        pagesHtml += `<span class="w-12 h-12 flex items-center justify-center text-outline" aria-hidden="true">...</span>`;
       continue;
     }
     const activeClass =

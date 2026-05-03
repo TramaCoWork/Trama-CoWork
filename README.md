@@ -62,11 +62,43 @@ npm run dev
 
 ## Comandos disponibles
 
-| Comando           | Accion                                          |
-| :---------------- | :---------------------------------------------- |
-| `npm run dev`     | Inicia el servidor de desarrollo en `:4321`     |
-| `npm run build`   | Genera el sitio para produccion en `./dist/`    |
-| `npm run preview` | Previsualiza el build localmente                |
+| Comando              | Accion                                          |
+| :------------------- | :---------------------------------------------- |
+| `npm run dev`        | Inicia el servidor de desarrollo en `:4321`     |
+| `npm run build`      | Genera el sitio para produccion en `./dist/`    |
+| `npm run preview`    | Previsualiza el build localmente                |
+| `npm run lint`       | Ejecuta el linter (Biome)                       |
+| `npm run lint:fix`   | Corrige errores de lint automaticamente         |
+| `npm run test`       | Ejecuta los tests (Vitest)                      |
+| `npm run test:watch` | Ejecuta los tests en modo watch                 |
+| `npm run ci`         | Ejecuta lint + tests + build (simula el CI)     |
+
+## Verificacion local (pre-push)
+
+Antes de hacer push o abrir un PR, ejecuta las verificaciones localmente:
+
+```sh
+# Todo junto (lint + tests + build)
+npm run ci
+
+# O individualmente
+npm run lint        # Verifica estilo y errores de codigo
+npm run test        # Ejecuta tests unitarios
+npm run build       # Verifica que compile sin errores
+```
+
+Con Docker:
+
+```sh
+docker compose exec app npm run ci
+
+# O individualmente
+docker compose exec app npm run lint
+docker compose exec app npm run test
+docker compose exec app npm run build
+```
+
+Estas mismas verificaciones se ejecutan automaticamente en cada Pull Request via GitHub Actions.
 
 ## Estructura del proyecto
 

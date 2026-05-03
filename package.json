@@ -9,11 +9,20 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "ci": "biome check . && vitest run && astro build"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.4",
     "astro": "^6.1.8",
     "tailwindcss": "^4.2.4"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.14",
+    "vitest": "^3.2.4"
   }
 }

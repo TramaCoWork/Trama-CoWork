@@ -55,7 +55,8 @@ export const professionals: Professional[] = [
     hourlyRate: 85,
     rating: 5.0,
     reviewCount: 124,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCOloydRmWu8_yEqgUL2PKKCHuK6o9xYtnH9yh3eRdYjTWIaBE-RvWhmHNf502uRKcaoA5rqX9U1s3jwCT88zrWQsxhF1tjCQmV8uxZfKj0RMTNrGkQovDPT56KJSmhmLB6lMT40xZ0khT4haPSRcqm4tEJ46i7h4AYpgt9toOiWoXAB5454WGoW5hyI4phrNv1HWf1gAenqSgp7QMQV6kTLiqaNHbevizDTmd0U50s2h5SZ6XXoQjt0MzBpQ8WkfEBZEtaxNNJEQ',
+    image:
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuCOloydRmWu8_yEqgUL2PKKCHuK6o9xYtnH9yh3eRdYjTWIaBE-RvWhmHNf502uRKcaoA5rqX9U1s3jwCT88zrWQsxhF1tjCQmV8uxZfKj0RMTNrGkQovDPT56KJSmhmLB6lMT40xZ0khT4haPSRcqm4tEJ46i7h4AYpgt9toOiWoXAB5454WGoW5hyI4phrNv1HWf1gAenqSgp7QMQV6kTLiqaNHbevizDTmd0U50s2h5SZ6XXoQjt0MzBpQ8WkfEBZEtaxNNJEQ',
     topRated: true,
     bio: 'Con mas de 12 anos de experiencia en la interseccion del diseno y la tecnologia, me dedico a transformar problemas complejos en soluciones visuales elegantes y funcionales. Mi enfoque combina el rigor analitico con una sensibilidad estetica editorial, asegurando que cada proyecto no solo cumpla objetivos, sino que cuente una historia cautivadora.',
     location: 'Madrid, Espana',
@@ -64,13 +65,40 @@ export const professionals: Professional[] = [
     certifications: ['Certified Design Lead', 'Agile Coach'],
     competencies: ['Identidad Visual', 'UX Research', 'Design Ops', 'Liderazgo', 'Estrategia de Producto'],
     services: [
-      { icon: 'architecture', title: 'Consultoria Estrategica', description: 'Definicion de roadmap de producto y alineacion de marca.' },
-      { icon: 'draw', title: 'Diseno de Interfaz Premium', description: 'Creacion de sistemas de diseno escalables y experiencias de alta gama.' },
+      {
+        icon: 'architecture',
+        title: 'Consultoria Estrategica',
+        description: 'Definicion de roadmap de producto y alineacion de marca.',
+      },
+      {
+        icon: 'draw',
+        title: 'Diseno de Interfaz Premium',
+        description: 'Creacion de sistemas de diseno escalables y experiencias de alta gama.',
+      },
     ],
     portfolio: [
-      { title: 'Lumina Fintech Redesign', category: 'Estrategia de Producto Digital', year: '2023', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBdBjkptMkzjVW2rfdqFtQhuHsWrl-dutInhPRfLnRUd981HhiQorXDWJopauxjQuWjQmi-dzeHZwPZHHD_KTWByzsoD5LQWN_RRU-s-_blhynsubmWkCRPeZXWoDts4vVZA5E4VytyBx2wOoit_7tSLX5gYQHqvoJPdK0dCsyQmBAEMz7lU0Czga2K-4Wt9VbdDwMKVPPhU0fRH4L6v9ZJ_0OZd3VE3AeAiwoJtOEqLikwf_x583zvJFLBYsSHSL-raL7JgKevLg', featured: true },
-      { title: 'Aura Brand Identity', category: 'Diseno Visual', year: '2023', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB7KmlkHyXJHIoip4ifjyNQi3vqA4VY4VIQcdDqllfaOWYj5-XvfGBRwlAjd5stV70hwsYIB5FdwNDCsay4vtl3aFbzXCch2BXx8p-UJND3_u0_l3juDSJpYfyGA_41O24sNW-V0m9HiQtTZu4VWEqewV7p5aTzPpKxQIvfY--NyjQ4u4E7T78ol5d0ZEy1fKD0b46ZDfuif-TjNwFwigslHcN5stNlMkjnuSLz64IXj9wQuoP03MUkr_94_dENQxrvTtVqSJjARA' },
-      { title: 'Nexus Mobile App', category: 'UX/UI Design', year: '2024', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA3i1NsbqERWEVEfTWEO3j3-eiY1w7tNus5IfVREVFY3vJpn16YOE3afHSmVh4hSsgIDU2Sol0eAzlgxqmcxfehbpJNrdM-H9VebX9f2igz1okfvhdWASQDbhNLHEUxx6-hFpMRpKFdy13z6tEgk3LUYCYRW7f4zPdGzgNe893aopIP6jNg64sMb8FdPYfeX_aEDoAAsgFzruQw96WktZPh27YJjDOgZhd8naGN-duwJVsdwprbdc3TiBSDq9RruI4WFl_3MHzsmg' },
+      {
+        title: 'Lumina Fintech Redesign',
+        category: 'Estrategia de Producto Digital',
+        year: '2023',
+        image:
+          'https://lh3.googleusercontent.com/aida-public/AB6AXuBdBjkptMkzjVW2rfdqFtQhuHsWrl-dutInhPRfLnRUd981HhiQorXDWJopauxjQuWjQmi-dzeHZwPZHHD_KTWByzsoD5LQWN_RRU-s-_blhynsubmWkCRPeZXWoDts4vVZA5E4VytyBx2wOoit_7tSLX5gYQHqvoJPdK0dCsyQmBAEMz7lU0Czga2K-4Wt9VbdDwMKVPPhU0fRH4L6v9ZJ_0OZd3VE3AeAiwoJtOEqLikwf_x583zvJFLBYsSHSL-raL7JgKevLg',
+        featured: true,
+      },
+      {
+        title: 'Aura Brand Identity',
+        category: 'Diseno Visual',
+        year: '2023',
+        image:
+          'https://lh3.googleusercontent.com/aida-public/AB6AXuB7KmlkHyXJHIoip4ifjyNQi3vqA4VY4VIQcdDqllfaOWYj5-XvfGBRwlAjd5stV70hwsYIB5FdwNDCsay4vtl3aFbzXCch2BXx8p-UJND3_u0_l3juDSJpYfyGA_41O24sNW-V0m9HiQtTZu4VWEqewV7p5aTzPpKxQIvfY--NyjQ4u4E7T78ol5d0ZEy1fKD0b46ZDfuif-TjNwFwigslHcN5stNlMkjnuSLz64IXj9wQuoP03MUkr_94_dENQxrvTtVqSJjARA',
+      },
+      {
+        title: 'Nexus Mobile App',
+        category: 'UX/UI Design',
+        year: '2024',
+        image:
+          'https://lh3.googleusercontent.com/aida-public/AB6AXuA3i1NsbqERWEVEfTWEO3j3-eiY1w7tNus5IfVREVFY3vJpn16YOE3afHSmVh4hSsgIDU2Sol0eAzlgxqmcxfehbpJNrdM-H9VebX9f2igz1okfvhdWASQDbhNLHEUxx6-hFpMRpKFdy13z6tEgk3LUYCYRW7f4zPdGzgNe893aopIP6jNg64sMb8FdPYfeX_aEDoAAsgFzruQw96WktZPh27YJjDOgZhd8naGN-duwJVsdwprbdc3TiBSDq9RruI4WFl_3MHzsmg',
+      },
     ],
   },
   {
@@ -80,7 +108,8 @@ export const professionals: Professional[] = [
     hourlyRate: 120,
     rating: 4.8,
     reviewCount: 89,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDMFO51vY1FlE8Yrac95Y6SfiB0g50-KvP5YRF4kJyRD_2bKCNR5yztt2MajZoYBK3TsSuFZLnv1yTtyGTNFCRBNbpCLRq1JbKJbQJawXSR_rC0Oejgqpldt8IE42w9d6__fHm8bLL-zDQlhqoSK4xnZjqK-jO43e3xKLfpRLyUUsuZrIAPLiG6PH99Fd6J4XCbnibnRgX7RX_Yb-APw5HeUVHNCcaKapqMXFOnxBjUQgMMhV8fmePPy-o1JZ3-5PgY-mx3UMsHfQ',
+    image:
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuDMFO51vY1FlE8Yrac95Y6SfiB0g50-KvP5YRF4kJyRD_2bKCNR5yztt2MajZoYBK3TsSuFZLnv1yTtyGTNFCRBNbpCLRq1JbKJbQJawXSR_rC0Oejgqpldt8IE42w9d6__fHm8bLL-zDQlhqoSK4xnZjqK-jO43e3xKLfpRLyUUsuZrIAPLiG6PH99Fd6J4XCbnibnRgX7RX_Yb-APw5HeUVHNCcaKapqMXFOnxBjUQgMMhV8fmePPy-o1JZ3-5PgY-mx3UMsHfQ',
     topRated: false,
     bio: 'Consultor estrategico con 8 anos liderando transformaciones digitales para startups y corporaciones. Especializado en modelos de negocio escalables y growth hacking.',
     location: 'Bogota, Colombia',
@@ -88,8 +117,16 @@ export const professionals: Professional[] = [
     languages: ['Espanol', 'Ingles'],
     competencies: ['Estrategia de Negocio', 'Growth Hacking', 'Transformacion Digital', 'Lean Startup'],
     services: [
-      { icon: 'trending_up', title: 'Estrategia de Crecimiento', description: 'Diseno de estrategias de crecimiento sostenible y escalable.' },
-      { icon: 'analytics', title: 'Analisis de Mercado', description: 'Investigacion de mercado y analisis competitivo.' },
+      {
+        icon: 'trending_up',
+        title: 'Estrategia de Crecimiento',
+        description: 'Diseno de estrategias de crecimiento sostenible y escalable.',
+      },
+      {
+        icon: 'analytics',
+        title: 'Analisis de Mercado',
+        description: 'Investigacion de mercado y analisis competitivo.',
+      },
     ],
   },
   {
@@ -99,7 +136,8 @@ export const professionals: Professional[] = [
     hourlyRate: 95,
     rating: 4.9,
     reviewCount: 210,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDr8TJy2NLbPqxnWq52WEExEL-hHfJ8260R1VLdrPqc-aAGiovgqp3CuQ1A8BTGvoWLTF4nYNcWtQE3a_T7mWEK_MPi9neGrdY_NxJJFbksQl_JDgLHJXk001KVrhMtHCCdzOYQQu7yDNPjAt09NFwWOROQGzYf7O4gmJxmgJboooM99QqANeD4vbUK5fZgdBP6ZMVQN6-m4cQNrb6qGS5u0f2MLe0vBGpZ3Rru7QlpEbXxWorXOOab9si0cqyJRd7jMm69n5I4ng',
+    image:
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuDr8TJy2NLbPqxnWq52WEExEL-hHfJ8260R1VLdrPqc-aAGiovgqp3CuQ1A8BTGvoWLTF4nYNcWtQE3a_T7mWEK_MPi9neGrdY_NxJJFbksQl_JDgLHJXk001KVrhMtHCCdzOYQQu7yDNPjAt09NFwWOROQGzYf7O4gmJxmgJboooM99QqANeD4vbUK5fZgdBP6ZMVQN6-m4cQNrb6qGS5u0f2MLe0vBGpZ3Rru7QlpEbXxWorXOOab9si0cqyJRd7jMm69n5I4ng',
     topRated: false,
     bio: 'Disenadora de identidades de marca con enfoque en storytelling visual. Creo sistemas de marca coherentes que conectan emocionalmente con las audiencias.',
     location: 'Buenos Aires, Argentina',
@@ -107,8 +145,16 @@ export const professionals: Professional[] = [
     languages: ['Espanol', 'Ingles', 'Mandarin'],
     competencies: ['Branding', 'Storytelling Visual', 'Tipografia', 'Sistemas de Diseno'],
     services: [
-      { icon: 'branding_watermark', title: 'Identidad de Marca', description: 'Creacion de identidades visuales completas y memorables.' },
-      { icon: 'palette', title: 'Sistemas de Diseno', description: 'Desarrollo de guias de estilo y componentes reutilizables.' },
+      {
+        icon: 'branding_watermark',
+        title: 'Identidad de Marca',
+        description: 'Creacion de identidades visuales completas y memorables.',
+      },
+      {
+        icon: 'palette',
+        title: 'Sistemas de Diseno',
+        description: 'Desarrollo de guias de estilo y componentes reutilizables.',
+      },
     ],
   },
   {
@@ -118,7 +164,8 @@ export const professionals: Professional[] = [
     hourlyRate: 150,
     rating: 5.0,
     reviewCount: 56,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuADLSxn7QFAlyw-lYbS1qgv_S9u6vDm28J97nuJBYm5vjZi5vN6SBDvVTzs7uzqZ6tTIw97Uf5GydcD7jcj3hDmDJPyD9_NaPxrT7u0VgjsONH7be0Ihaqtnq1o3xeog78udDdRRXRWy5VJZU27za6RQd3rChveonnSCLGuGfJIyKUa2aPBxrH6-v3_TaEabBF0akpkbKklVV-wYEyP-2oAPk1j5NYOjpUR5qT5IvdSVrV-60SZJJL02qdQzrafMnQLbLHjUZ7u7Q',
+    image:
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuADLSxn7QFAlyw-lYbS1qgv_S9u6vDm28J97nuJBYm5vjZi5vN6SBDvVTzs7uzqZ6tTIw97Uf5GydcD7jcj3hDmDJPyD9_NaPxrT7u0VgjsONH7be0Ihaqtnq1o3xeog78udDdRRXRWy5VJZU27za6RQd3rChveonnSCLGuGfJIyKUa2aPBxrH6-v3_TaEabBF0akpkbKklVV-wYEyP-2oAPk1j5NYOjpUR5qT5IvdSVrV-60SZJJL02qdQzrafMnQLbLHjUZ7u7Q',
     topRated: false,
     bio: 'Abogado corporativo especializado en derecho tecnologico, propiedad intelectual y regulaciones digitales para empresas innovadoras.',
     location: 'Ciudad de Mexico, Mexico',
@@ -126,8 +173,16 @@ export const professionals: Professional[] = [
     languages: ['Espanol', 'Ingles'],
     competencies: ['Derecho Tecnologico', 'Propiedad Intelectual', 'Contratos', 'Compliance'],
     services: [
-      { icon: 'gavel', title: 'Asesoria Legal Tech', description: 'Asesoria en regulaciones tecnologicas y proteccion de datos.' },
-      { icon: 'description', title: 'Contratos Digitales', description: 'Redaccion y revision de contratos para servicios digitales.' },
+      {
+        icon: 'gavel',
+        title: 'Asesoria Legal Tech',
+        description: 'Asesoria en regulaciones tecnologicas y proteccion de datos.',
+      },
+      {
+        icon: 'description',
+        title: 'Contratos Digitales',
+        description: 'Redaccion y revision de contratos para servicios digitales.',
+      },
     ],
   },
   {
@@ -137,7 +192,8 @@ export const professionals: Professional[] = [
     hourlyRate: 110,
     rating: 4.7,
     reviewCount: 142,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCwKffB72qxwxlKeOpIfYLbOFqQ6XfImbiwNW2Cdqx5HtXE6dmGXq69CjRM3dLCFdfcqTI_nh2q5hDGMhoTvF2M1W3Tou1VcrstQWXwUOr6aKIL0_UR_Ij7faXPwenw_cM2pYpqoDQm-H13oRYoCgJmim_CkQS5bNqlE0uKgGZWCQsKMKfJKvGFoH5pb_QP16ZnZhYIrqmwj7zDiHd1ydeYF50ZkIye4PfftAqrCqS1TI0uuAkNHYOOyTMJnC_qFd0B6wyPOoHgiQ',
+    image:
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuCwKffB72qxwxlKeOpIfYLbOFqQ6XfImbiwNW2Cdqx5HtXE6dmGXq69CjRM3dLCFdfcqTI_nh2q5hDGMhoTvF2M1W3Tou1VcrstQWXwUOr6aKIL0_UR_Ij7faXPwenw_cM2pYpqoDQm-H13oRYoCgJmim_CkQS5bNqlE0uKgGZWCQsKMKfJKvGFoH5pb_QP16ZnZhYIrqmwj7zDiHd1ydeYF50ZkIye4PfftAqrCqS1TI0uuAkNHYOOyTMJnC_qFd0B6wyPOoHgiQ',
     topRated: false,
     bio: 'Desarrolladora full stack con pasion por arquitecturas limpias y experiencias de usuario excepcionales. Especialista en React, Node.js y cloud.',
     location: 'Santiago, Chile',
@@ -156,7 +212,8 @@ export const professionals: Professional[] = [
     hourlyRate: 90,
     rating: 4.9,
     reviewCount: 77,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB5wiNuXqCt1cKFivVXAXNdyNVbl47Obdtw2EzqlghI61FMsmLwe4UnQwc0ZevDUTqc1MW4vD-Omux81ekWkKYMvSYwOD4Keks2zeCalUd2w0oGQWOti_KOFfik9gKqanYdpzX6Lt2uI5v0CRNevue3qbxhszmVWyF9R2y-zOVZKGToGEeLT4VGSucihb-aw4E49vaXsSuvLZT4iYYkLUPKoHQkjmSBhMtmiHptyvMU6nIWw8cttEUIqZlVekw9Jh4VboMSNRoFzQ',
+    image:
+      'https://lh3.googleusercontent.com/aida-public/AB6AXuB5wiNuXqCt1cKFivVXAXNdyNVbl47Obdtw2EzqlghI61FMsmLwe4UnQwc0ZevDUTqc1MW4vD-Omux81ekWkKYMvSYwOD4Keks2zeCalUd2w0oGQWOti_KOFfik9gKqanYdpzX6Lt2uI5v0CRNevue3qbxhszmVWyF9R2y-zOVZKGToGEeLT4VGSucihb-aw4E49vaXsSuvLZT4iYYkLUPKoHQkjmSBhMtmiHptyvMU6nIWw8cttEUIqZlVekw9Jh4VboMSNRoFzQ',
     topRated: false,
     bio: 'Arquitecto paisajista comprometido con el diseno sostenible y la integracion de espacios verdes en entornos urbanos.',
     location: 'Lima, Peru',
@@ -165,7 +222,11 @@ export const professionals: Professional[] = [
     competencies: ['Diseno Paisajista', 'Sostenibilidad', 'Urbanismo', 'AutoCAD', 'Revit'],
     services: [
       { icon: 'park', title: 'Diseno Paisajista', description: 'Diseno de espacios verdes urbanos y residenciales.' },
-      { icon: 'eco', title: 'Consultoria Sostenible', description: 'Estrategias de sostenibilidad para proyectos arquitectonicos.' },
+      {
+        icon: 'eco',
+        title: 'Consultoria Sostenible',
+        description: 'Estrategias de sostenibilidad para proyectos arquitectonicos.',
+      },
     ],
   },
 ];

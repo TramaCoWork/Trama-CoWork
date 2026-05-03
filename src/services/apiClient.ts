@@ -61,9 +61,12 @@ export class ApiClient {
       } catch {
         errorBody = null;
       }
-      const err = new Error(`[${method}] ${path} - ${res.status} ${res.statusText}`);
-      (err as any).status = res.status;
-      (err as any).body = errorBody;
+      const err = new Error(`[${method}] ${path} - ${res.status} ${res.statusText}`) as Error & {
+        status: number;
+        body: unknown;
+      };
+      err.status = res.status;
+      err.body = errorBody;
       throw err;
     }
 
