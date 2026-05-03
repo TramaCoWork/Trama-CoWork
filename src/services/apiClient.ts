@@ -85,6 +85,10 @@ export class ApiClient {
     return this.request<T>('PUT', path, { body, query });
   }
 
+  async patch<T>(path: string, body?: unknown, query?: QueryParams): Promise<T> {
+    return this.request<T>('PATCH', path, { body, query });
+  }
+
   async del<T>(path: string, query?: QueryParams): Promise<T> {
     return this.request<T>('DELETE', path, { query });
   }
