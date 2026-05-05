@@ -52,6 +52,7 @@ export class ApiClient {
       config.body = JSON.stringify(options.body);
     }
 
+    console.log(`[API] ${method} ${url}`);
     const res = await fetch(url, config);
 
     if (!res.ok) {
@@ -105,6 +106,7 @@ export class ApiClient {
       if (k.toLowerCase() !== 'content-type') headers[k] = v;
     }
 
+    console.log(`[API] POST (upload) ${url}`);
     const res = await fetch(url, {
       method: 'POST',
       headers,
