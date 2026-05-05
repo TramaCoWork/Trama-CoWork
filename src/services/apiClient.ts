@@ -93,6 +93,48 @@ export class ApiClient {
     return this.request<T>('DELETE', path, { query });
   }
 
+  /**
+   * Upload a file via multipart/form-data.
+   * Does NOT set Content-Type — the browser adds the boundary automatically.
+   */
+  async upload<T>(path: string, formData: FormData): Promise<T> {
+    const url = this.buildUrl(path);
+
+    const headers: Record<string, string> = {};
+    for (const [k, v] of Object.entries(this.defaultHeaders)) {
+      if (k.toLowerCase() !== 'content-type') headers[k] = v;
+    }
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    if (!res.ok) {
+      let errorBody: unknown;
+      try {
+        errorBody = await res.json();
+      } catch {
+        errorBody = null;
+      }
+      const err = new Error(`[POST upload] ${path} - ${res.status} ${res.statusText}`) as Error & {
+        status: number;
+        body: unknown;
+      };
+      err.status = res.status;
+      err.body = errorBody;
+      throw err;
+    }
+
+    return res.json() as Promise<T>;
+  }
+
+  /** Build a full URL for binary downloads (caller uses window.open or <a>). */
+  downloadUrl(path: string): string {
+    return this.buildUrl(path);
+  }
+
   setHeader(key: string, value: string): void {
     this.defaultHeaders[key] = value;
   }
