@@ -5,10 +5,11 @@ const sidebarLinks = [
   { href: '/dashboard', icon: 'dashboard', label: 'Resumen' },
   { href: '/dashboard/perfil', icon: 'edit', label: 'Editar perfil' },
   { href: '/dashboard/estudios', icon: 'school', label: 'Estudios' },
-  { href: '/dashboard/contactos', icon: 'contacts', label: 'Contactos' },
-  { href: '/dashboard/comunidad', icon: 'groups', label: 'Comunidad' },
-  { href: '/dashboard/trabajos', icon: 'work', label: 'Trabajos' },
-  { href: '/dashboard/contenido', icon: 'article', label: 'Contenido' },
+  // TODO: habilitar cuando estén implementadas
+  // { href: '/dashboard/contactos', icon: 'contacts', label: 'Contactos' },
+  // { href: '/dashboard/comunidad', icon: 'groups', label: 'Comunidad' },
+  // { href: '/dashboard/trabajos', icon: 'work', label: 'Trabajos' },
+  // { href: '/dashboard/contenido', icon: 'article', label: 'Contenido' },
 ];
 
 function isActive(href: string): boolean {
@@ -76,3 +77,56 @@ const mockUser = {
     </div>
   </div>
 </aside>
+
+<script>
+  import { getUserIdFromToken, getToken, logout } from '../services/authService';
+  import { api } from '../services/apiClient';
+  import { getProfilePhotoUrl } from '../services/profileService';
+  import type { ProfessionalProfile } from '../services/profileService';
+
+  const DEFAULT_AVATAR = '/images/default-avatar.svg';
+
+  async function loadSidebarUser() {
+    const userId = getUserIdFromToken();
+    const token = getToken();
+
+    if (!userId || !token) return;
+
+    api.setHeader('Authorization', `Bearer ${token}`);
+
+    try {
+      const data = await api.get<ProfessionalProfile>(`/professionals/by-user/${userId}`);
+
+      // Avatar
+      const avatar = document.getElementById('sidebar-user-avatar') as HTMLImageElement | null;
+      if (avatar) {
+        const photoUrl = getProfilePhotoUrl(data.id);
+        avatar.onerror = () => { avatar.onerror = null; avatar.src = DEFAULT_AVATAR; };
+        avatar.src = photoUrl;
+      }
+
+      // Name
+      const name = document.getElementById('sidebar-user-name');
+      if (name) name.textContent = data.name || '';
+
+      // Role (first service)
+      const role = document.getElementById('sidebar-user-role');
+      if (role && data.services?.length > 0) role.textContent = data.services[0];
+
+      // Profile link
+      const link = document.getElementById('sidebar-profile-link') as HTMLAnchorElement | null;
+      if (link) link.href = `/profesionales/perfil?id=${data.id}`;
+    } catch (err: unknown) {
+      const error = err as Error & { status?: number };
+      if (error?.status === 401) logout();
+    }
+  }
+
+  loadSidebarUser();
+
+  // Listen for photo updates from perfil.astro
+  window.addEventListener('sidebar:update-photo', ((e: CustomEvent) => {
+    const avatar = document.getElementById('sidebar-user-avatar') as HTMLImageElement | null;
+    if (avatar) avatar.src = e.detail?.src || DEFAULT_AVATAR;
+  }) as EventListener);
+</script>

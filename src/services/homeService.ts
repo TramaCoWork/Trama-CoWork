@@ -3,18 +3,17 @@
  * -----------
  * Llamadas a la API para la pagina Home.
  * Endpoints:
- *   - GET /categories              -> Lista de categorias
- *   - GET /professionals/featured  -> Profesionales destacados para portada
+ *   - GET /profession-categories/rubros -> Lista de rubros
+ *   - GET /professionals/featured       -> Profesionales destacados para portada
  */
 
 import { api } from './apiClient';
+import { fetchRubros, type Rubro } from './professionCategoriesService';
 
 // ─── Tipos de respuesta API ────────────────────────────────────
 
-export interface ApiCategory {
-  id: number;
-  name: string;
-}
+/** @deprecated Usar Rubro en su lugar */
+export type ApiCategory = Rubro;
 
 export interface ApiFeaturedProfessional {
   id: number;
@@ -23,15 +22,20 @@ export interface ApiFeaturedProfessional {
   priceMin: number;
   priceMax: number;
   services: string[];
+  rubro?: { id: number; slug: string; name: string } | null;
 }
 
 const DEFAULT_PHOTO = '/images/default-avatar.svg';
+const API_BASE = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
-// ─── Categorias ────────────────────────────────────────────────
+// ─── Rubros (antes Categorias) ─────────────────────────────────
 
-export async function fetchCategorias(): Promise<ApiCategory[]> {
-  return api.get<ApiCategory[]>('/categories');
+/** @deprecated Usar fetchRubros() directamente */
+export async function fetchCategorias(): Promise<Rubro[]> {
+  return fetchRubros();
 }
+
+export { fetchRubros };
 
 // ─── Profesionales destacados ──────────────────────────────────
 
@@ -49,7 +53,7 @@ export async function renderFeaturedProfessionals(containerId: string): Promise<
 
     container.innerHTML = profesionales
       .map((pro) => {
-        const photo = pro.photo ?? DEFAULT_PHOTO;
+        const photo = `${API_BASE}/uploads/photo/${pro.id}`;
         const service = pro.services.length > 0 ? pro.services[0] : '';
         const rating = 0;
         const fullStars = Math.floor(rating);
@@ -62,6 +66,7 @@ export async function renderFeaturedProfessionals(containerId: string): Promise<
             alt="Foto de perfil de ${pro.name}"
             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
             src="${photo}"
+            onerror="this.onerror=null;this.src='${DEFAULT_PHOTO}'"
             loading="lazy"
           />
         </div>

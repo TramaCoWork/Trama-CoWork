@@ -82,3 +82,28 @@ export function restoreSession(): void {
     localStorage.removeItem(TOKEN_KEY);
   }
 }
+
+// ─── Professional Register ─────────────────────────────────────
+
+export interface ProfessionalRegisterRequest {
+  email: string;
+  password: string;
+  name: string;
+  city: string;
+  rubroId: number;
+  whatsapp?: string;
+}
+
+export interface RegisterResponse {
+  access_token: string;
+  userId: string;
+}
+
+export async function professionalRegister(
+  data: ProfessionalRegisterRequest,
+): Promise<RegisterResponse> {
+  const res = await api.post<RegisterResponse>('/auth/professional-register', data);
+  localStorage.setItem(TOKEN_KEY, res.access_token);
+  api.setHeader('Authorization', `Bearer ${res.access_token}`);
+  return res;
+}

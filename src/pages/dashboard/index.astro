@@ -178,8 +178,6 @@ const communityImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCITJ
     import { getUserIdFromToken, getToken, logout } from '../../services/authService';
     import { api } from '../../services/apiClient';
 
-    const DEFAULT_AVATAR = '/images/default-avatar.svg';
-
     interface ProfessionalData {
       id: number;
       userId: string;
@@ -212,29 +210,7 @@ const communityImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCITJ
           greeting.textContent = `¡Hola, ${data.name}!`;
         }
 
-        // Update sidebar user card
-        const sidebarName = document.getElementById('sidebar-user-name');
-        if (sidebarName) {
-          sidebarName.textContent = data.name;
-        }
-
-        const sidebarRole = document.getElementById('sidebar-user-role');
-        if (sidebarRole && data.services.length > 0) {
-          sidebarRole.textContent = data.services[0];
-        }
-
-        const photo = data.photo || DEFAULT_AVATAR;
-        const sidebarAvatar = document.getElementById('sidebar-user-avatar') as HTMLImageElement | null;
-        if (sidebarAvatar) {
-          sidebarAvatar.src = photo;
-          sidebarAvatar.alt = `Foto de perfil de ${data.name}`;
-        }
-
-        // Update "Ver perfil público" link
-        const profileLink = document.getElementById('sidebar-profile-link') as HTMLAnchorElement | null;
-        if (profileLink) {
-          profileLink.href = `/profesionales/perfil?id=${data.id}`;
-        }
+        // Sidebar user card is now handled by DashboardSidebar.astro
       } catch (err: any) {
         if (err?.status === 401) {
           logout();

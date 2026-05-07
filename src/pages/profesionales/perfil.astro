@@ -92,6 +92,7 @@ import Layout from '../../layouts/Layout.astro';
   import { api } from '../../services/apiClient';
 
   const DEFAULT_AVATAR = '/images/default-avatar.svg';
+  const API_BASE = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
   interface ProfessionalData {
     id: number;
@@ -125,7 +126,9 @@ import Layout from '../../layouts/Layout.astro';
 
       // Hero image
       const img = document.getElementById('pro-image') as HTMLImageElement;
-      img.src = pro.photo || DEFAULT_AVATAR;
+      const photoUrl = `${API_BASE}/uploads/photo/${pro.id}`;
+      img.src = photoUrl;
+      img.onerror = () => { img.onerror = null; img.src = DEFAULT_AVATAR; };
       img.alt = `Foto de perfil de ${pro.name}`;
 
       // Name & category badge

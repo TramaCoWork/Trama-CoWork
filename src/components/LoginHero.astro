@@ -1,66 +1,65 @@
 ---
+import logoTrama from '../assets/images/logo-trama-apaisado.png';
 ---
 
-<section class="hidden md:flex md:w-1/2 lg:w-3/5 bg-surface-container-low items-center justify-center p-16 relative">
-  <!-- Patron de fondo -->
-  <div
-    class="absolute inset-0 opacity-10 pointer-events-none"
-    aria-hidden="true"
-    style="background-image: radial-gradient(var(--color-primary) 1px, transparent 1px); background-size: 32px 32px;"
-  ></div>
-
-  <div class="relative z-10 max-w-xl">
-    <span class="inline-block px-3 py-1 mb-6 text-xs font-bold tracking-widest uppercase text-secondary bg-secondary-fixed rounded-full">
-      RED PROFESIONAL
-    </span>
-
-    <h1 class="text-6xl lg:text-8xl font-extrabold text-primary leading-none tracking-tighter mb-8">
-      Eleva tu <br/>narrativa <br/><span class="text-tertiary">profesional.</span>
-    </h1>
-
-    <p class="text-xl text-on-surface-variant leading-relaxed font-light max-w-md">
-      Conecta con lideres de la industria y descubri oportunidades curadas para carreras de alto impacto en el ecosistema digital moderno.
-    </p>
-
-    <div class="mt-12 flex gap-4">
-      <div class="flex -space-x-3">
-        <img
-          class="w-12 h-12 rounded-full ring-4 ring-surface-container-low object-cover"
-          alt="Miembro profesional"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuACU8wpIMiHK20v5FHsLiXgiqVQpBtH8QInRCZ_fmWRvw8gm83gqlSPjd83JhXKtS6fu_2YwMIF3OYi1FPqUF3jFS71GsCro8_m1NBUvTfRXseT3zbATKgrTeEq5pFN5yuUDl-dlUcyAYTNLaN9gv9qLWFG8o4Jr9q93gmauFiP1FTdtbdIkSrT9Jf-al5rLaeKdWpEHgjNVqguQcIkwq8RrPtFU_FuG2KGaToUSjBhsiEiBGXxmnPDu3XXVYo6uvs56rgz_cygWA"
-          loading="lazy"
-        />
-        <img
-          class="w-12 h-12 rounded-full ring-4 ring-surface-container-low object-cover"
-          alt="Miembro profesional"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEeSMG0BJu1Giq-d20fOxGbkxYGXfVx7jrb5xOM1cFWpU0UtF1xX84RaP-s--OGb7yEqnl1q3UmBYE3qGVud-Pyz8wQjOr_vgEfzrpSWdayLfryO4Bwow_4rulLSVwBHMhEXkbhjplXWVvzlNz8Ok8Cq5oL26nsUAQJ522rvvGwnwAjzZP3Yh0N5N8E0onxNrrOSaHX1rftsqgS_AX9gKnAvEb4NeqxMtKfFb7FmsbHcqEX9AtLsvqeiRRHtsia5x1dsbYIe3goA"
-          loading="lazy"
-        />
-        <img
-          class="w-12 h-12 rounded-full ring-4 ring-surface-container-low object-cover"
-          alt="Miembro profesional"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBesRcDi--U83CixNFyssOlINer9k1moYw5jaNS7AZ5yyXpAaxtlDKe2lfaynD0atjzpZ-w21MiIGA8pQVN26Y3L0OeXWyX_DPUMf74xJD17i_zahC09_tJzZloXIy57OcS5UWBnsk6nuDVxJQuKvJr8WH0Qr6yvKOuL3TU12vUkiHJpFwP7MUOKktdK7rpu6-_gjEyS8NyMehHHLoGmd9R1l9E6gH5g7QOVyPOygAMR8Qjv0hqTnF97sJIEiENVy4pm0wnTqOAaA"
-          loading="lazy"
-        />
-      </div>
-      <div class="flex flex-col justify-center">
-        <span class="text-sm font-bold text-on-surface">+12k Miembros</span>
-        <span class="text-xs text-on-surface-variant">Creciendo cada dia</span>
-      </div>
-    </div>
+<section class="hidden md:flex md:w-1/2 lg:w-3/5 relative overflow-hidden flex-col justify-between p-16" style="background-color: #1a3a3a;">
+  <!-- Patron de lineas diagonales decorativas -->
+  <div class="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+    <!-- Lineas diagonales con opacidad baja -->
+    <div class="absolute -top-20 -right-20 w-[600px] h-[600px] opacity-[0.07]"
+      style="background: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 40px,
+        rgba(255,255,255,0.5) 40px,
+        rgba(255,255,255,0.5) 80px
+      );"
+    ></div>
+    <div class="absolute top-1/4 right-0 w-[500px] h-[500px] opacity-[0.05]"
+      style="background: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 50px,
+        rgba(255,255,255,0.4) 50px,
+        rgba(255,255,255,0.4) 100px
+      );"
+    ></div>
+    <!-- Elementos geometricos sutiles -->
+    <div class="absolute top-[15%] right-[10%] w-72 h-72 rounded-full opacity-[0.04]" style="background: radial-gradient(circle, rgba(255,255,255,0.3), transparent 70%);"></div>
+    <div class="absolute bottom-[20%] right-[20%] w-96 h-96 rounded-full opacity-[0.03]" style="background: radial-gradient(circle, rgba(255,255,255,0.3), transparent 70%);"></div>
   </div>
 
-  <!-- Elemento decorativo -->
-  <div class="absolute bottom-20 right-20 w-64 h-64 border-l border-t border-outline-variant/15 pointer-events-none" aria-hidden="true"></div>
+  <!-- Logo arriba a la izquierda -->
+  <div class="relative z-10">
+    <img src={logoTrama.src} alt="TRAMA COWORK" class="h-14 w-auto" loading="eager" />
+  </div>
 
-  <!-- Footer en panel izquierdo -->
-  <div class="absolute bottom-6 left-0 w-full px-16">
-    <div class="flex justify-between items-center text-xs uppercase tracking-widest text-on-surface-variant opacity-60">
-      <p>&copy; 2025 TRAMA Professional Platform</p>
+  <!-- Contenido central -->
+  <div class="relative z-10 max-w-lg">
+    <h1 class="text-4xl lg:text-5xl font-bold text-white leading-tight mb-4">
+      Conectamos talento.<br/>Creamos <span class="text-amber-400">oportunidades.</span>
+    </h1>
+
+    <!-- Linea decorativa bicolor -->
+    <div class="flex gap-1 mb-8">
+      <div class="w-12 h-1 rounded-full bg-teal-400"></div>
+      <div class="w-6 h-1 rounded-full bg-pink-500"></div>
+    </div>
+
+    <p class="text-lg text-white/70 leading-relaxed max-w-md">
+      En <span class="text-teal-300 font-medium">TRAMA</span> conectas con profesionales,<br/>
+      proyectos y oportunidades reales.
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <div class="relative z-10">
+    <div class="flex justify-between items-center text-xs uppercase tracking-widest text-white/40">
+      <p>&copy; 2025 TRAMA. TODOS LOS DERECHOS RESERVADOS.</p>
       <nav class="flex gap-6" aria-label="Enlaces legales">
-        <a class="hover:text-primary transition-colors" href="/privacidad">Privacidad</a>
-        <a class="hover:text-primary transition-colors" href="/terminos">Terminos</a>
-        <a class="hover:text-primary transition-colors" href="/ayuda">Ayuda</a>
+        <a class="hover:text-white/70 transition-colors" href="/privacidad">Privacidad</a>
+        <a class="hover:text-white/70 transition-colors" href="/terminos">Terminos</a>
+        <a class="hover:text-white/70 transition-colors" href="/ayuda">Ayuda</a>
       </nav>
     </div>
   </div>

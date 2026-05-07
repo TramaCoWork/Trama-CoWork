@@ -9,6 +9,7 @@
 import { api } from './apiClient';
 
 const DEFAULT_PHOTO = '/images/default-avatar.svg';
+const API_BASE = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
 // ─── Tipos de respuesta API ────────────────────────────────────
 
@@ -25,8 +26,11 @@ export interface ProfessionalItem {
   emailContact: string | null;
   completionPct: number;
   isActive: boolean;
+  rubroId: number | null;
   createdAt: string;
   updatedAt: string;
+  rubro?: { id: number; slug: string; name: string } | null;
+  professionCategories?: { id: number; slug: string; name: string }[];
 }
 
 export interface PaginatedProfessionals {
@@ -45,7 +49,8 @@ export async function fetchProfessionals(page = 1, sizePage = 10): Promise<Pagin
 // ─── Render helpers (vanilla JS) ───────────────────────────────
 
 function renderCard(pro: ProfessionalItem): string {
-  const photo = pro.photo ?? DEFAULT_PHOTO;
+  const photo = `${API_BASE}/uploads/photo/${pro.id}`;
+  const rubroName = pro.rubro?.name || '';
   const service = pro.services.length > 0 ? pro.services[0] : '';
   const priceLabel =
     pro.priceMin != null && pro.priceMax != null
@@ -63,6 +68,7 @@ function renderCard(pro: ProfessionalItem): string {
           class="w-full h-full object-cover"
           alt="Foto de ${pro.name}"
           src="${photo}"
+          onerror="this.onerror=null;this.src='${DEFAULT_PHOTO}'"
           loading="lazy"
         />
       </div>
@@ -72,7 +78,7 @@ function renderCard(pro: ProfessionalItem): string {
             <div>
               <div class="flex items-center gap-2 text-secondary font-bold text-xs uppercase tracking-widest mb-1">
                 <span class="material-symbols-outlined text-sm" aria-hidden="true">work</span>
-                ${service}
+                ${rubroName || service}
               </div>
               <h2 class="text-2xl font-extrabold tracking-tight text-on-surface">${pro.name}</h2>
             </div>

@@ -1,145 +1,62 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 
-// TODO: Replace with real categories from API
-const categories = [
-  {
-    name: 'Arquitectura',
-    slug: 'arquitectura',
-    experts: 1248,
-    badge: 'Popular',
-    badgeColor: 'text-secondary',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCYh-OX8k0U1fQlFYqWtRWaNVpFHt9UmjZCuqPMbarS_sdT0Xw7v5eAos6DRmcNia3nu7X85uXyUo7g4qYeOwm1ZJ7qfl09XBehySMyb6nCnJvDCXq9pt5EFUfAVES5P8wZllfVFz4DvpwEBc55VZa6gro_K0czyDSW0rEqk_zXYsCxR3D_SBadDECcw0rYE4AcOZNTsHWiJupsZmYugEQ7VcOJ4xgpuD3Hllgh1ryg75Gat40wJ9ssdl-Lsqqo8yb1BKvAcxmSFw',
-    imageAlt: 'Rascacielos moderno de vidrio reflejando el cielo',
-  },
-  {
-    name: 'Diseño de interiores',
-    slug: 'diseno-interiores',
-    experts: 856,
-    badge: 'Tendencia',
-    badgeColor: 'text-tertiary',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDND2h8BR5pSZiIIk1u06S8VfX7Czplzxo_94khfEQTAXfBcAGvH5jes-vl4Db8FoqTQ7BhTeU5ruYvJ9ZaIP_oaV3JimmuNnvaUkkoUrkMmxAp3G3VW4gZtNOrbgFntiuvaMdtgbj37DkMvzfJgrfU5ieOtmHkwNEsEQaqWHsi9JX4Typ3jpohGvXSCMeKeDHIe2BEUzj19JBD1_mtkZly5fjW0BPIbcWsxB-G58W0odd3CtoAp80FGhIIT1zR_Ow_0qWFbC2yPQ',
-    imageAlt: 'Sala minimalista con sofá beige y luz natural',
-  },
-  {
-    name: 'Diseño estratégico',
-    slug: 'diseno-estrategico',
-    experts: 412,
-    badge: null,
-    badgeColor: null,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDx2bZhqY4WGJaYPzFwXo7KGIEgGOR2zRwxfqda3Mx9JlBAIzeEA0xowm3oL9T0YaL3mt4y6R7Vdeq-aOvj5T-P07IGkZPJTtRLJLcFK9dSWdQuory0vn_I-EI67a1odfqatv6etadmYSSfvOb1UM-HCNEh8fqsEYkQ7C0x79tBsc5-VUGsEUocRIsV4UuCpxtF_jI4kOlXAUM-zcgj5WUB_93eD5t67NdVP-UO8jOKXgf06aXDS9nPQw564eEXMis30HYc4KTc3w',
-    imageAlt: 'Escritorio con tablet mostrando wireframes y café',
-  },
-  {
-    name: 'Arquitectura del paisaje',
-    slug: 'arquitectura-paisaje',
-    experts: 324,
-    badge: null,
-    badgeColor: null,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAXRnWvFxOQqKSzWGTSSJZle-PWM11oJdWH73GNeg_Hj--WGbfa1UyRTaeg-1uIz1ZXRaT7xG2uREZKq_f6ySjkzB-HH6nmBaKwxMQ1plOgRps-aRL8_jRQfYN__mNO3ZOieNXquzFocHmobegiFybAw89I5qUndTk8i-3KCdSItF64FcOOJPGgYmvIGzG54s-PDE-_kJ9eY6QLRfWLPclyic9DFr2Z8WiGyyCeCDo1HSCPupYeqW01Je0XORCjukFcVfEJl242yw',
-    imageAlt: 'Jardín urbano en terraza con vegetación sustentable',
-  },
-  {
-    name: 'Construcción',
-    slug: 'construccion',
-    experts: 1890,
-    badge: null,
-    badgeColor: null,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBZDzWsQ3dTqn6RfakZbDjcFhteftqmY7qO7S6k2NNUnkjJ0i3oDz3EQqq2-GGume54vH4aI7Hahp-9vcsuOpcqWYi8DJOx1MYdRMglLhNjIkvfdl--e9TOzaI_Bjo-y3naIEir24uSweQkC7vJ-aWEUBP2Iv-fcG4QWmHTuvIakoZmvCyhERfp-ABVtOyUhs7OGWuv5BoDb2qy_yUkXc0ETtosZ3XWdAmDI1T8bFio0DtEpzP5fILJRIIVdzRanpKePuoBBYxB0g',
-    imageAlt: 'Estructura en construcción con vigas de acero al atardecer',
-  },
-  {
-    name: 'Urbanismo',
-    slug: 'urbanismo',
-    experts: 215,
-    badge: null,
-    badgeColor: null,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB1nrufMb6FZOpN6c6VYXT_chWCcKs0z72KoKMLmax6HJaefE2BkoZx7apVZHHh7l6tUV75bNjKnrPe4jykq8hVT87Wwg6WViYRE5vxGaHsT88-hwR7V6FGPqVT7YnZjwrshsVPCDFzlOsmVbX-IDCD6slMoKBdpXnsgPwNVf-hqKpiSGp_JoKOHC83HyA9Ckug53b4He20vGAoPJkrjIY2lNHji22SBBlvoAAgltKyhDcEiYhRvsfJ5iTUqqoANvGU6oV66inJBg',
-    imageAlt: 'Vista aérea de intersección urbana con árboles y senderos peatonales',
-  },
-];
-
 const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367P7jELVkpiimAmtwksLf4UQudl-KSgzPY4BleK7el9TLfVR7jK6zX9yd2EQdkRK5-q1UDPmMDkY1NMIcO-N8jyVz4SZwdxvw3O2GMLwPhhCwhuJhClLVrS979Tt7wrK7hdVQTzcai-eW6B3S3bpH4bFpVE3bSqmn-EfSJ6s0ebA7sWPQ6Iq5rVCppr2Is6FMxSdwU9xB1bzHdD0HE31yPOAhzytKfPtphYclP-7YWdUeF-RISdIpXwSAPYFQyi4s7qg';
 ---
 
-<Layout title="Especialidades | TRAMA" description="Explora las especialidades profesionales disponibles en la red TRAMA.">
+<Layout title="Rubros Profesionales | TRAMA" description="Explora los rubros profesionales disponibles en la red TRAMA.">
   <section class="pt-12 pb-20">
     <!-- Hero -->
-    <header class="max-w-7xl mx-auto px-8 mb-12">
-      <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 py-12">
-        <div class="max-w-2xl">
-          <span class="text-secondary tracking-widest uppercase text-sm font-bold mb-4 block">
-            Red Profesional de Élite
-          </span>
-          <h1 class="text-5xl md:text-6xl font-extrabold text-on-surface tracking-tight leading-tight">
-            Explora <span class="text-primary italic">Especialidades</span>
-          </h1>
-        </div>
-        <div class="flex-1 max-w-xl w-full">
-          <div class="relative">
-            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline" aria-hidden="true">search</span>
-            <label for="category-search" class="sr-only">Filtrar especialidades</label>
-            <input
-              id="category-search"
-              class="w-full pl-12 pr-4 py-5 bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all text-on-surface placeholder:text-outline/60 text-lg"
-              placeholder="Filtrar por arquitectura, diseño o construcción..."
-              type="text"
-            />
-          </div>
-        </div>
+    <header class="max-w-3xl mx-auto px-5 md:px-8 mb-8">
+      <span class="text-xs font-bold tracking-[0.2em] text-secondary uppercase mb-2 block">
+        Red Profesional de Élite
+      </span>
+      <h1 class="text-4xl md:text-5xl font-extrabold text-on-surface tracking-tight leading-tight mb-6">
+        Explora <span class="text-primary italic">Rubros</span>
+      </h1>
+      <!-- Search -->
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline" aria-hidden="true">search</span>
+        <label for="category-search" class="sr-only">Filtrar rubros</label>
+        <input
+          id="category-search"
+          class="w-full pl-12 pr-4 py-4 bg-surface-container-low border-none rounded-2xl focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-outline/60 text-sm font-medium"
+          placeholder="Filtrar rubros..."
+          type="text"
+        />
       </div>
     </header>
 
-    <!-- Category List -->
-    <section class="max-w-7xl mx-auto px-8" aria-label="Lista de especialidades">
-      <div class="flex flex-col gap-1" id="category-list">
-        {categories.map((cat) => (
-          <a
-            href={`/profesionales?categoria=${cat.slug}`}
-            class="category-row group flex flex-col md:flex-row md:items-center justify-between p-8 rounded-xl hover:bg-surface-container-lowest transition-all duration-300 border border-transparent hover:border-outline-variant/15"
-            data-name={cat.name.toLowerCase()}
-          >
-            <div class="flex items-center gap-8">
-              <div class="h-20 w-20 rounded-xl bg-surface-container overflow-hidden group-hover:scale-105 transition-transform duration-500 shrink-0">
-                <img alt={cat.imageAlt} class="w-full h-full object-cover" src={cat.image} />
-              </div>
-              <div>
-                <h2 class="text-2xl font-bold text-on-surface group-hover:text-primary transition-colors">
-                  {cat.name}
-                </h2>
-                <div class="flex items-center gap-2 mt-1">
-                  <span class="text-sm font-medium text-on-surface-variant">
-                    {cat.experts.toLocaleString('es-AR')} expertos disponibles
-                  </span>
-                  {cat.badge && (
-                    <>
-                      <span class="h-1 w-1 rounded-full bg-outline-variant" aria-hidden="true"></span>
-                      <span class={`text-xs uppercase tracking-wider font-bold ${cat.badgeColor}`}>
-                        {cat.badge}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div class="flex items-center gap-2 mt-6 md:mt-0 text-on-surface-variant font-medium text-sm group-hover:text-primary transition-colors">
-              <span>Ver todos los perfiles</span>
-              <span class="material-symbols-outlined text-lg translate-x-0 group-hover:translate-x-1 transition-transform" aria-hidden="true">arrow_forward</span>
-            </div>
-          </a>
-        ))}
+    <!-- Accordion List -->
+    <section class="max-w-3xl mx-auto px-5 md:px-8" aria-label="Lista de rubros">
+      <!-- Loading -->
+      <div id="rubros-loading" class="flex items-center justify-center py-24">
+        <div class="flex flex-col items-center gap-3">
+          <span class="material-symbols-outlined text-4xl text-primary animate-spin" aria-hidden="true">schedule</span>
+          <p class="text-sm font-medium text-on-surface-variant">Cargando..</p>
+        </div>
+      </div>
+      <!-- Accordion container -->
+      <div class="space-y-3 hidden" id="rubros-accordion"></div>
+      <!-- Error -->
+      <div id="rubros-error" class="hidden text-center py-12">
+        <span class="material-symbols-outlined text-4xl text-outline mb-4 block" aria-hidden="true">error_outline</span>
+        <p class="text-on-surface-variant font-medium">No se pudieron cargar los rubros.</p>
+        <button onclick="location.reload()" class="mt-4 px-6 py-3 bg-primary text-on-primary rounded-xl font-bold text-sm hover:opacity-90 transition-opacity">
+          Reintentar
+        </button>
       </div>
     </section>
 
     <!-- CTA -->
-    <aside class="max-w-7xl mx-auto px-8 mt-24">
-      <div class="bg-surface-container-low rounded-3xl p-12 relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-12">
+    <aside class="max-w-3xl mx-auto px-5 md:px-8 mt-20">
+      <div class="bg-surface-container-low rounded-3xl p-8 md:p-12 relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-10">
         <div class="relative z-10 max-w-xl text-center lg:text-left">
-          <h2 class="text-4xl font-extrabold text-on-surface tracking-tight mb-4">
-            ¿No encuentras lo que buscas?
+          <h2 class="text-3xl md:text-4xl font-extrabold text-on-surface tracking-tight mb-4">
+            ¿No encontrás lo que buscás?
           </h2>
-          <p class="text-on-surface-variant text-lg mb-8 leading-relaxed">
-            Nuestra red cuenta con miles de profesionales especializados en nichos arquitectónicos. Crea una solicitud personalizada y deja que ellos te encuentren.
+          <p class="text-on-surface-variant text-base md:text-lg mb-8 leading-relaxed">
+            Nuestra red cuenta con miles de profesionales especializados. Creá una solicitud personalizada y dejá que ellos te encuentren.
           </p>
           <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
             <a
@@ -167,16 +84,175 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
     </aside>
   </section>
 
-  <script>
-    const searchInput = document.getElementById('category-search') as HTMLInputElement;
-    const rows = document.querySelectorAll('.category-row');
+  <style>
+    .accordion-body {
+      overflow: hidden;
+      transition: max-height 0.35s ease-out, opacity 0.25s ease-out;
+      max-height: 0;
+      opacity: 0;
+    }
+  </style>
 
-    searchInput?.addEventListener('input', () => {
-      const query = searchInput.value.toLowerCase().trim();
-      rows.forEach((row) => {
-        const name = (row as HTMLElement).dataset.name || '';
-        (row as HTMLElement).style.display = name.includes(query) ? '' : 'none';
+  <script>
+    import { fetchRubros, fetchProfessionsByRubro } from '../../services/professionCategoriesService';
+    import type { Rubro, ProfessionCategory } from '../../services/professionCategoriesService';
+
+    const accordionEl = document.getElementById('rubros-accordion')!;
+    const loadingEl = document.getElementById('rubros-loading')!;
+    const errorEl = document.getElementById('rubros-error')!;
+    const searchInput = document.getElementById('category-search') as HTMLInputElement;
+
+    // Cache for loaded sub-rubros per rubro id
+    const childrenCache = new Map<number, ProfessionCategory[]>();
+
+    // ─── Render a single rubro accordion card ───────────────────
+    function renderRubroCard(rubro: Rubro): string {
+      const safeId = `rubro-${rubro.id}`;
+      return `
+        <article
+          class="rubro-card bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/20"
+          data-rubro-id="${rubro.id}"
+          data-rubro-slug="${rubro.slug}"
+          data-name="${rubro.name.toLowerCase()}"
+        >
+          <button
+            class="accordion-trigger w-full flex items-center justify-between p-4 md:p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-2xl transition-colors"
+            aria-expanded="false"
+            aria-controls="body-${safeId}"
+          >
+            <div class="flex items-center gap-4">
+              <div class="bg-primary/10 p-3 rounded-xl shrink-0">
+                <span class="material-symbols-outlined text-primary text-2xl" aria-hidden="true">work</span>
+              </div>
+              <span class="accordion-title font-bold text-lg text-on-surface text-left">${rubro.name}</span>
+            </div>
+            <span class="material-symbols-outlined accordion-icon text-outline text-xl transition-transform duration-300" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="accordion-body bg-surface-container-low/50" id="body-${safeId}">
+            <ul class="px-4 md:px-5 pb-4 space-y-1">
+              <li class="flex flex-col items-center justify-center py-6">
+                <span class="material-symbols-outlined text-3xl text-primary animate-spin" aria-hidden="true">schedule</span>
+                <span class="text-sm text-on-surface-variant mt-2">Cargando..</span>
+              </li>
+            </ul>
+          </div>
+        </article>`;
+    }
+
+    // ─── Render children (level 2) inside an accordion body ─────
+    function renderChildren(bodyEl: HTMLElement, rubroSlug: string, children: ProfessionCategory[]) {
+      const ul = bodyEl.querySelector('ul')!;
+      if (children.length === 0) {
+        ul.innerHTML = '<li class="p-3 text-on-surface-variant text-sm italic pl-16">Sin sub-rubros disponibles</li>';
+        return;
+      }
+      ul.innerHTML = children.map(child => `
+        <li>
+          <a
+            href="/profesionales?rubro=${rubroSlug}&profession_category=${child.slug}"
+            class="flex items-center justify-between p-3 rounded-xl hover:bg-surface-container-lowest transition-colors group"
+          >
+            <span class="text-on-surface-variant font-medium pl-12 group-hover:text-on-surface transition-colors">${child.name}</span>
+            <span class="text-primary text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+              Ver todos
+              <span class="material-symbols-outlined text-sm" aria-hidden="true">arrow_forward</span>
+            </span>
+          </a>
+        </li>
+      `).join('');
+    }
+
+    // ─── Toggle accordion ───────────────────────────────────────
+    async function toggleAccordion(card: HTMLElement) {
+      const trigger = card.querySelector('.accordion-trigger')!;
+      const body = card.querySelector('.accordion-body')! as HTMLElement;
+      const icon = card.querySelector('.accordion-icon')! as HTMLElement;
+      const title = card.querySelector('.accordion-title')! as HTMLElement;
+      const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+
+      if (isExpanded) {
+        // Collapse
+        body.style.maxHeight = '0';
+        body.style.opacity = '0';
+        icon.style.transform = '';
+        title.classList.remove('text-primary');
+        title.classList.add('text-on-surface');
+        icon.classList.remove('text-primary');
+        icon.classList.add('text-outline');
+        trigger.setAttribute('aria-expanded', 'false');
+      } else {
+        // Expand
+        icon.style.transform = 'rotate(180deg)';
+        title.classList.add('text-primary');
+        title.classList.remove('text-on-surface');
+        icon.classList.add('text-primary');
+        icon.classList.remove('text-outline');
+        trigger.setAttribute('aria-expanded', 'true');
+
+        // Lazy-load children
+        const rubroId = Number(card.dataset.rubroId);
+        const rubroSlug = card.dataset.rubroSlug!;
+        if (!childrenCache.has(rubroId)) {
+          try {
+            const children = await fetchProfessionsByRubro(rubroId);
+            childrenCache.set(rubroId, children);
+            renderChildren(body, rubroSlug, children);
+          } catch (err) {
+            console.error(`Error cargando sub-rubros para rubro ${rubroId}:`, err);
+            body.querySelector('ul')!.innerHTML =
+              '<li class="p-3 text-error text-sm pl-16">Error al cargar sub-rubros</li>';
+          }
+        } else {
+          renderChildren(body, rubroSlug, childrenCache.get(rubroId)!);
+        }
+
+        // Set max-height to scrollHeight for smooth animation
+        body.style.maxHeight = body.scrollHeight + 'px';
+        body.style.opacity = '1';
+      }
+    }
+
+    // ─── Search filter ──────────────────────────────────────────
+    function bindSearch() {
+      searchInput?.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase().trim();
+        accordionEl.querySelectorAll('.rubro-card').forEach((card) => {
+          const name = (card as HTMLElement).dataset.name || '';
+          (card as HTMLElement).style.display = name.includes(query) ? '' : 'none';
+        });
       });
-    });
+    }
+
+    // ─── Init ───────────────────────────────────────────────────
+    async function init() {
+      try {
+        const rubros = await fetchRubros();
+        loadingEl.classList.add('hidden');
+
+        if (rubros.length === 0) {
+          errorEl.classList.remove('hidden');
+          return;
+        }
+
+        accordionEl.innerHTML = rubros.map(renderRubroCard).join('');
+        accordionEl.classList.remove('hidden');
+
+        // Bind click handlers
+        accordionEl.querySelectorAll('.accordion-trigger').forEach((trigger) => {
+          trigger.addEventListener('click', () => {
+            const card = trigger.closest('.rubro-card') as HTMLElement;
+            toggleAccordion(card);
+          });
+        });
+
+        bindSearch();
+      } catch (err) {
+        console.error('Error cargando rubros:', err);
+        loadingEl.classList.add('hidden');
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    init();
   </script>
 </Layout>

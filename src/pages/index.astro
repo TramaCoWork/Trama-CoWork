@@ -2,27 +2,77 @@
 import Layout from '../layouts/Layout.astro';
 import HeroSearch from '../components/HeroSearch.astro';
 import CTASection from '../components/CTASection.astro';
+
+const categories = [
+  {
+    icon: 'palette',
+    title: 'Diseño & Creatividad',
+    description: 'Diseñadores gráficos, UX/UI, ilustradores y más.',
+    href: '/profesionales?rubro=diseno-creatividad',
+  },
+  {
+    icon: 'apartment',
+    title: 'Arquitectura & Construcción',
+    description: 'Arquitectos, diseñadores de interiores, ingenieros y más.',
+    href: '/profesionales?rubro=arquitectura-construccion',
+  },
+  {
+    icon: 'code',
+    title: 'Tecnología & Desarrollo',
+    description: 'Desarrolladores web, móviles, software y más.',
+    href: '/profesionales?rubro=tecnologia-desarrollo',
+  },
+  {
+    icon: 'campaign',
+    title: 'Marketing & Comunicación',
+    description: 'Especialistas en marketing digital, contenidos y más.',
+    href: '/profesionales?rubro=marketing-comunicacion',
+  },
+  {
+    icon: 'edit_note',
+    title: 'Redacción & Traducción',
+    description: 'Redactores, correctores, traductores y más.',
+    href: '/profesionales?rubro=redaccion-traduccion',
+  },
+  {
+    icon: 'more_horiz',
+    title: 'Otras áreas',
+    description: 'Descubrí más profesionales en diversas disciplinas.',
+    href: '/categorias',
+  },
+];
 ---
 
-<Layout title="TRAMA | Professional Network">
+<Layout title="TRAMA | Red Profesional">
   <!-- Hero & Search Section -->
   <HeroSearch />
 
-  <!-- Explora Profesionales Section -->
-  <section class="bg-surface-container-low py-24">
+  <!-- Explora Profesionales - Categorías -->
+  <section class="bg-surface-container-low py-24 mt-8">
     <div class="max-w-7xl mx-auto px-6">
       <div class="flex justify-between items-end mb-16">
         <div>
           <h2 class="text-4xl font-black tracking-tighter text-on-surface mb-2">Explora profesionales</h2>
           <div class="h-1.5 w-24 bg-primary rounded-full" aria-hidden="true"></div>
         </div>
-        <a class="text-primary font-bold flex items-center gap-2 hover:gap-4 transition-all group" href="/profesionales">
-          Ver todos los expertos
+        <a class="text-primary font-bold flex items-center gap-2 hover:gap-4 transition-all group" href="/categorias">
+          Ver todas las categorías
           <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
         </a>
       </div>
-      <div id="professionals-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <p class="text-on-surface-variant col-span-full text-center py-12">Cargando profesionales...</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+        {categories.map((cat) => (
+          <a
+            href={cat.href}
+            class="bg-surface-container-lowest rounded-2xl border border-outline-variant/20 p-6 flex flex-col items-center text-center hover:shadow-lg hover:border-primary/30 transition-all group"
+          >
+            <div class="w-14 h-14 rounded-xl bg-surface-container-low flex items-center justify-center mb-4 group-hover:bg-primary/10 transition-colors">
+              <span class="material-symbols-outlined text-3xl text-outline group-hover:text-primary transition-colors" aria-hidden="true">{cat.icon}</span>
+            </div>
+            <h3 class="font-bold text-on-surface text-sm mb-2 leading-tight">{cat.title}</h3>
+            <p class="text-xs text-on-surface-variant leading-relaxed">{cat.description}</p>
+          </a>
+        ))}
       </div>
     </div>
   </section>
@@ -30,8 +80,3 @@ import CTASection from '../components/CTASection.astro';
   <!-- CTA Section -->
   <CTASection />
 </Layout>
-
-<script>
-  import { renderFeaturedProfessionals } from '../services/homeService';
-  renderFeaturedProfessionals('professionals-grid');
-</script>

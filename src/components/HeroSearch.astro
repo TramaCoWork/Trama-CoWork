@@ -1,30 +1,50 @@
 ---
 import { priceRange } from '../data/mock';
+import heroImage from '../assets/images/hero-cowork.jpg';
 ---
 
-<section class="relative pt-24 pb-32 bg-surface" aria-label="Buscar profesionales">
-  <div class="max-w-7xl mx-auto px-6 relative z-10 text-center">
-    <div class="max-w-4xl mx-auto mb-16">
-      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tighter text-on-surface mb-6 leading-tight">
-        Encontr&aacute; al <span class="text-primary italic">profesional</span> perfecto para tu visi&oacute;n.
-      </h1>
-      <p class="text-xl text-on-surface-variant mb-12 max-w-2xl mx-auto font-medium opacity-80">
-        Talento curado en dise&ntilde;o, arquitectura y tecnolog&iacute;a. Conectamos visionarios con los constructores del ma&ntilde;ana.
-      </p>
-    </div>
+<!-- Hero con imagen de fondo -->
+<section class="relative" aria-label="Buscar profesionales">
+  <!-- Imagen de fondo -->
+  <div class="relative min-h-[520px] md:min-h-[560px] flex items-center">
+    <img
+      src={heroImage.src}
+      alt=""
+      class="absolute inset-0 w-full h-full object-cover"
+      loading="eager"
+      aria-hidden="true"
+    />
+    <!-- Overlay gradiente para legibilidad del texto -->
+    <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent"></div>
 
-    <!-- Tarjeta de b&uacute;squeda central -->
-    <div class="max-w-4xl mx-auto bg-surface-container-lowest p-6 md:p-8 rounded-2xl shadow-xl border border-outline-variant/30 overflow-visible">
+    <!-- Contenido del hero -->
+    <div class="relative z-10 max-w-7xl mx-auto px-6 py-20 w-full">
+      <div class="max-w-xl">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
+          Encontrá al<br/>
+          <span class="text-primary italic">profesional ideal</span><br/>
+          para tu necesidad.
+        </h1>
+        <p class="text-white/80 text-base md:text-lg leading-relaxed max-w-md">
+          Descubrí y contactá profesionales especializados, con la tranquilidad de saber que cada perfil fue revisado y validado por nuestro equipo.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tarjeta de búsqueda superpuesta -->
+  <div class="relative z-20 max-w-4xl mx-auto px-6 -mt-16">
+    <div class="bg-surface-container-lowest p-6 md:p-8 rounded-2xl shadow-xl border border-outline-variant/30">
       <form class="flex flex-col gap-6" role="search" aria-label="Buscar profesionales">
-        <!-- Barra de b&uacute;squeda principal -->
+        <!-- Barra de búsqueda principal -->
         <div class="bg-surface-container-low rounded-full flex flex-col md:flex-row items-center gap-2 p-1.5 border border-outline-variant/10">
           <div class="flex-1 flex items-center px-6 py-3 md:py-4 gap-3 w-full">
-            <span class="material-symbols-outlined text-primary text-2xl" aria-hidden="true">search</span>
+            <span class="material-symbols-outlined text-outline text-2xl" aria-hidden="true">search</span>
             <label for="hero-search" class="sr-only">Buscar servicio</label>
             <input
               id="hero-search"
-              class="w-full bg-transparent border-none focus:ring-0 text-on-surface text-lg font-semibold placeholder:text-outline/50"
-              placeholder="&iquest;Qu&eacute; servicio est&aacute;s buscando hoy?"
+              class="w-full bg-transparent border-none focus:ring-0 text-on-surface text-lg font-medium placeholder:text-outline/50"
+              placeholder="¿Qué servicio estás buscando hoy?"
               type="search"
             />
           </div>
@@ -39,9 +59,9 @@ import { priceRange } from '../data/mock';
 
         <!-- Fila de filtros -->
         <div class="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12 pt-2">
-          <!-- Dropdown de categor&iacute;as -->
+          <!-- Dropdown de áreas -->
           <fieldset class="relative w-full md:w-auto border-none p-0 m-0">
-            <legend class="sr-only">Categor&iacute;as</legend>
+            <legend class="sr-only">Áreas</legend>
             <button
               id="categories-toggle"
               type="button"
@@ -51,12 +71,12 @@ import { priceRange } from '../data/mock';
             >
               <span class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary text-lg" aria-hidden="true">category</span>
-                Categor&iacute;as
+                Todas las áreas
               </span>
               <span class="material-symbols-outlined text-sm transition-transform duration-200" aria-hidden="true">keyboard_arrow_down</span>
             </button>
             <div id="categories-dropdown" class="absolute top-full left-0 mt-1 w-64 max-h-64 overflow-y-auto bg-surface-container-lowest shadow-2xl rounded-xl border border-outline-variant/20 p-4 hidden z-50 text-left">
-              <span class="text-sm text-outline">Cargando categorias...</span>
+              <span class="text-sm text-outline">Cargando áreas...</span>
             </div>
           </fieldset>
 
@@ -82,14 +102,6 @@ import { priceRange } from '../data/mock';
         </div>
       </form>
     </div>
-  </div>
-
-  <!-- Elementos decorativos de fondo -->
-  <div class="absolute top-0 right-0 w-1/2 h-full -z-0 opacity-10 pointer-events-none" aria-hidden="true">
-    <div class="w-full h-full bg-gradient-to-bl from-primary to-transparent blur-3xl rounded-full translate-x-1/2 -translate-y-1/2"></div>
-  </div>
-  <div class="absolute bottom-0 left-0 w-1/3 h-1/2 -z-0 opacity-5 pointer-events-none" aria-hidden="true">
-    <div class="w-full h-full bg-primary blur-3xl rounded-full -translate-x-1/2 translate-y-1/2"></div>
   </div>
 </section>
 
