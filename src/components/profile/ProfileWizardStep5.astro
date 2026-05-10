@@ -1,0 +1,88 @@
+<!-- Step 5: Educación y CV -->
+<div id="wizard-step-5" class="wizard-step hidden">
+  <div class="bg-surface-container-low rounded-3xl p-8 space-y-6">
+    <div class="flex items-center gap-3 mb-2">
+      <span class="material-symbols-outlined text-primary" aria-hidden="true">school</span>
+      <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Educación y CV</h2>
+    </div>
+
+    <!-- Education list -->
+    <div>
+      <div class="flex items-center justify-between mb-3">
+        <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estudios (al menos 1 requerido)</label>
+        <button id="w-btn-add-edu" type="button"
+          class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all">
+          <span class="material-symbols-outlined text-sm" aria-hidden="true">add</span>
+          Agregar
+        </button>
+      </div>
+      <div id="w-edu-list" class="space-y-3">
+        <p id="w-edu-empty" class="text-sm text-on-surface-variant py-4 text-center border border-dashed border-outline-variant/20 rounded-xl">No hay estudios cargados.</p>
+      </div>
+    </div>
+
+    <!-- Education form (hidden) -->
+    <div id="w-edu-form" class="hidden border border-outline-variant/20 rounded-xl p-5 space-y-4 bg-surface-container-lowest">
+      <h4 id="w-edu-form-title" class="text-sm font-bold text-on-surface">Agregar estudio</h4>
+      <input type="hidden" id="w-edu-edit-id" value="" />
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label for="w-edu-level" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Nivel *</label>
+          <select id="w-edu-level"
+            class="w-full bg-surface border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+        <div>
+          <label for="w-edu-year" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Año *</label>
+          <input id="w-edu-year" type="number" min="1950" max="2030" placeholder="2024"
+            class="w-full bg-surface border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+        </div>
+      </div>
+      <div>
+        <label for="w-edu-title" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Título *</label>
+        <input id="w-edu-title" type="text" placeholder="Ej. Licenciatura en Diseño Gráfico"
+          class="w-full bg-surface border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+      </div>
+      <div>
+        <label for="w-edu-institution" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Institución *</label>
+        <input id="w-edu-institution" type="text" placeholder="Ej. Universidad de Buenos Aires"
+          class="w-full bg-surface border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+      </div>
+      <div>
+        <label for="w-edu-profession" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Profesión asociada *</label>
+        <select id="w-edu-profession"
+          class="w-full bg-surface border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+          <option value="">Seleccionar profesión...</option>
+        </select>
+        <p id="w-edu-profession-hint" class="hidden text-xs text-error mt-1.5 flex items-center gap-1">
+          <span class="material-symbols-outlined text-xs">warning</span>
+          Seleccioná al menos una profesión en el paso "Profesión y especialidades" para poder adjuntar documentos.
+        </p>
+      </div>
+      <div>
+        <label for="w-edu-doc" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1 block">Certificado / Título (opcional)</label>
+        <input id="w-edu-doc" type="file" accept="image/jpeg,image/png,application/pdf"
+          class="w-full text-sm text-on-surface file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-primary-fixed file:text-on-primary-fixed-variant hover:file:opacity-80 cursor-pointer" />
+        <p id="w-edu-doc-blocked" class="hidden text-xs text-on-surface-variant mt-1.5">Seleccioná una profesión para poder adjuntar un documento.</p>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button id="w-edu-cancel" type="button" class="flex-1 px-4 py-2.5 rounded-xl font-bold text-xs text-on-surface-variant bg-surface-container-low hover:bg-surface-container-high transition-colors">Cancelar</button>
+        <button id="w-edu-save" type="button" class="flex-1 px-4 py-2.5 rounded-xl font-bold text-xs bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all">Guardar</button>
+      </div>
+    </div>
+
+    <!-- CV Upload -->
+    <div class="pt-4 border-t border-outline-variant/15">
+      <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3 block">CV / Currículum Vitae *</label>
+      <div id="w-cv-status" class="hidden mb-3 flex items-center gap-2 text-sm text-primary">
+        <span class="material-symbols-outlined text-lg">attach_file</span>
+        <span id="w-cv-name" class="font-medium">cv.pdf</span>
+        <span class="material-symbols-outlined text-lg text-primary">check_circle</span>
+      </div>
+      <input id="w-cv-file" type="file" accept=".pdf,image/jpeg,image/png"
+        class="w-full text-sm text-on-surface file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-secondary file:text-on-secondary hover:file:opacity-80 cursor-pointer" />
+      <p class="text-xs text-on-surface-variant mt-2">PDF, JPG o PNG, max 5MB</p>
+    </div>
+  </div>
+</div>

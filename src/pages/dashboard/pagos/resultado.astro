@@ -1,0 +1,111 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="TRAMA - Resultado del pago">
+  <div class="flex items-center justify-center py-16">
+    <div id="result-card" class="bg-surface-container-low rounded-3xl p-10 max-w-lg w-full text-center">
+      <!-- Loading while we parse -->
+      <div id="result-loading">
+        <div class="w-10 h-10 border-3 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-sm font-medium text-on-surface-variant">Procesando resultado...</p>
+      </div>
+
+      <!-- Approved -->
+      <div id="result-approved" class="hidden">
+        <div class="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-6">
+          <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-4xl" aria-hidden="true">check_circle</span>
+        </div>
+        <h1 class="text-2xl font-black text-on-surface tracking-tight mb-2">Pago aprobado</h1>
+        <p class="text-sm text-on-surface-variant leading-relaxed">Tu suscripcion fue activada correctamente. Ya podes disfrutar de todos los beneficios de tu plan.</p>
+        <div id="approved-details" class="mt-6 bg-surface-container-lowest rounded-2xl p-5 space-y-2 text-left"></div>
+      </div>
+
+      <!-- Pending -->
+      <div id="result-pending" class="hidden">
+        <div class="w-20 h-20 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center mx-auto mb-6">
+          <span class="material-symbols-outlined text-yellow-600 dark:text-yellow-400 text-4xl" aria-hidden="true">schedule</span>
+        </div>
+        <h1 class="text-2xl font-black text-on-surface tracking-tight mb-2">Pago pendiente</h1>
+        <p class="text-sm text-on-surface-variant leading-relaxed">Tu pago esta siendo procesado. Te notificaremos cuando se confirme. Esto puede demorar unos minutos.</p>
+        <div id="pending-details" class="mt-6 bg-surface-container-lowest rounded-2xl p-5 space-y-2 text-left"></div>
+      </div>
+
+      <!-- Rejected -->
+      <div id="result-rejected" class="hidden">
+        <div class="w-20 h-20 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-6">
+          <span class="material-symbols-outlined text-red-600 dark:text-red-400 text-4xl" aria-hidden="true">cancel</span>
+        </div>
+        <h1 class="text-2xl font-black text-on-surface tracking-tight mb-2">Pago rechazado</h1>
+        <p class="text-sm text-on-surface-variant leading-relaxed">No se pudo procesar tu pago. Podes intentar nuevamente con otro medio de pago.</p>
+        <div id="rejected-details" class="mt-6 bg-surface-container-lowest rounded-2xl p-5 space-y-2 text-left"></div>
+      </div>
+
+      <!-- Unknown -->
+      <div id="result-unknown" class="hidden">
+        <div class="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-900/30 flex items-center justify-center mx-auto mb-6">
+          <span class="material-symbols-outlined text-gray-600 dark:text-gray-400 text-4xl" aria-hidden="true">help</span>
+        </div>
+        <h1 class="text-2xl font-black text-on-surface tracking-tight mb-2">Estado desconocido</h1>
+        <p class="text-sm text-on-surface-variant leading-relaxed">No pudimos determinar el resultado del pago. Revisa tu historial de pagos para verificar el estado.</p>
+      </div>
+
+      <!-- Action button -->
+      <a href="/dashboard/pagos"
+        class="inline-flex items-center justify-center gap-2 mt-8 px-8 py-4 rounded-2xl font-bold text-sm bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all">
+        <span class="material-symbols-outlined text-sm" aria-hidden="true">arrow_back</span>
+        Volver a Pagos
+      </a>
+    </div>
+  </div>
+
+  <script>
+    function detailRow(label: string, value: string): string {
+      return `<div class="flex items-baseline gap-3">
+        <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant w-28 shrink-0">${label}</span>
+        <span class="text-sm font-medium text-on-surface">${value}</span>
+      </div>`;
+    }
+
+    function init() {
+      const params = new URLSearchParams(window.location.search);
+
+      // MP may send: status, payment_id, external_reference, preference_id, etc.
+      const status = params.get('status') || params.get('collection_status') || '';
+      const paymentId = params.get('payment_id') || params.get('collection_id') || '';
+      const preferenceId = params.get('preference_id') || params.get('preapproval_id') || '';
+      const externalRef = params.get('external_reference') || '';
+
+      const loadingEl = document.getElementById('result-loading')!;
+      loadingEl.classList.add('hidden');
+
+      // Build details HTML
+      let detailsHtml = '';
+      if (paymentId) detailsHtml += detailRow('ID Pago', paymentId);
+      if (preferenceId) detailsHtml += detailRow('ID Preferencia', preferenceId);
+      if (externalRef) detailsHtml += detailRow('Referencia', externalRef);
+      if (status) detailsHtml += detailRow('Estado', status);
+
+      const normalizedStatus = status.toLowerCase();
+
+      if (normalizedStatus === 'approved' || normalizedStatus === 'authorized') {
+        const el = document.getElementById('result-approved')!;
+        el.classList.remove('hidden');
+        if (detailsHtml) document.getElementById('approved-details')!.innerHTML = detailsHtml;
+      } else if (normalizedStatus === 'pending' || normalizedStatus === 'in_process') {
+        const el = document.getElementById('result-pending')!;
+        el.classList.remove('hidden');
+        if (detailsHtml) document.getElementById('pending-details')!.innerHTML = detailsHtml;
+      } else if (normalizedStatus === 'rejected' || normalizedStatus === 'failure' || normalizedStatus === 'null') {
+        const el = document.getElementById('result-rejected')!;
+        el.classList.remove('hidden');
+        if (detailsHtml) document.getElementById('rejected-details')!.innerHTML = detailsHtml;
+      } else {
+        // Unknown or empty status
+        document.getElementById('result-unknown')!.classList.remove('hidden');
+      }
+    }
+
+    init();
+  </script>
+</DashboardLayout>

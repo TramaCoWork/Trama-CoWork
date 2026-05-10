@@ -2,14 +2,11 @@
 const currentPath = Astro.url.pathname;
 
 const sidebarLinks = [
-  { href: '/dashboard', icon: 'dashboard', label: 'Resumen' },
-  { href: '/dashboard/perfil', icon: 'edit', label: 'Editar perfil' },
-  { href: '/dashboard/estudios', icon: 'school', label: 'Estudios' },
-  // TODO: habilitar cuando estén implementadas
-  // { href: '/dashboard/contactos', icon: 'contacts', label: 'Contactos' },
-  // { href: '/dashboard/comunidad', icon: 'groups', label: 'Comunidad' },
-  // { href: '/dashboard/trabajos', icon: 'work', label: 'Trabajos' },
-  // { href: '/dashboard/contenido', icon: 'article', label: 'Contenido' },
+  { href: '/dashboard', icon: 'dashboard', label: 'Resumen', requiresActive: false },
+  { href: '/dashboard/perfil', icon: 'edit', label: 'Editar perfil', requiresActive: false },
+  { href: '/dashboard/estudios', icon: 'school', label: 'Estudios', requiresActive: true },
+  { href: '/dashboard/comunidad', icon: 'forum', label: 'Comunidad', requiresActive: true },
+  { href: '/dashboard/pagos', icon: 'payments', label: 'Pagos', requiresActive: true },
 ];
 
 function isActive(href: string): boolean {
@@ -41,10 +38,11 @@ const mockUser = {
     {sidebarLinks.map((link) => (
       <a
         href={link.href}
-        class={isActive(link.href)
+        class={`${link.requiresActive ? 'hidden ' : ''}${isActive(link.href)
           ? 'bg-primary/10 text-primary rounded-lg mx-2 flex items-center px-4 py-3 gap-3 transition-transform duration-200 hover:translate-x-1 text-sm font-bold'
-          : 'text-on-surface-variant hover:bg-surface-container mx-2 flex items-center px-4 py-3 gap-3 transition-transform duration-200 hover:translate-x-1 text-sm font-semibold rounded-lg'}
+          : 'text-on-surface-variant hover:bg-surface-container mx-2 flex items-center px-4 py-3 gap-3 transition-transform duration-200 hover:translate-x-1 text-sm font-semibold rounded-lg'}`}
         aria-current={isActive(link.href) ? 'page' : undefined}
+        data-requires-active={link.requiresActive ? '' : undefined}
       >
         <span class="material-symbols-outlined" aria-hidden="true">{link.icon}</span>
         <span>{link.label}</span>
@@ -74,6 +72,13 @@ const mockUser = {
       >
         Ver perfil público
       </a>
+      <button
+        id="sidebar-logout-btn"
+        type="button"
+        class="block w-full text-center text-xs font-bold py-2 rounded-lg text-on-surface-variant border border-outline-variant/30 hover:bg-error/10 hover:text-error hover:border-error/30 transition-all mt-2"
+      >
+        Cerrar sesión
+      </button>
     </div>
   </div>
 </aside>
@@ -116,6 +121,17 @@ const mockUser = {
       // Profile link
       const link = document.getElementById('sidebar-profile-link') as HTMLAnchorElement | null;
       if (link) link.href = `/profesionales/perfil?id=${data.id}`;
+
+      // Show/hide menu items & public profile link based on profile status
+      const isProfileActive = data.profileStatus === 'active';
+      if (isProfileActive) {
+        document.querySelectorAll('[data-requires-active]').forEach(el => {
+          el.classList.remove('hidden');
+        });
+      } else {
+        // Hide "Ver perfil público" button
+        if (link) link.classList.add('hidden');
+      }
     } catch (err: unknown) {
       const error = err as Error & { status?: number };
       if (error?.status === 401) logout();
@@ -123,6 +139,11 @@ const mockUser = {
   }
 
   loadSidebarUser();
+
+  // Logout button
+  document.getElementById('sidebar-logout-btn')?.addEventListener('click', () => {
+    logout('/login');
+  });
 
   // Listen for photo updates from perfil.astro
   window.addEventListener('sidebar:update-photo', ((e: CustomEvent) => {

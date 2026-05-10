@@ -40,10 +40,29 @@ export interface PaginatedProfessionals {
   sizePage: number;
 }
 
+// ─── Filtros de búsqueda ───────────────────────────────────────
+
+export interface SearchFilters {
+  rubro?: string;
+  sub_rubro?: string;
+  countryId?: number;
+  provinceId?: number;
+}
+
 // ─── Fetch ─────────────────────────────────────────────────────
 
 export async function fetchProfessionals(page = 1, sizePage = 10): Promise<PaginatedProfessionals> {
   return api.get<PaginatedProfessionals>('/professionals', { page, sizePage });
+}
+
+/** Buscar profesionales con filtros avanzados (GET /search) */
+export async function searchProfessionals(filters: SearchFilters): Promise<ProfessionalItem[]> {
+  const params: Record<string, string | number> = {};
+  if (filters.rubro) params.rubro = filters.rubro;
+  if (filters.sub_rubro) params.sub_rubro = filters.sub_rubro;
+  if (filters.countryId) params.countryId = filters.countryId;
+  if (filters.provinceId) params.provinceId = filters.provinceId;
+  return api.get<ProfessionalItem[]>('/search', params);
 }
 
 // ─── Render helpers (vanilla JS) ───────────────────────────────

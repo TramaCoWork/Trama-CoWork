@@ -1,0 +1,224 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="TRAMA - Cancelar suscripcion">
+  <!-- Loading -->
+  <div id="cancel-loading" class="flex items-center justify-center py-24">
+    <div class="flex flex-col items-center gap-4">
+      <div class="w-10 h-10 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      <p class="text-sm font-medium text-on-surface-variant">Cargando...</p>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div id="cancel-content" class="hidden">
+    <!-- Header -->
+    <header class="mb-10">
+      <a href="/dashboard/pagos" class="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline mb-4">
+        <span class="material-symbols-outlined text-sm" aria-hidden="true">arrow_back</span>
+        Volver a Pagos
+      </a>
+      <h1 class="text-4xl font-black text-on-surface tracking-tighter">Cancelar suscripcion</h1>
+      <p class="text-on-surface-variant font-medium mt-2">Antes de irte, queremos que sepas lo que vas a perder.</p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Left: Benefits / encouragement -->
+      <div class="space-y-6">
+        <!-- Current plan info -->
+        <div class="bg-surface-container-low rounded-3xl p-8">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="material-symbols-outlined text-primary" aria-hidden="true">workspace_premium</span>
+            <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Tu plan actual</h2>
+          </div>
+          <p id="cancel-plan-name" class="text-lg font-bold text-on-surface">—</p>
+          <p id="cancel-plan-amount" class="text-sm text-on-surface-variant mt-1">—</p>
+        </div>
+
+        <!-- Benefits list -->
+        <div class="bg-primary/5 rounded-3xl p-8 border border-primary/15">
+          <div class="flex items-center gap-3 mb-6">
+            <span class="material-symbols-outlined text-primary" aria-hidden="true">stars</span>
+            <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Lo que perderas al cancelar</h2>
+          </div>
+          <ul class="space-y-4">
+            <li class="flex items-start gap-3">
+              <span class="material-symbols-outlined text-primary text-lg mt-0.5 shrink-0" aria-hidden="true">check_circle</span>
+              <div>
+                <p class="text-sm font-bold text-on-surface">Visibilidad en la red de profesionales</p>
+                <p class="text-xs text-on-surface-variant mt-0.5">Tu perfil aparece en las busquedas de clientes potenciales.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="material-symbols-outlined text-primary text-lg mt-0.5 shrink-0" aria-hidden="true">check_circle</span>
+              <div>
+                <p class="text-sm font-bold text-on-surface">Acceso a la comunidad</p>
+                <p class="text-xs text-on-surface-variant mt-0.5">Conecta con otros profesionales, comparte experiencias y genera oportunidades.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="material-symbols-outlined text-primary text-lg mt-0.5 shrink-0" aria-hidden="true">check_circle</span>
+              <div>
+                <p class="text-sm font-bold text-on-surface">Espacio de coworking</p>
+                <p class="text-xs text-on-surface-variant mt-0.5">Acceso al espacio fisico y virtual de trabajo colaborativo.</p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="material-symbols-outlined text-primary text-lg mt-0.5 shrink-0" aria-hidden="true">check_circle</span>
+              <div>
+                <p class="text-sm font-bold text-on-surface">Soporte y acompañamiento</p>
+                <p class="text-xs text-on-surface-variant mt-0.5">Nuestro equipo te ayuda a crecer profesionalmente.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Right: Cancellation form -->
+      <div>
+        <div class="bg-surface-container-low rounded-3xl p-8">
+          <div class="flex items-center gap-3 mb-6">
+            <span class="material-symbols-outlined text-error" aria-hidden="true">warning</span>
+            <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Confirmar cancelacion</h2>
+          </div>
+
+          <p class="text-sm text-on-surface-variant leading-relaxed mb-6">
+            Lamentamos que quieras irte. Si hay algo que podamos mejorar, nos encantaria saberlo.
+            Tu suscripcion se cancelará inmediatamente y perderás acceso a los beneficios de tu plan.
+          </p>
+
+          <div class="mb-6">
+            <label for="cancel-reason" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">
+              Contanos por que te vas <span class="text-error">*</span>
+            </label>
+            <textarea id="cancel-reason" rows="4" required
+              placeholder="Ej: No estoy usando la plataforma, encontre otra solucion, el precio es alto..."
+              class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none text-sm"></textarea>
+            <p id="reason-error" class="hidden text-xs text-error mt-1 font-bold">Por favor indica un motivo de cancelacion.</p>
+          </div>
+
+          <div class="flex flex-col gap-3">
+            <button id="btn-confirm-cancel" type="button"
+              class="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold text-sm bg-error text-on-error hover:opacity-90 active:scale-[0.98] transition-all">
+              <span class="material-symbols-outlined text-sm" aria-hidden="true">cancel</span>
+              Cancelar mi suscripcion
+            </button>
+            <a href="/dashboard/pagos"
+              class="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold text-sm bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all">
+              <span class="material-symbols-outlined text-sm" aria-hidden="true">favorite</span>
+              Quiero seguir con mi plan
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import { getUserIdFromToken, getToken, logout } from '../../../services/authService';
+    import { api } from '../../../services/apiClient';
+    import type { Subscription } from '../../../services/subscriptionService';
+
+    const loadingEl = document.getElementById('cancel-loading')!;
+    const contentEl = document.getElementById('cancel-content')!;
+    const planName = document.getElementById('cancel-plan-name')!;
+    const planAmount = document.getElementById('cancel-plan-amount')!;
+    const reasonInput = document.getElementById('cancel-reason') as HTMLTextAreaElement;
+    const reasonError = document.getElementById('reason-error')!;
+    const btnCancel = document.getElementById('btn-confirm-cancel')!;
+
+    function formatCurrency(amount: number, currency: string): string {
+      return new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: currency || 'ARS',
+        minimumFractionDigits: 0,
+      }).format(amount);
+    }
+
+    function frequencyLabel(freq: number, type: string): string {
+      const labels: Record<string, string> = { days: 'dia', months: 'mes', years: 'año' };
+      const label = labels[type] || type;
+      if (freq === 1) return `/${label}`;
+      return `cada ${freq} ${label}${freq > 1 ? (type === 'months' ? 'es' : 's') : ''}`;
+    }
+
+    async function loadData() {
+      const userId = getUserIdFromToken();
+      const token = getToken();
+
+      if (!userId || !token) { logout(); return; }
+
+      api.setHeader('Authorization', `Bearer ${token}`);
+
+      try {
+        const sub = await api.get<Subscription>('/subscriptions/me');
+
+        if (!sub || sub.status === 'cancelled') {
+          // No active subscription, redirect back
+          window.location.href = '/dashboard/pagos';
+          return;
+        }
+
+        loadingEl.classList.add('hidden');
+        contentEl.classList.remove('hidden');
+
+        if (sub.plan) {
+          planName.textContent = sub.plan.name;
+          planAmount.textContent = `${formatCurrency(sub.plan.amount, sub.plan.currency)}${frequencyLabel(sub.plan.frequency, sub.plan.frequencyType)}`;
+        }
+      } catch (err: unknown) {
+        const error = err as Error & { status?: number };
+        if (error?.status === 401) { logout(); return; }
+        // If no subscription found, redirect
+        window.location.href = '/dashboard/pagos';
+      }
+    }
+
+    // Cancel handler
+    btnCancel.addEventListener('click', async () => {
+      const reason = reasonInput.value.trim();
+
+      if (!reason) {
+        reasonError.classList.remove('hidden');
+        reasonInput.classList.add('border-error');
+        reasonInput.focus();
+        return;
+      }
+
+      reasonError.classList.add('hidden');
+      reasonInput.classList.remove('border-error');
+
+      btnCancel.setAttribute('disabled', '');
+      btnCancel.innerHTML = '<div class="w-4 h-4 border-2 border-on-error/30 border-t-on-error rounded-full animate-spin"></div> Cancelando...';
+
+      try {
+        await api.patch('/subscriptions/me/cancel', { reason });
+
+        // Redirect with toast
+        const msg = encodeURIComponent('Tu suscripcion fue cancelada correctamente');
+        window.location.href = `/dashboard/pagos?toast=${msg}&toast_type=success`;
+      } catch (err: unknown) {
+        const error = err as Error & { status?: number };
+        if (error?.status === 401) { logout(); return; }
+
+        btnCancel.removeAttribute('disabled');
+        btnCancel.innerHTML = '<span class="material-symbols-outlined text-sm" aria-hidden="true">cancel</span> Cancelar mi suscripcion';
+
+        // Show inline error
+        reasonError.textContent = error?.message || 'Error al cancelar. Intenta de nuevo.';
+        reasonError.classList.remove('hidden');
+      }
+    });
+
+    // Clear error on input
+    reasonInput.addEventListener('input', () => {
+      if (reasonInput.value.trim()) {
+        reasonError.classList.add('hidden');
+        reasonInput.classList.remove('border-error');
+      }
+    });
+
+    loadData();
+  </script>
+</DashboardLayout>

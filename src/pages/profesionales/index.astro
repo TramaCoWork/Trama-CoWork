@@ -35,7 +35,166 @@ import SearchHeader from '../../components/SearchHeader.astro';
 </Layout>
 
 <script>
-  import { renderProfessionalsList } from '../../services/professionalsService';
+  import { renderProfessionalsList, searchProfessionals, type SearchFilters } from '../../services/professionalsService';
 
-  renderProfessionalsList('pro-list', 'pro-count', 'pro-pagination', 'pro-loading', 'pro-error');
+  const listEl = document.getElementById('pro-list')!;
+  const countEl = document.getElementById('pro-count')!;
+  const paginationEl = document.getElementById('pro-pagination')!;
+  const loadingEl = document.getElementById('pro-loading')!;
+  const errorEl = document.getElementById('pro-error')!;
+  const searchForm = document.getElementById('search-form') as HTMLFormElement;
+
+  // ─── Render search results (no pagination) ────────────────────
+  function renderSearchResults(results: Awaited<ReturnType<typeof searchProfessionals>>) {
+    loadingEl.classList.add('hidden');
+    errorEl.classList.add('hidden');
+    countEl.innerHTML = `<span class="font-bold text-on-surface">${results.length}</span> profesionales encontrados`;
+    paginationEl.innerHTML = '';
+
+    if (results.length === 0) {
+      listEl.innerHTML = `
+        <div class="text-center py-16">
+          <span class="material-symbols-outlined text-4xl text-outline mb-4 block" aria-hidden="true">search_off</span>
+          <p class="text-on-surface-variant font-medium text-lg">No se encontraron profesionales con esos filtros.</p>
+        </div>`;
+      return;
+    }
+
+    // Re-use the card renderer from the service by importing renderCard indirectly
+    // Since renderCard is not exported, we replicate the list rendering here
+    const API_BASE = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
+    const DEFAULT_PHOTO = '/images/default-avatar.svg';
+
+    listEl.innerHTML = results.map(pro => {
+      const photo = `${API_BASE}/uploads/photo/${pro.id}`;
+      const rubroName = pro.rubro?.name || '';
+      const service = pro.services?.length > 0 ? pro.services[0] : '';
+      const priceLabel =
+        pro.priceMin != null && pro.priceMax != null
+          ? `$${pro.priceMin} - $${pro.priceMax}`
+          : pro.priceMin != null
+            ? `$${pro.priceMin}`
+            : pro.priceMax != null
+              ? `$${pro.priceMax}`
+              : '';
+      const locationParts = [];
+      if ((pro as any).province?.name) locationParts.push((pro as any).province.name);
+      if ((pro as any).country?.name) locationParts.push((pro as any).country.name);
+      const locationLabel = locationParts.join(', ') || pro.city || '';
+
+      return `
+        <article class="group bg-surface-container-lowest hover:bg-surface-container-lowest rounded-3xl p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col md:flex-row gap-8 relative overflow-hidden">
+          <div class="w-full md:w-64 h-64 shrink-0 rounded-2xl overflow-hidden relative">
+            <img class="w-full h-full object-cover" alt="Foto de ${pro.name}" src="${photo}" onerror="this.onerror=null;this.src='${DEFAULT_PHOTO}'" loading="lazy" />
+          </div>
+          <div class="flex-1 flex flex-col justify-between py-2">
+            <div class="space-y-4">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center gap-2 text-secondary font-bold text-xs uppercase tracking-widest mb-1">
+                    <span class="material-symbols-outlined text-sm" aria-hidden="true">work</span>
+                    ${rubroName || service}
+                  </div>
+                  <h2 class="text-2xl font-extrabold tracking-tight text-on-surface">${pro.name}</h2>
+                </div>
+                ${locationLabel ? `<span class="text-sm text-on-surface-variant font-medium flex items-center gap-1"><span class="material-symbols-outlined text-sm" aria-hidden="true">location_on</span>${locationLabel}</span>` : ''}
+              </div>
+              ${pro.bio ? `<p class="text-on-surface-variant text-sm line-clamp-2 leading-relaxed font-medium">${pro.bio}</p>` : ''}
+              ${
+                pro.services?.length > 0
+                  ? `<div class="flex flex-wrap gap-2">${pro.services
+                      .slice(0, 3)
+                      .map((s: string, i: number) => {
+                        const styles = [
+                          'bg-primary-fixed text-on-primary-fixed-variant',
+                          'bg-secondary-fixed text-on-secondary-fixed-variant',
+                          'bg-tertiary-fixed text-on-tertiary-fixed-variant',
+                        ];
+                        return `<span class="px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-tight ${styles[i % styles.length]}">${s}</span>`;
+                      })
+                      .join('')}</div>`
+                  : ''
+              }
+            </div>
+            <div class="pt-6 mt-4 border-t border-surface-variant flex items-center justify-between">
+              <div>
+                ${
+                  priceLabel
+                    ? `<span class="text-outline text-xs block font-bold uppercase tracking-widest">Rango</span>
+                       <div class="flex items-baseline gap-1">
+                         <span class="text-3xl font-black text-on-surface">${priceLabel}</span>
+                       </div>`
+                    : ''
+                }
+              </div>
+              <a href="/profesionales/perfil?id=${pro.id}" class="bg-primary hover:bg-primary-container text-on-primary px-8 py-3 rounded-xl font-bold transition-all active:scale-95 flex items-center gap-2">
+                Ver perfil
+                <span class="material-symbols-outlined text-xl" aria-hidden="true">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+        </article>`;
+    }).join('');
+  }
+
+  // ─── Ejecutar búsqueda con filtros ────────────────────────────
+  async function doSearch(filters: SearchFilters) {
+    loadingEl.classList.remove('hidden');
+    listEl.innerHTML = '';
+    errorEl.classList.add('hidden');
+    countEl.innerHTML = '';
+    paginationEl.innerHTML = '';
+
+    try {
+      const results = await searchProfessionals(filters);
+      renderSearchResults(results);
+    } catch (err) {
+      console.error('Error buscando profesionales:', err);
+      loadingEl.classList.add('hidden');
+      errorEl.classList.remove('hidden');
+    }
+  }
+
+  // ─── Form submit handler ──────────────────────────────────────
+  searchForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const formData = new FormData(searchForm);
+    const filters: SearchFilters = {};
+
+    const rubro = formData.get('rubro')?.toString().trim();
+    const subRubro = formData.get('sub_rubro')?.toString().trim();
+    const countryId = formData.get('countryId')?.toString().trim();
+    const provinceId = formData.get('provinceId')?.toString().trim();
+
+    if (rubro) filters.rubro = rubro;
+    if (subRubro) filters.sub_rubro = subRubro;
+    if (countryId) filters.countryId = Number(countryId);
+    if (provinceId) filters.provinceId = Number(provinceId);
+
+    // Actualizar URL sin recargar
+    const params = new URLSearchParams();
+    if (rubro) params.set('rubro', rubro);
+    if (subRubro) params.set('sub_rubro', subRubro);
+    if (countryId) params.set('countryId', countryId);
+    if (provinceId) params.set('provinceId', provinceId);
+    const newUrl = params.toString() ? `${window.location.pathname}?${params}` : window.location.pathname;
+    history.replaceState(null, '', newUrl);
+
+    doSearch(filters);
+  });
+
+  // ─── Init: si hay query params, buscar; sino cargar todos ─────
+  const urlParams = new URLSearchParams(window.location.search);
+  const hasFilters = urlParams.has('rubro') || urlParams.has('sub_rubro') || urlParams.has('countryId') || urlParams.has('provinceId');
+
+  if (hasFilters) {
+    const filters: SearchFilters = {};
+    if (urlParams.get('rubro')) filters.rubro = urlParams.get('rubro')!;
+    if (urlParams.get('sub_rubro')) filters.sub_rubro = urlParams.get('sub_rubro')!;
+    if (urlParams.get('countryId')) filters.countryId = Number(urlParams.get('countryId'));
+    if (urlParams.get('provinceId')) filters.provinceId = Number(urlParams.get('provinceId'));
+    doSearch(filters);
+  } else {
+    renderProfessionalsList('pro-list', 'pro-count', 'pro-pagination', 'pro-loading', 'pro-error');
+  }
 </script>

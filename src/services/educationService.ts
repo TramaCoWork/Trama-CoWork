@@ -8,7 +8,7 @@ import { api } from './apiClient';
 
 // ─── Types ──────────────────────────────────────────────────
 
-export type EducationLevel = 'secundario' | 'terciario' | 'universitario' | 'posgrado' | 'maestria' | 'doctorado';
+export type EducationLevel = 'secundario' | 'terciario' | 'universitario' | 'posgrado' | 'maestria' | 'doctorado' | 'certificacion';
 
 export type DocumentVerificationStatus = 'pending' | 'approved' | 'rejected';
 
@@ -37,17 +37,7 @@ export interface Education {
   title: string;
   institution: string;
   year: number | null;
-  createdAt: string;
-  updatedAt: string;
-  documents?: Document[];
-}
-
-export interface Certification {
-  id: string;
-  professionalId: string;
-  name: string;
-  institution: string;
-  year: number | null;
+  professionId?: number | null;
   createdAt: string;
   updatedAt: string;
   documents?: Document[];
@@ -58,12 +48,7 @@ export interface CreateEducationBody {
   title: string;
   institution: string;
   year?: number;
-}
-
-export interface CreateCertificationBody {
-  name: string;
-  institution: string;
-  year?: number;
+  professionId?: number;
 }
 
 // ─── Education ──────────────────────────────────────────────
@@ -78,20 +63,6 @@ export function addEducation(profileId: string, body: CreateEducationBody): Prom
 
 export function deleteEducation(profileId: string, educationId: string): Promise<{ deleted: boolean }> {
   return api.del<{ deleted: boolean }>(`/professionals/${profileId}/education/${educationId}`);
-}
-
-// ─── Certifications ─────────────────────────────────────────
-
-export function fetchCertifications(profileId: string): Promise<Certification[]> {
-  return api.get<Certification[]>(`/professionals/${profileId}/certifications`);
-}
-
-export function addCertification(profileId: string, body: CreateCertificationBody): Promise<Certification> {
-  return api.post<Certification>(`/professionals/${profileId}/certifications`, body);
-}
-
-export function deleteCertification(profileId: string, certId: string): Promise<{ deleted: boolean }> {
-  return api.del<{ deleted: boolean }>(`/professionals/${profileId}/certifications/${certId}`);
 }
 
 // ─── Documents ──────────────────────────────────────────────

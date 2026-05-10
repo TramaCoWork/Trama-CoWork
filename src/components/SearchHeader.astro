@@ -8,92 +8,216 @@
       <p class="text-on-surface-variant font-medium">Explora profesionales verificados en tu zona o especializados globalmente.</p>
     </div>
 
-    <!-- Barra de busqueda -->
-    <form id="search-form" class="relative group" role="search" aria-label="Buscar profesionales">
-      <div class="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-2xl blur opacity-25 group-focus-within:opacity-100 transition duration-1000" aria-hidden="true"></div>
-      <div class="relative flex flex-col md:flex-row gap-2 bg-surface-container-lowest p-2 rounded-2xl shadow-sm">
-        <div class="flex-1 flex items-center px-4 gap-3">
-          <span class="material-symbols-outlined text-primary" aria-hidden="true">search</span>
-          <label for="search-query" class="sr-only">Servicio profesional</label>
-          <input
-            id="search-query"
-            class="w-full border-none focus:ring-0 bg-transparent py-4 text-lg font-medium placeholder:text-outline-variant"
-            placeholder="Que servicio profesional necesitas?"
-            type="search"
-            name="q"
-          />
+    <!-- Filtros -->
+    <form id="search-form" role="search" aria-label="Buscar profesionales">
+      <div class="relative group">
+        <div class="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-2xl blur opacity-25 group-focus-within:opacity-100 transition duration-1000" aria-hidden="true"></div>
+        <div class="relative bg-surface-container-lowest p-4 md:p-5 rounded-2xl shadow-sm">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+            <!-- Rubro -->
+            <div class="space-y-1.5">
+              <label for="filter-rubro" class="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-primary text-sm" aria-hidden="true">work</span>
+                Rubro
+              </label>
+              <select
+                id="filter-rubro"
+                name="rubro"
+                class="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm font-medium text-on-surface focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
+              >
+                <option value="">Todos los rubros</option>
+              </select>
+            </div>
+
+            <!-- Sub-rubro -->
+            <div class="space-y-1.5">
+              <label for="filter-subrubro" class="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-primary text-sm" aria-hidden="true">category</span>
+                Sub-rubro
+              </label>
+              <select
+                id="filter-subrubro"
+                name="sub_rubro"
+                disabled
+                class="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm font-medium text-on-surface focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <option value="">Selecciona un rubro primero</option>
+              </select>
+            </div>
+
+            <!-- País -->
+            <div class="space-y-1.5">
+              <label for="filter-country" class="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-primary text-sm" aria-hidden="true">public</span>
+                País
+              </label>
+              <select
+                id="filter-country"
+                name="countryId"
+                class="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm font-medium text-on-surface focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
+              >
+                <option value="">Todos los países</option>
+              </select>
+            </div>
+
+            <!-- Provincia -->
+            <div class="space-y-1.5">
+              <label for="filter-province" class="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-primary text-sm" aria-hidden="true">location_on</span>
+                Provincia
+              </label>
+              <select
+                id="filter-province"
+                name="provinceId"
+                disabled
+                class="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm font-medium text-on-surface focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <option value="">Selecciona un país primero</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Botón buscar -->
+          <div class="flex justify-end">
+            <button
+              type="submit"
+              class="bg-primary hover:bg-primary-container text-on-primary font-bold px-8 py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              <span class="material-symbols-outlined text-xl" aria-hidden="true">search</span>
+              Buscar
+            </button>
+          </div>
         </div>
-        <div class="h-12 w-px bg-surface-variant hidden md:block self-center" aria-hidden="true"></div>
-        <div class="flex-1 flex items-center px-4 gap-3">
-          <span class="material-symbols-outlined text-primary" aria-hidden="true">location_on</span>
-          <label for="search-location" class="sr-only">Ubicacion</label>
-          <input
-            id="search-location"
-            class="w-full border-none focus:ring-0 bg-transparent py-4 text-lg font-medium placeholder:text-outline-variant"
-            placeholder="Ubicacion (Opcional)"
-            type="text"
-            name="location"
-          />
-        </div>
-        <button
-          type="submit"
-          class="bg-primary hover:bg-primary-container text-on-primary font-bold px-8 py-4 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
-        >
-          Buscar
-        </button>
       </div>
     </form>
-
-    <!-- Filtros -->
-    <div class="flex flex-wrap gap-3 overflow-x-auto pb-2">
-      <button class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-full text-sm font-bold" type="button">
-        <span class="material-symbols-outlined text-lg" aria-hidden="true">tune</span>
-        Todos los filtros
-      </button>
-      <button class="flex items-center gap-2 px-5 py-2.5 bg-surface-container-highest text-on-surface rounded-full text-sm font-semibold hover:bg-outline-variant transition-colors" type="button">
-        Rango de precio
-        <span class="material-symbols-outlined text-lg" aria-hidden="true">expand_more</span>
-      </button>
-      <button class="flex items-center gap-2 px-5 py-2.5 bg-surface-container-highest text-on-surface rounded-full text-sm font-semibold hover:bg-outline-variant transition-colors" type="button">
-        Rating
-        <span class="material-symbols-outlined text-lg" aria-hidden="true">star</span>
-      </button>
-      <button class="flex items-center gap-2 px-5 py-2.5 bg-surface-container-highest text-on-surface rounded-full text-sm font-semibold hover:bg-outline-variant transition-colors" type="button">
-        Disponibilidad
-      </button>
-      <div class="flex-grow"></div>
-      <div class="flex items-center gap-2 text-sm font-bold text-on-surface-variant uppercase tracking-widest">
-        <label for="sort-by" class="sr-only">Ordenar por</label>
-        <span aria-hidden="true">Ordenar:</span>
-        <select id="sort-by" class="bg-transparent border-none focus:ring-0 text-sm font-bold text-primary py-0 pl-0">
-          <option>Recomendados</option>
-          <option>Mas recientes</option>
-          <option>Precio: menor a mayor</option>
-          <option>Mejor rating</option>
-        </select>
-      </div>
-    </div>
   </div>
 </header>
 
 <script>
-  const searchForm = document.getElementById('search-form') as HTMLFormElement | null;
+  import { fetchRubros, fetchProfessionsByRubro } from '../services/professionCategoriesService';
+  import { fetchCountries, fetchProvinces } from '../services/locationService';
 
-  searchForm?.addEventListener('submit', (e) => {
-    e.preventDefault();
+  const rubroSelect = document.getElementById('filter-rubro') as HTMLSelectElement;
+  const subRubroSelect = document.getElementById('filter-subrubro') as HTMLSelectElement;
+  const countrySelect = document.getElementById('filter-country') as HTMLSelectElement;
+  const provinceSelect = document.getElementById('filter-province') as HTMLSelectElement;
 
-    const formData = new FormData(searchForm);
-    const query = formData.get('q')?.toString().trim() ?? '';
-    const location = formData.get('location')?.toString().trim() ?? '';
+  // ─── Leer query params de la URL ──────────────────────────────
+  const urlParams = new URLSearchParams(window.location.search);
+  const preRubro = urlParams.get('rubro') || '';
+  const preSubRubro = urlParams.get('sub_rubro') || '';
+  const preCountryId = urlParams.get('countryId') || '';
+  const preProvinceId = urlParams.get('provinceId') || '';
 
-    console.log('Busqueda:', { query, location });
+  // ─── Cargar rubros ────────────────────────────────────────────
+  async function loadRubros() {
+    try {
+      const rubros = await fetchRubros();
+      rubros.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.slug;
+        opt.textContent = r.name;
+        opt.dataset.rubroId = String(r.id);
+        if (r.slug === preRubro) opt.selected = true;
+        rubroSelect.appendChild(opt);
+      });
+      // Si hay rubro preseleccionado, cargar sub-rubros
+      if (preRubro) {
+        await loadSubRubros();
+      }
+    } catch (err) {
+      console.error('Error cargando rubros:', err);
+    }
+  }
 
-    // TODO: Reemplazar con fetch a API real
-    // const params = new URLSearchParams();
-    // if (query) params.set('q', query);
-    // if (location) params.set('location', location);
-    // const res = await fetch(`/api/professionals?${params}`);
-    // const results = await res.json();
-    // renderResults(results);
+  // ─── Cargar sub-rubros (cascada desde rubro) ──────────────────
+  async function loadSubRubros() {
+    const selectedOption = rubroSelect.selectedOptions[0];
+    const rubroId = selectedOption?.dataset?.rubroId;
+
+    // Reset
+    subRubroSelect.innerHTML = '<option value="">Todos los sub-rubros</option>';
+
+    if (!rubroId) {
+      subRubroSelect.disabled = true;
+      subRubroSelect.innerHTML = '<option value="">Selecciona un rubro primero</option>';
+      return;
+    }
+
+    subRubroSelect.disabled = false;
+
+    try {
+      const children = await fetchProfessionsByRubro(Number(rubroId));
+      children.forEach(sub => {
+        const opt = document.createElement('option');
+        opt.value = sub.slug;
+        opt.textContent = sub.name;
+        if (sub.slug === preSubRubro) opt.selected = true;
+        subRubroSelect.appendChild(opt);
+      });
+    } catch (err) {
+      console.error('Error cargando sub-rubros:', err);
+    }
+  }
+
+  // ─── Cargar países ────────────────────────────────────────────
+  async function loadCountries() {
+    try {
+      const countries = await fetchCountries();
+      countries.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = String(c.id);
+        opt.textContent = c.name;
+        if (String(c.id) === preCountryId) opt.selected = true;
+        countrySelect.appendChild(opt);
+      });
+      // Si hay país preseleccionado, cargar provincias
+      if (preCountryId) {
+        await loadProvinces();
+      }
+    } catch (err) {
+      console.error('Error cargando países:', err);
+    }
+  }
+
+  // ─── Cargar provincias (cascada desde país) ───────────────────
+  async function loadProvinces() {
+    const countryId = countrySelect.value;
+
+    // Reset
+    provinceSelect.innerHTML = '<option value="">Todas las provincias</option>';
+
+    if (!countryId) {
+      provinceSelect.disabled = true;
+      provinceSelect.innerHTML = '<option value="">Selecciona un país primero</option>';
+      return;
+    }
+
+    provinceSelect.disabled = false;
+
+    try {
+      const provinces = await fetchProvinces(Number(countryId));
+      provinces.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = String(p.id);
+        opt.textContent = p.name;
+        if (String(p.id) === preProvinceId) opt.selected = true;
+        provinceSelect.appendChild(opt);
+      });
+    } catch (err) {
+      console.error('Error cargando provincias:', err);
+    }
+  }
+
+  // ─── Eventos de cascada ───────────────────────────────────────
+  rubroSelect.addEventListener('change', () => {
+    loadSubRubros();
   });
+
+  countrySelect.addEventListener('change', () => {
+    loadProvinces();
+  });
+
+  // ─── Init: cargar rubros y países en paralelo ─────────────────
+  Promise.all([loadRubros(), loadCountries()]);
 </script>

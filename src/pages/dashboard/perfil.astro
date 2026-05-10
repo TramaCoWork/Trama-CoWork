@@ -1,32 +1,16 @@
 ---
 import DashboardLayout from '../../layouts/DashboardLayout.astro';
+import ProfileWizardStep1 from '../../components/profile/ProfileWizardStep1.astro';
+import ProfileWizardStep2 from '../../components/profile/ProfileWizardStep2.astro';
+import ProfileWizardStep3 from '../../components/profile/ProfileWizardStep3.astro';
+import ProfileWizardStep4 from '../../components/profile/ProfileWizardStep4.astro';
+import ProfileWizardStep5 from '../../components/profile/ProfileWizardStep5.astro';
+import ProfileWizardStep6 from '../../components/profile/ProfileWizardStep6.astro';
+import ProfileNormalForm from '../../components/profile/ProfileNormalForm.astro';
+import ProfileModals from '../../components/profile/ProfileModals.astro';
 ---
 
 <DashboardLayout title="TRAMA - Editar perfil">
-  <!-- Header -->
-  <header class="mb-10">
-    <div class="flex justify-between items-end">
-      <div>
-        <h1 class="text-4xl font-black text-on-surface tracking-tighter">Editar perfil</h1>
-        <p class="text-on-surface-variant font-medium mt-2">Mantené tu información actualizada para que los clientes te encuentren.</p>
-      </div>
-      <div id="completion-badge" class="hidden">
-        <div class="flex items-center gap-3 bg-surface-container-low px-5 py-3 rounded-2xl">
-          <div class="relative w-12 h-12">
-            <svg class="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
-              <circle cx="18" cy="18" r="15.5" fill="none" stroke="currentColor" stroke-width="2" class="text-outline-variant/20"></circle>
-              <circle id="completion-circle" cx="18" cy="18" r="15.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="97.4" stroke-dashoffset="97.4" stroke-linecap="round" class="text-primary transition-all duration-700"></circle>
-            </svg>
-            <span id="completion-text" class="absolute inset-0 flex items-center justify-center text-xs font-black text-on-surface">0%</span>
-          </div>
-          <div>
-            <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Completitud</p>
-            <p id="completion-status" class="text-sm font-bold text-on-surface">Cargando...</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
 
   <!-- Loading State -->
   <div id="profile-loading" class="flex items-center justify-center py-24">
@@ -42,293 +26,107 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       <span class="material-symbols-outlined text-4xl mb-4 block" aria-hidden="true">error</span>
       <h2 class="text-xl font-bold mb-2">Error al cargar el perfil</h2>
       <p id="profile-error-msg" class="text-sm opacity-80">No se pudo obtener la información del perfil.</p>
-      <button onclick="location.reload()" class="mt-6 bg-error text-on-error px-6 py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity">
-        Reintentar
-      </button>
+      <button onclick="location.reload()" class="mt-6 bg-error text-on-error px-6 py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity">Reintentar</button>
     </div>
   </div>
 
-  <!-- Profile Form -->
-  <form id="profile-form" class="hidden">
-    <!-- Toast -->
-    <div id="toast" class="fixed top-6 right-6 z-50 hidden transition-all duration-300 translate-y-[-1rem] opacity-0">
-      <div id="toast-inner" class="flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm">
-        <span id="toast-icon" class="material-symbols-outlined text-xl" aria-hidden="true"></span>
-        <span id="toast-msg"></span>
+  <!-- ═══════════════════════════════════════════════════════════
+       WIZARD VIEW (incomplete / onboarding / rejected)
+       ═══════════════════════════════════════════════════════════ -->
+  <div id="wizard-view" class="hidden">
+
+    <!-- Rejected banner -->
+    <div id="rejected-banner" class="hidden mb-6 bg-error-container text-on-error-container rounded-2xl px-6 py-4 flex items-center gap-3">
+      <span class="material-symbols-outlined text-error text-2xl shrink-0" aria-hidden="true">warning</span>
+      <div>
+        <p class="font-bold text-sm">Tu perfil fue rechazado</p>
+        <p class="text-xs opacity-80 mt-0.5">Corregí los datos señalados y volvé a enviar para revisión.</p>
       </div>
     </div>
 
-    <!-- Photo + Name Header Card -->
-    <div class="bg-surface-container-low rounded-3xl p-8 mb-6">
-      <div class="flex flex-col md:flex-row items-center gap-8">
-        <!-- Avatar Preview -->
-        <div class="relative shrink-0 group">
-          <img
-            id="avatar-preview"
-            src="/images/default-avatar.svg"
-            alt="Foto de perfil"
-            class="w-28 h-28 rounded-full object-cover border-4 border-surface-container-lowest shadow-lg"
-          />
-          <!-- Upload overlay -->
-          <label
-            id="photo-upload-label"
-            for="field-photo-file"
-            class="absolute inset-0 rounded-full flex items-center justify-center bg-on-surface/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-            title="Subir foto"
-          >
-            <span class="material-symbols-outlined text-2xl text-white" aria-hidden="true">photo_camera</span>
-          </label>
-          <input
-            id="field-photo-file"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            class="hidden"
-          />
-          <!-- Delete button -->
-          <button
-            id="btn-delete-photo"
-            type="button"
-            class="hidden absolute -top-1 -right-1 w-7 h-7 bg-error text-on-error rounded-full flex items-center justify-center shadow-md hover:opacity-90 transition-opacity"
-            title="Eliminar foto"
-          >
-            <span class="material-symbols-outlined text-sm" aria-hidden="true">close</span>
-          </button>
-          <!-- Upload spinner -->
-          <div
-            id="photo-upload-spinner"
-            class="hidden absolute inset-0 rounded-full flex items-center justify-center bg-on-surface/60"
-          >
-            <div class="w-8 h-8 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
-          </div>
-        </div>
-        <!-- Photo URL + Name -->
-        <div class="flex-1 w-full space-y-4">
-          <div>
-            <label for="field-name" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">
-              Nombre completo
-            </label>
-            <input
-              id="field-name"
-              type="text"
-              placeholder="Tu nombre completo"
-              class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-            />
-          </div>
-          <p class="text-xs text-on-surface-variant">
-            <span class="material-symbols-outlined text-sm align-middle mr-1" aria-hidden="true">info</span>
-            Hace click en la foto para subir una imagen (JPG, PNG o WebP, max 2MB)
-          </p>
-        </div>
-      </div>
+    <!-- Header -->
+    <header class="mb-8">
+      <h1 class="text-3xl font-black text-on-surface tracking-tighter">Completá tu perfil</h1>
+      <p class="text-on-surface-variant font-medium mt-1 text-sm">Seguí los pasos para activar tu cuenta profesional en TRAMA.</p>
+    </header>
+
+    <!-- Step progress bar -->
+    <div class="mb-10">
+      <div id="wizard-steps-bar" class="flex items-center justify-between"></div>
     </div>
 
-    <!-- Two Column Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Step panels -->
+    <div>
 
-      <!-- Left Column: Datos Personales -->
-      <div class="bg-surface-container-low rounded-3xl p-8 space-y-6">
-        <div class="flex items-center gap-3 mb-2">
-          <span class="material-symbols-outlined text-primary" aria-hidden="true">person</span>
-          <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Datos personales</h2>
-        </div>
+      <ProfileWizardStep1 />
+      <ProfileWizardStep2 />
+      <ProfileWizardStep3 />
+      <ProfileWizardStep4 />
+      <ProfileWizardStep5 />
+      <ProfileWizardStep6 />
 
-        <div>
-          <label for="field-city" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Ciudad</label>
-          <input id="field-city" type="text" placeholder="Buenos Aires"
-            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
-        </div>
-
-        <div>
-          <label for="field-whatsapp" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">WhatsApp</label>
-          <div class="relative">
-            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-lg" aria-hidden="true">phone</span>
-            <input id="field-whatsapp" type="tel" placeholder="+54 11 1234-5678"
-              class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl pl-12 pr-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
-          </div>
-        </div>
-
-        <div>
-          <label for="field-linkedin" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">LinkedIn</label>
-          <div class="relative">
-            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-lg" aria-hidden="true">link</span>
-            <input id="field-linkedin" type="url" placeholder="https://linkedin.com/in/tu-perfil"
-              class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl pl-12 pr-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
-          </div>
-        </div>
-
-        <div>
-          <label for="field-modality" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Modalidad de trabajo</label>
-          <select id="field-modality"
-            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
-            <option value="">Seleccionar...</option>
-            <option value="presencial">Presencial</option>
-            <option value="online">Online</option>
-            <option value="ambas">Ambas</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="field-price-hour" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Precio por hora (USD)</label>
-          <div class="relative">
-            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-outline font-bold">$</span>
-            <input id="field-price-hour" type="number" min="0" step="0.01" placeholder="0.00"
-              class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl pl-10 pr-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Column: Datos Publicos -->
-      <div class="bg-surface-container-low rounded-3xl p-8 space-y-6">
-        <div class="flex items-center gap-3 mb-2">
-          <span class="material-symbols-outlined text-primary" aria-hidden="true">public</span>
-          <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Perfil publico</h2>
-        </div>
-
-        <div>
-          <label for="field-bio" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">
-            Bio
-            <span id="bio-count" class="text-outline font-medium normal-case tracking-normal ml-2">(0/300)</span>
-          </label>
-          <textarea id="field-bio" maxlength="300" rows="4" placeholder="Contá brevemente sobre vos y tu experiencia profesional..."
-            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"></textarea>
-        </div>
-
-        <div>
-          <label for="field-email-contact" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Email de contacto</label>
-          <div class="relative">
-            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-lg" aria-hidden="true">mail</span>
-            <input id="field-email-contact" type="email" placeholder="contacto@ejemplo.com"
-              class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl pl-12 pr-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
-          </div>
-        </div>
-
-        <div>
-          <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Servicios</label>
-          <div id="services-container" class="flex flex-wrap gap-2 mb-3 min-h-[2.5rem]"></div>
-          <div class="relative">
-            <input id="field-service-input" type="text" placeholder="Escribí un servicio y presioná Enter"
-              class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
-            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-outline uppercase tracking-widest">Enter</span>
-          </div>
-        </div>
-
-        <!-- Profession selector -->
-        <div class="space-y-4" id="profession-selector">
-          <div class="flex items-center justify-between">
-            <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
-              Profesiones (max 5)
-            </label>
-            <span id="profession-count" class="text-xs font-bold text-primary">0/5 seleccionadas</span>
-          </div>
-          <div id="profession-groups" class="space-y-6">
-            <p class="text-sm text-on-surface-variant">Cargando profesiones...</p>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label for="field-price-min" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Precio min</label>
-            <div class="relative">
-              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-outline font-bold">$</span>
-              <input id="field-price-min" type="number" min="0" step="0.01" placeholder="0"
-                class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl pl-10 pr-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
-            </div>
-          </div>
-          <div>
-            <label for="field-price-max" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Precio max</label>
-            <div class="relative">
-              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-outline font-bold">$</span>
-              <input id="field-price-max" type="number" min="0" step="0.01" placeholder="0"
-                class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl pl-10 pr-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Submit -->
-    <div class="mt-8 flex justify-end gap-4">
-      <a href="/dashboard"
-        class="px-8 py-4 rounded-xl font-bold text-sm text-on-surface-variant bg-surface-container-low hover:bg-surface-container-high transition-colors">
-        Cancelar
-      </a>
-      <button
-        id="btn-save"
-        type="submit"
-        class="px-10 py-4 rounded-xl font-bold text-sm bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all flex items-center gap-2 shadow-lg"
-      >
-        <span class="material-symbols-outlined text-lg" aria-hidden="true">save</span>
-        Guardar cambios
-      </button>
-    </div>
-  </form>
-
-  <!-- Modal: Confirmar eliminación de foto -->
-  <div id="modal-delete-photo" class="fixed inset-0 z-[60] hidden items-center justify-center">
-    <div id="modal-backdrop" class="absolute inset-0 bg-on-surface/50 backdrop-blur-sm transition-opacity"></div>
-    <div class="relative bg-surface-container-lowest rounded-3xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center animate-[scale-in_0.2s_ease-out]">
-      <div class="w-16 h-16 bg-error-container rounded-full flex items-center justify-center mx-auto mb-5">
-        <span class="material-symbols-outlined text-3xl text-error" aria-hidden="true">delete</span>
-      </div>
-      <h3 class="text-xl font-extrabold text-on-surface mb-2 tracking-tight">Eliminar foto</h3>
-      <p class="text-sm text-on-surface-variant mb-8">
-        Esta accion no se puede deshacer. ¿Estas seguro de que queres eliminar tu foto de perfil?
-      </p>
-      <div class="flex gap-3">
-        <button id="modal-cancel" type="button"
-          class="flex-1 px-6 py-3 rounded-xl font-bold text-sm text-on-surface-variant bg-surface-container-low hover:bg-surface-container-high transition-colors">
-          Cancelar
+      <!-- Navigation buttons -->
+      <div class="flex justify-between mt-8">
+        <button id="w-btn-prev" type="button"
+          class="hidden px-8 py-3 rounded-xl font-bold text-sm text-on-surface-variant bg-surface-container-low hover:bg-surface-container-high transition-colors flex items-center gap-2">
+          <span class="material-symbols-outlined text-lg" aria-hidden="true">arrow_back</span>
+          Anterior
         </button>
-        <button id="modal-confirm" type="button"
-          class="flex-1 px-6 py-3 rounded-xl font-bold text-sm bg-error text-on-error hover:opacity-90 active:scale-[0.98] transition-all shadow-md">
-          Eliminar
+        <div class="flex-1"></div>
+        <button id="w-btn-next" type="button"
+          class="px-8 py-3 rounded-xl font-bold text-sm bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all flex items-center gap-2 shadow-lg">
+          <span id="w-btn-next-text">Siguiente</span>
+          <span class="material-symbols-outlined text-lg" aria-hidden="true">arrow_forward</span>
         </button>
       </div>
+
     </div>
   </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       NORMAL FORM VIEW (active / suspended)
+       ═══════════════════════════════════════════════════════════ -->
+  <ProfileNormalForm />
+
+  <!-- Modals + Toast -->
+  <ProfileModals />
 
   <script>
-    import { getUserIdFromToken, getToken, logout } from '../../services/authService';
+    import { getUserIdFromToken, getToken, getEmailFromToken, logout } from '../../services/authService';
     import { api } from '../../services/apiClient';
-    import { uploadProfilePhoto, deleteProfilePhoto, getProfilePhotoUrl, updateProfessionalInfo } from '../../services/profileService';
-    import { fetchProfessionsByRubro } from '../../services/professionCategoriesService';
-    import type { ProfessionalProfile } from '../../services/profileService';
+    import {
+      uploadProfilePhoto, deleteProfilePhoto, getProfilePhotoUrl,
+      updateProfessionalInfo, updatePersonalData, updateGeneralProfile,
+      uploadIdentity, fetchEducation, addEducation, updateEducation,
+      deleteEducation, uploadDocument, submitProfile, updateMotivation, uploadCV,
+    } from '../../services/profileService';
+    import { fetchRubros, fetchProfessionsByRubro } from '../../services/professionCategoriesService';
+    import { fetchCountries, fetchProvinces } from '../../services/locationService';
+    import { fetchCatalog, getCatalogLabel, populateSelect } from '../../services/catalogService';
+    import type { ProfessionalProfile, Education } from '../../services/profileService';
 
     const DEFAULT_AVATAR = '/images/default-avatar.svg';
+    const WIZARD_STATES = ['incomplete', 'onboarding', 'rejected'];
+    const TOTAL_STEPS = 6;
 
-    // ─── State ──────────────────────────────────────────────────
+    // ─── Global State ───────────────────────────────────────────
+    let profileData: ProfessionalProfile | null = null;
     let profileId: string | null = null;
+    let currentStatus = '';
+    let currentStep = 1;
+    let maxStepReached = 1;
+    let currentRubroId: number | null = null;
+    let selectedRubroName = '';
     let currentServices: string[] = [];
-
-    // ─── DOM refs ───────────────────────────────────────────────
-    const loadingEl = document.getElementById('profile-loading')!;
-    const errorEl = document.getElementById('profile-error')!;
-    const errorMsg = document.getElementById('profile-error-msg')!;
-    const formEl = document.getElementById('profile-form') as HTMLFormElement;
-    const completionBadge = document.getElementById('completion-badge')!;
-    const completionCircle = document.getElementById('completion-circle')!;
-    const completionText = document.getElementById('completion-text')!;
-    const completionStatus = document.getElementById('completion-status')!;
-
-    // Fields
-    const fieldName = document.getElementById('field-name') as HTMLInputElement;
-    const fieldPhotoFile = document.getElementById('field-photo-file') as HTMLInputElement;
-    const btnDeletePhoto = document.getElementById('btn-delete-photo') as HTMLButtonElement;
-    const photoUploadSpinner = document.getElementById('photo-upload-spinner')!;
-    const fieldCity = document.getElementById('field-city') as HTMLInputElement;
-    const fieldWhatsapp = document.getElementById('field-whatsapp') as HTMLInputElement;
-    const fieldLinkedin = document.getElementById('field-linkedin') as HTMLInputElement;
-    const fieldModality = document.getElementById('field-modality') as HTMLSelectElement;
-    const fieldPriceHour = document.getElementById('field-price-hour') as HTMLInputElement;
-    const fieldBio = document.getElementById('field-bio') as HTMLTextAreaElement;
-    const fieldEmailContact = document.getElementById('field-email-contact') as HTMLInputElement;
-    const fieldPriceMin = document.getElementById('field-price-min') as HTMLInputElement;
-    const fieldPriceMax = document.getElementById('field-price-max') as HTMLInputElement;
-    const fieldServiceInput = document.getElementById('field-service-input') as HTMLInputElement;
-    const servicesContainer = document.getElementById('services-container')!;
-    const bioCount = document.getElementById('bio-count')!;
-    const avatarPreview = document.getElementById('avatar-preview') as HTMLImageElement;
-    const btnSave = document.getElementById('btn-save')!;
+    let educationList: Education[] = [];
+    let dniFrontFile: File | null = null;
+    let dniBackFile: File | null = null;
+    let hasDniFront = false;
+    let hasDniBack = false;
+    let hasPhoto = false;
+    let hasCv = false;
+    let pendingCountryId: number | null = null;
+    let pendingProvinceId: number | null = null;
 
     // ─── Toast ──────────────────────────────────────────────────
     function showToast(message: string, type: 'success' | 'error') {
@@ -336,89 +134,52 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       const inner = document.getElementById('toast-inner')!;
       const icon = document.getElementById('toast-icon')!;
       const msg = document.getElementById('toast-msg')!;
-
       msg.textContent = message;
-      if (type === 'success') {
-        inner.className = 'flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm bg-primary text-on-primary';
-        icon.textContent = 'check_circle';
-      } else {
-        inner.className = 'flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm bg-error text-on-error';
-        icon.textContent = 'error';
-      }
-
+      inner.className = type === 'success'
+        ? 'flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm bg-primary text-on-primary'
+        : 'flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm bg-error text-on-error';
+      icon.textContent = type === 'success' ? 'check_circle' : 'error';
       toast.classList.remove('hidden');
-      requestAnimationFrame(() => {
-        toast.classList.remove('translate-y-[-1rem]', 'opacity-0');
-      });
-
-      setTimeout(() => {
-        toast.classList.add('translate-y-[-1rem]', 'opacity-0');
-        setTimeout(() => toast.classList.add('hidden'), 300);
-      }, 3500);
+      requestAnimationFrame(() => toast.classList.remove('translate-y-[-1rem]', 'opacity-0'));
+      setTimeout(() => { toast.classList.add('translate-y-[-1rem]', 'opacity-0'); setTimeout(() => toast.classList.add('hidden'), 300); }, 3500);
     }
 
-    // ─── Services chips ─────────────────────────────────────────
-    function renderServices() {
-      servicesContainer.innerHTML = currentServices
-        .map(
-          (s, i) => `
-          <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary-fixed text-on-primary-fixed-variant uppercase tracking-tight">
-            ${s}
-            <button type="button" data-remove="${i}" class="ml-1 hover:text-error transition-colors" aria-label="Eliminar ${s}">
-              <span class="material-symbols-outlined text-sm" aria-hidden="true">close</span>
-            </button>
-          </span>`,
-        )
-        .join('');
-
-      servicesContainer.querySelectorAll('[data-remove]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const idx = Number((btn as HTMLElement).dataset.remove);
-          currentServices.splice(idx, 1);
-          renderServices();
-        });
-      });
+    // ─── Location helpers ───────────────────────────────────────
+    async function loadCountriesInto(sel: HTMLSelectElement, pendingId: number | null, onLoaded?: () => void) {
+      try {
+        const countries = await fetchCountries();
+        sel.innerHTML = '<option disabled selected value="">Seleccioná tu país</option>' + countries.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        if (pendingId) sel.value = String(pendingId);
+        if (onLoaded) onLoaded();
+      } catch { sel.innerHTML = '<option disabled selected>Error al cargar países</option>'; }
     }
 
-    fieldServiceInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        const val = fieldServiceInput.value.trim();
-        if (val && !currentServices.includes(val)) {
-          currentServices.push(val);
-          renderServices();
-        }
-        fieldServiceInput.value = '';
-      }
-    });
+    async function loadProvincesInto(sel: HTMLSelectElement, countryId: number, pendingId: number | null) {
+      sel.disabled = true;
+      sel.innerHTML = '<option disabled selected value="">Cargando...</option>';
+      try {
+        const provinces = await fetchProvinces(countryId);
+        sel.innerHTML = '<option disabled selected value="">Seleccioná tu provincia</option>' + provinces.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        sel.disabled = false;
+        if (pendingId) sel.value = String(pendingId);
+      } catch { sel.innerHTML = '<option disabled selected>Error</option>'; }
+    }
 
-    // ─── Bio counter ────────────────────────────────────────────
-    fieldBio.addEventListener('input', () => {
-      bioCount.textContent = `(${fieldBio.value.length}/300)`;
-    });
+    // ─── Profession loader ──────────────────────────────────────
+    const MAX_PROFS = 5;
 
-    // ─── Profession selector ──────────────────────────────────
-    const MAX_PROFESSIONS = 5;
-    const professionGroupsEl = document.getElementById('profession-groups')!;
-    const professionCountEl = document.getElementById('profession-count')!;
-
-    async function loadProfessionSelector(rubroId: number, selectedIds: number[]) {
+    async function loadProfessions(container: HTMLElement, countEl: HTMLElement, rubroId: number, selectedIds: number[], editable: boolean) {
       try {
         const subRubros = await fetchProfessionsByRubro(rubroId);
-
-        professionGroupsEl.innerHTML = subRubros.map(sub => `
+        container.innerHTML = subRubros.map(sub => `
           <div class="space-y-2">
             <h4 class="text-sm font-bold text-on-surface-variant uppercase tracking-wider">${sub.name}</h4>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
               ${(sub.children || []).map(prof => `
-                <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-low cursor-pointer transition-colors">
-                  <input
-                    type="checkbox"
-                    name="professionCategoryIds"
-                    value="${prof.id}"
-                    class="profession-checkbox rounded-md border-outline-variant text-primary focus:ring-primary w-5 h-5"
-                    ${selectedIds.includes(prof.id) ? 'checked' : ''}
-                  />
+                <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-low cursor-pointer transition-colors ${!editable ? 'pointer-events-none opacity-70' : ''}">
+                  <input type="checkbox" name="profCatIds" value="${prof.id}"
+                    class="prof-cb rounded-md border-outline-variant text-primary focus:ring-primary w-5 h-5"
+                    ${selectedIds.includes(prof.id) ? 'checked' : ''} ${!editable ? 'disabled' : ''} />
                   <span class="text-sm font-medium text-on-surface">${prof.name}</span>
                 </label>
               `).join('')}
@@ -426,291 +187,940 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
           </div>
         `).join('');
 
-        const checkboxes = professionGroupsEl.querySelectorAll<HTMLInputElement>('.profession-checkbox');
-        function updateProfCount() {
-          const checked = professionGroupsEl.querySelectorAll<HTMLInputElement>('.profession-checkbox:checked');
-          professionCountEl.textContent = `${checked.length}/${MAX_PROFESSIONS} seleccionadas`;
-          checkboxes.forEach(cb => {
-            if (!cb.checked && checked.length >= MAX_PROFESSIONS) {
-              cb.disabled = true;
-              cb.closest('label')?.classList.add('opacity-50');
-            } else {
-              cb.disabled = false;
-              cb.closest('label')?.classList.remove('opacity-50');
-            }
-          });
+        if (editable) {
+          const cbs = container.querySelectorAll<HTMLInputElement>('.prof-cb');
+          const update = () => {
+            const checked = container.querySelectorAll<HTMLInputElement>('.prof-cb:checked');
+            countEl.textContent = `${checked.length}/${MAX_PROFS} seleccionadas`;
+            cbs.forEach(cb => {
+              if (!cb.checked && checked.length >= MAX_PROFS) { cb.disabled = true; cb.closest('label')?.classList.add('opacity-50'); }
+              else { cb.disabled = false; cb.closest('label')?.classList.remove('opacity-50'); }
+            });
+          };
+          cbs.forEach(cb => cb.addEventListener('change', update));
+          update();
+        } else {
+          const checked = container.querySelectorAll<HTMLInputElement>('.prof-cb:checked');
+          countEl.textContent = `${checked.length}/${MAX_PROFS} seleccionadas`;
         }
-
-        checkboxes.forEach(cb => cb.addEventListener('change', updateProfCount));
-        updateProfCount();
-      } catch (err) {
-        console.error('Error cargando profesiones:', err);
-        professionGroupsEl.innerHTML = '<p class="text-sm text-error">Error al cargar profesiones</p>';
-      }
+      } catch { container.innerHTML = '<p class="text-sm text-error">Error al cargar profesiones</p>'; }
     }
 
-    function getSelectedProfessionIds(): number[] {
-      return Array.from(
-        document.querySelectorAll<HTMLInputElement>('.profession-checkbox:checked')
-      ).map(cb => Number(cb.value));
+    function getCheckedProfIds(container: HTMLElement): number[] {
+      return Array.from(container.querySelectorAll<HTMLInputElement>('.prof-cb:checked')).map(cb => Number(cb.value));
     }
 
-    // ─── Photo upload ─────────────────────────────────────────────
-    let hasPhoto = false;
-
-    function updateDeleteButton() {
-      if (hasPhoto) {
-        btnDeletePhoto.classList.remove('hidden');
-        btnDeletePhoto.classList.add('flex');
-      } else {
-        btnDeletePhoto.classList.add('hidden');
-        btnDeletePhoto.classList.remove('flex');
-      }
+    function getCheckedProfNames(container: HTMLElement): string[] {
+      return Array.from(container.querySelectorAll<HTMLInputElement>('.prof-cb:checked')).map(cb => {
+        const label = cb.closest('label');
+        return label?.querySelector('span')?.textContent?.trim() || '';
+      }).filter(Boolean);
     }
 
-    fieldPhotoFile.addEventListener('change', async () => {
-      const file = fieldPhotoFile.files?.[0];
-      if (!file) return;
+    // ─── Services chip helper ───────────────────────────────────
+    function renderServicesInto(container: HTMLElement, services: string[], onUpdate: (s: string[]) => void) {
+      container.innerHTML = services.map((s, i) => `
+        <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary-fixed text-on-primary-fixed-variant uppercase tracking-tight">
+          ${s}
+          <button type="button" data-rm="${i}" class="ml-1 hover:text-error transition-colors" aria-label="Eliminar ${s}">
+            <span class="material-symbols-outlined text-sm" aria-hidden="true">close</span>
+          </button>
+        </span>`).join('');
+      container.querySelectorAll('[data-rm]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          services.splice(Number((btn as HTMLElement).dataset.rm), 1);
+          onUpdate(services);
+          renderServicesInto(container, services, onUpdate);
+        });
+      });
+    }
 
-      if (file.size > 2 * 1024 * 1024) {
-        showToast('La imagen no puede superar los 2MB', 'error');
-        fieldPhotoFile.value = '';
-        return;
+    function wireServiceInput(input: HTMLInputElement, container: HTMLElement, services: string[], onUpdate: (s: string[]) => void) {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const val = input.value.trim();
+          if (val && !services.includes(val)) { services.push(val); onUpdate(services); renderServicesInto(container, services, onUpdate); }
+          input.value = '';
+        }
+      });
+    }
+
+    // ─── Completion circle helper ───────────────────────────────
+    function setCompletion(circleEl: SVGCircleElement, textEl: HTMLElement, statusEl: HTMLElement, pct: number) {
+      const circ = 97.4;
+      circleEl.style.strokeDashoffset = String(circ - (pct / 100) * circ);
+      textEl.textContent = `${pct}%`;
+      if (pct >= 100) { statusEl.textContent = 'Perfil completo'; statusEl.className = 'text-sm font-bold text-primary'; }
+      else if (pct >= 50) { statusEl.textContent = 'Buen progreso'; statusEl.className = 'text-sm font-bold text-on-surface'; }
+      else { statusEl.textContent = 'Por completar'; statusEl.className = 'text-sm font-bold text-outline'; }
+    }
+
+    // ─── Photo upload helper ────────────────────────────────────
+    function wirePhotoUpload(fileInput: HTMLInputElement, preview: HTMLImageElement, spinner: HTMLElement, deleteBtn: HTMLButtonElement | null, onPhotoChange: (has: boolean) => void) {
+      fileInput.addEventListener('change', async () => {
+        const file = fileInput.files?.[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) { showToast('Max 2MB', 'error'); fileInput.value = ''; return; }
+        spinner.classList.remove('hidden'); spinner.classList.add('flex');
+        try {
+          await uploadProfilePhoto(file);
+          preview.src = getProfilePhotoUrl(profileId!) + `?t=${Date.now()}`;
+          hasPhoto = true; onPhotoChange(true);
+          if (deleteBtn) { deleteBtn.classList.remove('hidden'); deleteBtn.classList.add('flex'); }
+          showToast('Foto actualizada', 'success');
+          window.dispatchEvent(new CustomEvent('sidebar:update-photo', { detail: { src: preview.src } }));
+        } catch (err: any) { if (err?.status === 401) { logout(); return; } showToast(err?.message || 'Error al subir foto', 'error'); }
+        finally { spinner.classList.add('hidden'); spinner.classList.remove('flex'); fileInput.value = ''; }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // WIZARD LOGIC
+    // ═══════════════════════════════════════════════════════════
+
+    function initWizard(data: ProfessionalProfile) {
+      const wizardView = document.getElementById('wizard-view')!;
+      wizardView.classList.remove('hidden');
+
+      if (currentStatus === 'rejected') document.getElementById('rejected-banner')!.classList.remove('hidden');
+
+      // Start step from backend or 1
+      currentStep = data.currentStep > 0 && data.currentStep <= TOTAL_STEPS ? Math.min(data.currentStep, TOTAL_STEPS) : 1;
+      maxStepReached = TOTAL_STEPS;
+
+      // Build step bar
+      renderStepBar();
+
+      // Populate all steps
+      populateWizardStep1(data);
+      populateWizardStep2(data);
+      populateWizardStep3(data);
+      populateWizardStep4(data);
+      populateWizardStep5(data);
+      populateWizardStep6(data);
+
+      // Wire navigation
+      const btnPrev = document.getElementById('w-btn-prev') as HTMLButtonElement;
+      const btnNext = document.getElementById('w-btn-next') as HTMLButtonElement;
+
+      btnPrev.addEventListener('click', () => { if (currentStep > 1) { currentStep--; showStep(); } });
+      btnNext.addEventListener('click', async () => {
+        if (currentStep < TOTAL_STEPS) {
+          await saveCurrentStep();
+          currentStep++;
+          showStep();
+        }
+      });
+
+      showStep();
+    }
+
+    const STEP_ICONS = ['person', 'badge', 'work', 'account_circle', 'school', 'send'];
+    const STEP_LABELS = ['Personal', 'Identidad', 'Profesión', 'Perfil', 'Estudios', 'Envío'];
+
+    function renderStepBar() {
+      const bar = document.getElementById('wizard-steps-bar')!;
+      let html = '';
+      for (let i = 1; i <= TOTAL_STEPS; i++) {
+        const connector = i < TOTAL_STEPS ? '<div class="flex-1 h-0.5 bg-outline-variant/20 mx-0.5 step-connector" data-after="' + i + '"></div>' : '';
+        html += `
+          <button type="button" class="step-pill flex items-center gap-2 px-3 py-2 rounded-xl border-2 transition-all shrink-0 min-w-0" data-step="${i}">
+            <span class="material-symbols-outlined text-lg step-icon" aria-hidden="true">${STEP_ICONS[i - 1]}</span>
+            <span class="step-label text-xs font-bold uppercase tracking-wider hidden sm:inline">${STEP_LABELS[i - 1]}</span>
+            <span class="step-check hidden material-symbols-outlined text-sm">check</span>
+          </button>
+          ${connector}
+        `;
       }
+      bar.innerHTML = html;
 
-      photoUploadSpinner.classList.remove('hidden');
-      photoUploadSpinner.classList.add('flex');
+      bar.querySelectorAll('.step-pill').forEach(dot => {
+        dot.addEventListener('click', () => {
+          const s = Number((dot as HTMLElement).dataset.step);
+          if (s <= maxStepReached) {
+            saveCurrentStep();
+            currentStep = s;
+            showStep();
+          }
+        });
+      });
+    }
 
+    function showStep() {
+      // Update panels
+      document.querySelectorAll('.wizard-step').forEach((el, i) => {
+        el.classList.toggle('hidden', i + 1 !== currentStep);
+      });
+
+      // Update step pills
+      document.querySelectorAll('.step-pill').forEach(dot => {
+        const s = Number((dot as HTMLElement).dataset.step);
+        const icon = dot.querySelector('.step-icon') as HTMLElement;
+        const label = dot.querySelector('.step-label') as HTMLElement;
+        const check = dot.querySelector('.step-check') as HTMLElement;
+
+        if (s < currentStep) {
+          dot.className = 'step-pill flex items-center gap-2 px-3 py-2 rounded-xl border-2 transition-all shrink-0 min-w-0 bg-primary border-primary text-on-primary cursor-pointer';
+          icon.classList.add('hidden'); check.classList.remove('hidden');
+          if (label) label.classList.remove('hidden');
+        } else if (s === currentStep) {
+          dot.className = 'step-pill flex items-center gap-2 px-3 py-2 rounded-xl border-2 transition-all shrink-0 min-w-0 border-primary text-primary bg-primary/10';
+          icon.classList.remove('hidden'); check.classList.add('hidden');
+          if (label) label.classList.remove('hidden');
+        } else {
+          dot.className = 'step-pill flex items-center gap-2 px-3 py-2 rounded-xl border-2 transition-all shrink-0 min-w-0 border-outline-variant/30 text-outline';
+          icon.classList.remove('hidden'); check.classList.add('hidden');
+          if (label) label.classList.add('hidden', 'sm:inline');
+        }
+      });
+
+      // Connectors
+      document.querySelectorAll('.step-connector').forEach(conn => {
+        const after = Number((conn as HTMLElement).dataset.after);
+        (conn as HTMLElement).className = after < currentStep
+          ? 'flex-1 h-0.5 bg-primary mx-1 step-connector'
+          : 'flex-1 h-0.5 bg-outline-variant/20 mx-1 step-connector';
+        (conn as HTMLElement).dataset.after = String(after);
+      });
+
+      // Navigation buttons
+      const btnPrev = document.getElementById('w-btn-prev') as HTMLButtonElement;
+      const btnNext = document.getElementById('w-btn-next') as HTMLButtonElement;
+
+      btnPrev.classList.toggle('hidden', currentStep === 1);
+      btnPrev.classList.toggle('flex', currentStep !== 1);
+      btnNext.classList.toggle('hidden', currentStep === TOTAL_STEPS);
+      btnNext.classList.toggle('flex', currentStep !== TOTAL_STEPS);
+
+      // Refresh step 6 completion when shown
+      if (currentStep === TOTAL_STEPS) refreshStep6Completion();
+    }
+
+    // ─── Step 1: Datos personales ───────────────────────────────
+    function populateWizardStep1(data: ProfessionalProfile) {
+      const email = getEmailFromToken() || data.emailContact || '—';
+      document.getElementById('w-display-email')!.textContent = email;
+
+      (document.getElementById('w-name') as HTMLInputElement).value = data.name || '';
+      (document.getElementById('w-city') as HTMLInputElement).value = data.city || '';
+      (document.getElementById('w-whatsapp') as HTMLInputElement).value = data.whatsapp || '';
+
+      const wCountry = document.getElementById('w-country') as HTMLSelectElement;
+      const wProvince = document.getElementById('w-province') as HTMLSelectElement;
+
+      loadCountriesInto(wCountry, data.countryId, () => {
+        if (data.countryId) loadProvincesInto(wProvince, data.countryId, data.provinceId);
+      });
+
+      wCountry.addEventListener('change', () => {
+        const id = Number(wCountry.value);
+        if (id) loadProvincesInto(wProvince, id, null);
+      });
+    }
+
+    async function saveStep1() {
+      if (!profileId) return;
+      const payload: Record<string, any> = {
+        name: (document.getElementById('w-name') as HTMLInputElement).value.trim() || undefined,
+        city: (document.getElementById('w-city') as HTMLInputElement).value.trim() || undefined,
+        whatsapp: (document.getElementById('w-whatsapp') as HTMLInputElement).value.trim() || undefined,
+        countryId: Number((document.getElementById('w-country') as HTMLSelectElement).value) || undefined,
+        provinceId: Number((document.getElementById('w-province') as HTMLSelectElement).value) || undefined,
+      };
       try {
-        await uploadProfilePhoto(file);
-        // Refresh photo with cache-busting
-        avatarPreview.src = getProfilePhotoUrl(profileId!) + `?t=${Date.now()}`;
-        hasPhoto = true;
-        updateDeleteButton();
-        showToast('Foto actualizada', 'success');
+        const updated = await updatePersonalData(profileId, payload);
+        if (updated?.completionPct !== undefined && profileData) profileData.completionPct = updated.completionPct;
+      } catch (err: any) { showToast(err?.message || 'Error al guardar', 'error'); throw err; }
+    }
 
-        // Notify sidebar
-        window.dispatchEvent(new CustomEvent('sidebar:update-photo', { detail: { src: avatarPreview.src } }));
-      } catch (err: unknown) {
-        const error = err as Error & { status?: number };
-        if (error?.status === 401) { logout(); return; }
-        showToast(error?.message || 'Error al subir la foto', 'error');
-      } finally {
-        photoUploadSpinner.classList.add('hidden');
-        photoUploadSpinner.classList.remove('flex');
-        fieldPhotoFile.value = '';
+    // ─── Step 2: Identidad ────────────────────────────────────
+    function populateWizardStep2(data: ProfessionalProfile) {
+      // DNI number
+      (document.getElementById('w-dni') as HTMLInputElement).value = data.dni || '';
+
+      // DNI already uploaded?
+      hasDniFront = !!data.identityFrontUrl;
+      hasDniBack = !!data.identityBackUrl;
+
+      if (hasDniFront) {
+        document.getElementById('w-dni-front-check')!.classList.remove('hidden');
+        document.getElementById('w-dni-front-check')!.classList.add('flex');
+        document.getElementById('w-dni-front-placeholder')!.innerHTML = '<span class="material-symbols-outlined text-2xl text-primary">check_circle</span><span class="text-xs font-bold text-primary">SUBIDO</span>';
       }
-    });
+      if (hasDniBack) {
+        document.getElementById('w-dni-back-check')!.classList.remove('hidden');
+        document.getElementById('w-dni-back-check')!.classList.add('flex');
+        document.getElementById('w-dni-back-placeholder')!.innerHTML = '<span class="material-symbols-outlined text-2xl text-primary">check_circle</span><span class="text-xs font-bold text-primary">SUBIDO</span>';
+      }
 
-    // ─── Delete photo modal ───────────────────────────────────────
-    const modal = document.getElementById('modal-delete-photo')!;
-    const modalBackdrop = document.getElementById('modal-backdrop')!;
-    const modalCancel = document.getElementById('modal-cancel')!;
-    const modalConfirm = document.getElementById('modal-confirm')!;
+      // Wire file inputs for preview
+      const frontInput = document.getElementById('w-dni-front') as HTMLInputElement;
+      const backInput = document.getElementById('w-dni-back') as HTMLInputElement;
 
-    function openModal() {
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
+      frontInput.addEventListener('change', () => {
+        const f = frontInput.files?.[0]; if (!f) return;
+        if (f.size > 5 * 1024 * 1024) { showToast('Max 5MB', 'error'); frontInput.value = ''; return; }
+        dniFrontFile = f;
+        if (f.type.startsWith('image/')) {
+          const img = document.getElementById('w-dni-front-img') as HTMLImageElement;
+          img.src = URL.createObjectURL(f);
+          document.getElementById('w-dni-front-preview')!.classList.remove('hidden');
+          document.getElementById('w-dni-front-placeholder')!.classList.add('hidden');
+        }
+      });
+
+      backInput.addEventListener('change', () => {
+        const f = backInput.files?.[0]; if (!f) return;
+        if (f.size > 5 * 1024 * 1024) { showToast('Max 5MB', 'error'); backInput.value = ''; return; }
+        dniBackFile = f;
+        if (f.type.startsWith('image/')) {
+          const img = document.getElementById('w-dni-back-img') as HTMLImageElement;
+          img.src = URL.createObjectURL(f);
+          document.getElementById('w-dni-back-preview')!.classList.remove('hidden');
+          document.getElementById('w-dni-back-placeholder')!.classList.add('hidden');
+        }
+      });
     }
 
-    function closeModal() {
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
+    async function saveStep2() {
+      // Save DNI number
+      if (profileId) {
+        const dni = (document.getElementById('w-dni') as HTMLInputElement).value.trim();
+        if (dni) {
+          try {
+            await updatePersonalData(profileId, { dni });
+          } catch (err: any) { showToast(err?.message || 'Error al guardar DNI', 'error'); }
+        }
+      }
+      // Upload DNI photos if both selected
+      if (dniFrontFile && dniBackFile) {
+        try {
+          await uploadIdentity(dniFrontFile, dniBackFile);
+          hasDniFront = true; hasDniBack = true;
+          dniFrontFile = null; dniBackFile = null;
+          document.getElementById('w-dni-front-check')!.classList.remove('hidden');
+          document.getElementById('w-dni-front-check')!.classList.add('flex');
+          document.getElementById('w-dni-back-check')!.classList.remove('hidden');
+          document.getElementById('w-dni-back-check')!.classList.add('flex');
+          showToast('Documento de identidad subido', 'success');
+        } catch (err: any) {
+          showToast(err?.body?.message || err?.message || 'Error al subir documento', 'error');
+          throw err;
+        }
+      }
     }
 
-    modalCancel.addEventListener('click', closeModal);
-    modalBackdrop.addEventListener('click', closeModal);
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
-    });
+    // ─── Step 3: Rubro y profesiones ────────────────────────────
+    function populateWizardStep3(data: ProfessionalProfile) {
+      const rubroSelect = document.getElementById('w-rubro') as HTMLSelectElement;
+      const profGroups = document.getElementById('w-profession-groups')!;
+      const profCount = document.getElementById('w-profession-count')!;
 
-    btnDeletePhoto.addEventListener('click', () => {
-      openModal();
-    });
+      // Load rubros
+      fetchRubros().then(rubros => {
+        rubroSelect.innerHTML = '<option disabled selected value="">Seleccioná tu profesión</option>'
+          + rubros.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+        if (data.rubroId) {
+          rubroSelect.value = String(data.rubroId);
+          currentRubroId = data.rubroId;
+          selectedRubroName = data.rubro?.name || rubros.find(r => r.id === data.rubroId)?.name || '';
+        }
+      }).catch(() => { rubroSelect.innerHTML = '<option disabled selected>Error</option>'; });
 
-    modalConfirm.addEventListener('click', async () => {
-      closeModal();
+      // If rubro exists, load professions
+      if (data.rubroId) {
+        const selectedIds = (data.professionCategories || []).map(p => p.id);
+        loadProfessions(profGroups, profCount, data.rubroId, selectedIds, true);
+      }
 
-      photoUploadSpinner.classList.remove('hidden');
-      photoUploadSpinner.classList.add('flex');
+      rubroSelect.addEventListener('change', () => {
+        const id = Number(rubroSelect.value);
+        if (id) {
+          currentRubroId = id;
+          selectedRubroName = rubroSelect.options[rubroSelect.selectedIndex].text;
+          loadProfessions(profGroups, profCount, id, [], true);
+        }
+      });
+    }
 
+    async function saveStep3() {
+      if (!profileId || !currentRubroId) return;
+      const profIds = getCheckedProfIds(document.getElementById('w-profession-groups')!);
       try {
-        await deleteProfilePhoto();
-        avatarPreview.src = DEFAULT_AVATAR;
-        hasPhoto = false;
-        updateDeleteButton();
-        showToast('Foto eliminada', 'success');
-
-        // Notify sidebar
-        window.dispatchEvent(new CustomEvent('sidebar:update-photo', { detail: { src: DEFAULT_AVATAR } }));
-      } catch (err: unknown) {
-        const error = err as Error & { status?: number };
-        if (error?.status === 401) { logout(); return; }
-        showToast(error?.message || 'Error al eliminar la foto', 'error');
-      } finally {
-        photoUploadSpinner.classList.add('hidden');
-        photoUploadSpinner.classList.remove('flex');
-      }
-    });
-
-    // ─── Completion circle ──────────────────────────────────────
-    function updateCompletion(pct: number) {
-      const circumference = 97.4; // 2 * PI * 15.5
-      const offset = circumference - (pct / 100) * circumference;
-      completionCircle.style.strokeDashoffset = String(offset);
-      completionText.textContent = `${pct}%`;
-
-      if (pct >= 80) {
-        completionStatus.textContent = 'Perfil completo';
-        completionStatus.className = 'text-sm font-bold text-primary';
-      } else if (pct >= 50) {
-        completionStatus.textContent = 'Buen progreso';
-        completionStatus.className = 'text-sm font-bold text-on-surface';
-      } else {
-        completionStatus.textContent = 'Por completar';
-        completionStatus.className = 'text-sm font-bold text-outline';
-      }
-
-      completionBadge.classList.remove('hidden');
+        const updated = await updateProfessionalInfo(profileId, { professionCategoryIds: profIds });
+        // Also update rubro via general update
+        await api.patch(`/professionals/${profileId}`, { rubroId: currentRubroId });
+        if (profileData) { profileData.rubroId = currentRubroId; profileData.completionPct = updated?.completionPct ?? profileData.completionPct; }
+      } catch (err: any) { showToast(err?.message || 'Error al guardar', 'error'); throw err; }
     }
 
-    // ─── Populate form ──────────────────────────────────────────
-    function populateForm(data: ProfessionalProfile) {
-      profileId = data.id;
-      fieldName.value = data.name || '';
-      fieldCity.value = data.city || '';
-      fieldWhatsapp.value = data.whatsapp || '';
-      fieldLinkedin.value = data.linkedin || '';
-      fieldModality.value = data.workModality || '';
-      fieldPriceHour.value = data.pricePerHour || '';
-      fieldBio.value = data.bio || '';
-      fieldEmailContact.value = data.emailContact || '';
-      fieldPriceMin.value = data.priceMin || '';
-      fieldPriceMax.value = data.priceMax || '';
+    // ─── Step 4: Perfil profesional ─────────────────────────────
+    function populateWizardStep4(data: ProfessionalProfile) {
+      // Load work modalities catalog
+      fetchCatalog('work-modalities').then(items => {
+        populateSelect(document.getElementById('w-modality') as HTMLSelectElement, items, data.workModality || '');
+      }).catch(() => {});
 
-      // Load photo from public endpoint
+      // Profile photo
+      const preview = document.getElementById('w-avatar-preview') as HTMLImageElement;
+      const spinner = document.getElementById('w-photo-spinner')!;
+      const fileInput = document.getElementById('w-photo-file') as HTMLInputElement;
+
       const photoUrl = getProfilePhotoUrl(data.id);
       const testImg = new Image();
-      testImg.onload = () => {
-        avatarPreview.src = photoUrl;
-        hasPhoto = true;
-        updateDeleteButton();
-      };
-      testImg.onerror = () => {
-        avatarPreview.src = DEFAULT_AVATAR;
-        hasPhoto = false;
-        updateDeleteButton();
-      };
+      testImg.onload = () => { preview.src = photoUrl; hasPhoto = true; };
+      testImg.onerror = () => { preview.src = DEFAULT_AVATAR; hasPhoto = false; };
       testImg.src = photoUrl;
 
+      wirePhotoUpload(fileInput, preview, spinner, null, (has) => { hasPhoto = has; });
+
+      (document.getElementById('w-bio') as HTMLTextAreaElement).value = data.bio || '';
+      (document.getElementById('w-price-hour') as HTMLInputElement).value = data.pricePerHour || '';
+      (document.getElementById('w-price-ars') as HTMLInputElement).value = data.priceMin || '';
+      (document.getElementById('w-linkedin') as HTMLInputElement).value = data.linkedin || '';
+
+      const bioCount = document.getElementById('w-bio-count')!;
+      const bio = document.getElementById('w-bio') as HTMLTextAreaElement;
       bioCount.textContent = `(${(data.bio || '').length}/300)`;
+      bio.addEventListener('input', () => { bioCount.textContent = `(${bio.value.length}/300)`; });
 
       currentServices = [...(data.services || [])];
-      renderServices();
-
-      // Load profession selector if rubro is set
-      if (data.rubroId) {
-        const selectedIds = (data.professionCategories || []).map((p: { id: number }) => p.id);
-        loadProfessionSelector(data.rubroId, selectedIds);
-      } else {
-        professionGroupsEl.innerHTML = '<p class="text-sm text-on-surface-variant">No hay rubro asignado. Contactá a soporte para asignar tu rubro.</p>';
-      }
-
-      updateCompletion(data.completionPct);
+      const container = document.getElementById('w-services-container')!;
+      const input = document.getElementById('w-service-input') as HTMLInputElement;
+      renderServicesInto(container, currentServices, (s) => { currentServices = s; });
+      wireServiceInput(input, container, currentServices, (s) => { currentServices = s; });
     }
 
-    // ─── Load profile ───────────────────────────────────────────
-    async function loadProfile() {
-      const userId = getUserIdFromToken();
-      const token = getToken();
+    async function saveStep4() {
+      if (!profileId) return;
+      try {
+        const bio = (document.getElementById('w-bio') as HTMLTextAreaElement).value.trim();
+        const priceArs = (document.getElementById('w-price-ars') as HTMLInputElement).value || undefined;
+        await updateProfessionalInfo(profileId, { bio: bio || undefined, services: currentServices });
+        const updated = await api.patch<ProfessionalProfile>(`/professionals/${profileId}/personal`, {
+          pricePerHour: (document.getElementById('w-price-hour') as HTMLInputElement).value || undefined,
+          workModality: (document.getElementById('w-modality') as HTMLSelectElement).value || undefined,
+          linkedin: (document.getElementById('w-linkedin') as HTMLInputElement).value.trim() || undefined,
+        });
+        await api.patch(`/professionals/${profileId}`, {
+          bio: bio || undefined,
+          services: currentServices,
+          priceMin: priceArs,
+          priceMax: priceArs,
+        });
+        if (updated?.completionPct !== undefined && profileData) profileData.completionPct = updated.completionPct;
+      } catch (err: any) { showToast(err?.message || 'Error al guardar', 'error'); throw err; }
+    }
 
-      if (!userId || !token) {
-        logout();
-        return;
+    // ─── Step 5: Education + CV ─────────────────────────────────
+
+    function populateWizardStep5(data: ProfessionalProfile) {
+      // Load education levels catalog
+      fetchCatalog('education-levels').then(items => {
+        populateSelect(document.getElementById('w-edu-level') as HTMLSelectElement, items);
+      }).catch(() => {});
+
+      // Load education
+      fetchEducation(data.id).then(list => {
+        educationList = list;
+        renderWizardEduList();
+      }).catch(() => {});
+
+      // Check for existing CV
+      if (data.documents) {
+        const cv = (data as any).documents?.find((d: any) => d.type === 'cv');
+        if (cv) {
+          hasCv = true;
+          document.getElementById('w-cv-status')!.classList.remove('hidden');
+          document.getElementById('w-cv-status')!.classList.add('flex');
+          document.getElementById('w-cv-name')!.textContent = cv.originalName || 'CV subido';
+        }
       }
 
+      // Wire education form
+      document.getElementById('w-btn-add-edu')!.addEventListener('click', () => openWizardEduForm());
+      document.getElementById('w-edu-cancel')!.addEventListener('click', closeWizardEduForm);
+      document.getElementById('w-edu-save')!.addEventListener('click', saveWizardEdu);
+
+      // Wire CV upload
+      const cvInput = document.getElementById('w-cv-file') as HTMLInputElement;
+      cvInput.addEventListener('change', async () => {
+        const file = cvInput.files?.[0];
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) { showToast('Max 5MB', 'error'); cvInput.value = ''; return; }
+        try {
+          await uploadCV(file);
+          hasCv = true;
+          document.getElementById('w-cv-status')!.classList.remove('hidden');
+          document.getElementById('w-cv-status')!.classList.add('flex');
+          document.getElementById('w-cv-name')!.textContent = file.name;
+          showToast('CV subido correctamente', 'success');
+        } catch (err: any) { showToast(err?.message || 'Error al subir CV', 'error'); }
+        cvInput.value = '';
+      });
+    }
+
+    function renderWizardEduList() {
+      const list = document.getElementById('w-edu-list')!;
+      const empty = document.getElementById('w-edu-empty')!;
+
+      list.querySelectorAll('.edu-item').forEach(el => el.remove());
+
+      if (educationList.length === 0) { empty.classList.remove('hidden'); return; }
+      empty.classList.add('hidden');
+
+      educationList.forEach(edu => {
+        const div = document.createElement('div');
+        div.className = 'edu-item border border-outline-variant/15 rounded-xl p-4 flex items-start justify-between gap-4 bg-surface-container-lowest';
+        div.innerHTML = `
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-bold text-on-surface truncate">${edu.title}</p>
+            <p class="text-xs text-on-surface-variant mt-0.5">${edu.institution} &middot; ${edu.year}</p>
+            <span class="inline-block mt-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-widest bg-primary-fixed text-on-primary-fixed-variant">${getCatalogLabel('education-levels', edu.level)}</span>
+            ${edu.documents?.length ? `<div class="mt-2 flex items-center gap-1 text-xs text-primary"><span class="material-symbols-outlined text-sm">attach_file</span><span>${edu.documents[0].originalName}</span></div>` : ''}
+          </div>
+          <div class="flex gap-1 shrink-0">
+            <button type="button" class="edu-edit w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors" data-id="${edu.id}" title="Editar"><span class="material-symbols-outlined text-lg">edit</span></button>
+            <button type="button" class="edu-del w-8 h-8 rounded-lg flex items-center justify-center text-error hover:bg-error-container transition-colors" data-id="${edu.id}" title="Eliminar"><span class="material-symbols-outlined text-lg">delete</span></button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+
+      list.querySelectorAll('.edu-edit').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const edu = educationList.find(e => e.id === (btn as HTMLElement).dataset.id);
+          if (edu) openWizardEduForm(edu);
+        });
+      });
+
+      list.querySelectorAll('.edu-del').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = (btn as HTMLElement).dataset.id!;
+          if (!profileId) return;
+          try {
+            await deleteEducation(profileId, id);
+            educationList = educationList.filter(e => e.id !== id);
+            renderWizardEduList();
+            showToast('Estudio eliminado', 'success');
+          } catch (err: any) { showToast(err?.message || 'Error', 'error'); }
+        });
+      });
+    }
+
+    function openWizardEduForm(edu?: Education) {
+      document.getElementById('w-edu-form')!.classList.remove('hidden');
+
+      // Populate profession select from checked professions in Step 3
+      const profSelect = document.getElementById('w-edu-profession') as HTMLSelectElement;
+      const profHint = document.getElementById('w-edu-profession-hint')!;
+      const docInput = document.getElementById('w-edu-doc') as HTMLInputElement;
+      const docBlocked = document.getElementById('w-edu-doc-blocked')!;
+
+      const profIds = getCheckedProfIds(document.getElementById('w-profession-groups')!);
+      const profNames = getCheckedProfNames(document.getElementById('w-profession-groups')!);
+
+      // Clear existing options except placeholder
+      while (profSelect.options.length > 1) profSelect.remove(1);
+
+      if (profIds.length > 0) {
+        profIds.forEach((id, i) => {
+          const opt = document.createElement('option');
+          opt.value = String(id);
+          opt.textContent = profNames[i] || `Profesión ${id}`;
+          profSelect.appendChild(opt);
+        });
+        profSelect.disabled = false;
+        profHint.classList.add('hidden');
+        docInput.disabled = false;
+        docBlocked.classList.add('hidden');
+      } else {
+        profSelect.disabled = true;
+        profHint.classList.remove('hidden');
+        docInput.disabled = true;
+        docBlocked.classList.remove('hidden');
+      }
+
+      if (edu) {
+        document.getElementById('w-edu-form-title')!.textContent = 'Editar estudio';
+        (document.getElementById('w-edu-edit-id') as HTMLInputElement).value = edu.id;
+        (document.getElementById('w-edu-level') as HTMLSelectElement).value = edu.level;
+        (document.getElementById('w-edu-year') as HTMLInputElement).value = String(edu.year);
+        (document.getElementById('w-edu-title') as HTMLInputElement).value = edu.title;
+        (document.getElementById('w-edu-institution') as HTMLInputElement).value = edu.institution;
+        if (edu.professionId) profSelect.value = String(edu.professionId);
+      } else {
+        document.getElementById('w-edu-form-title')!.textContent = 'Agregar estudio';
+        (document.getElementById('w-edu-edit-id') as HTMLInputElement).value = '';
+        (document.getElementById('w-edu-level') as HTMLSelectElement).value = '';
+        (document.getElementById('w-edu-year') as HTMLInputElement).value = '';
+        (document.getElementById('w-edu-title') as HTMLInputElement).value = '';
+        (document.getElementById('w-edu-institution') as HTMLInputElement).value = '';
+        profSelect.value = '';
+      }
+      (document.getElementById('w-edu-doc') as HTMLInputElement).value = '';
+    }
+
+    function closeWizardEduForm() {
+      document.getElementById('w-edu-form')!.classList.add('hidden');
+    }
+
+    async function saveWizardEdu() {
+      if (!profileId) return;
+      const level = (document.getElementById('w-edu-level') as HTMLSelectElement).value;
+      const title = (document.getElementById('w-edu-title') as HTMLInputElement).value.trim();
+      const institution = (document.getElementById('w-edu-institution') as HTMLInputElement).value.trim();
+      const year = Number((document.getElementById('w-edu-year') as HTMLInputElement).value);
+      const professionIdStr = (document.getElementById('w-edu-profession') as HTMLSelectElement).value;
+      const professionId = professionIdStr ? Number(professionIdStr) : undefined;
+
+      if (!level || !title || !institution || !year) { showToast('Completá todos los campos', 'error'); return; }
+
+      const btn = document.getElementById('w-edu-save') as HTMLButtonElement;
+      btn.disabled = true; btn.textContent = 'Guardando...';
+
+      try {
+        const editId = (document.getElementById('w-edu-edit-id') as HTMLInputElement).value;
+        let saved: Education;
+        if (editId) {
+          saved = await updateEducation(profileId, editId, { level, title, institution, year, professionId });
+          educationList = educationList.map(e => e.id === editId ? saved : e);
+        } else {
+          saved = await addEducation(profileId, { level, title, institution, year, professionId });
+          educationList.push(saved);
+        }
+
+        const docFile = (document.getElementById('w-edu-doc') as HTMLInputElement).files?.[0];
+        if (docFile) {
+          try { await uploadDocument(docFile, 'title', saved.id, undefined, professionId); educationList = await fetchEducation(profileId); } catch (e: any) { console.error('Upload doc error:', e); showToast(e?.message || 'Error al subir documento', 'error'); }
+        }
+
+        renderWizardEduList();
+        closeWizardEduForm();
+        showToast(editId ? 'Estudio actualizado' : 'Estudio agregado', 'success');
+      } catch (err: any) { showToast(err?.message || 'Error', 'error'); }
+      finally { btn.disabled = false; btn.textContent = 'Guardar'; }
+    }
+
+    async function saveStep5() {
+      // Education and CV are saved inline, nothing extra needed
+    }
+
+    // ─── Step 6: Motivation + submit ────────────────────────────
+    function populateWizardStep6(data: ProfessionalProfile) {
+      const motivation = document.getElementById('w-motivation') as HTMLTextAreaElement;
+      const motivationCount = document.getElementById('w-motivation-count')!;
+
+      motivation.value = data.tramaMotivation || '';
+      motivationCount.textContent = `(${(data.tramaMotivation || '').length}/300)`;
+      motivation.addEventListener('input', () => { motivationCount.textContent = `(${motivation.value.length}/300)`; });
+
+      // Submit button
+      const btnSubmit = document.getElementById('w-btn-submit') as HTMLButtonElement;
+      btnSubmit.addEventListener('click', async () => {
+        // Save motivation if present
+        if (!profileId) return;
+        const motText = motivation.value.trim();
+
+        if (motText) {
+          try {
+            const updated = await updateMotivation(profileId, motText);
+            if (updated?.completionPct !== undefined && profileData) profileData.completionPct = updated.completionPct;
+          } catch (err: any) { showToast(err?.message || 'Error al guardar motivación', 'error'); return; }
+        }
+
+        // Show confirmation modal
+        showConfirmSubmitModal();
+      });
+    }
+
+    function refreshStep6Completion() {
+      const checks: { label: string; ok: boolean }[] = [
+        { label: 'Nombre completo', ok: Boolean((document.getElementById('w-name') as HTMLInputElement)?.value.trim()) },
+        { label: 'Biografía', ok: Boolean((document.getElementById('w-bio') as HTMLTextAreaElement)?.value.trim()) },
+        { label: 'Foto de perfil', ok: Boolean(profileData?.photo) },
+        { label: 'Servicios', ok: currentServices.length > 0 },
+        { label: 'Precio', ok: Boolean((document.getElementById('w-price-ars') as HTMLInputElement)?.value) || Boolean((document.getElementById('w-price-hour') as HTMLInputElement)?.value) },
+        { label: 'Ciudad', ok: Boolean((document.getElementById('w-city') as HTMLInputElement)?.value.trim()) },
+        { label: 'Profesión', ok: Boolean(currentRubroId) },
+        { label: 'Especialidades', ok: getCheckedProfIds(document.getElementById('w-profession-groups')!).length > 0 },
+        { label: 'DNI', ok: Boolean((document.getElementById('w-dni') as HTMLInputElement)?.value.trim()) },
+      ];
+
+      const filled = checks.filter(c => c.ok).length;
+      const pct = Math.round((filled / checks.length) * 100);
+      const missing = checks.filter(c => !c.ok);
+
+      const circle = document.getElementById('w-completion-circle') as unknown as SVGCircleElement;
+      const text = document.getElementById('w-completion-text')!;
+      const status = document.getElementById('w-completion-status')!;
+      setCompletion(circle, text, status, pct);
+
+      const btnSubmit = document.getElementById('w-btn-submit') as HTMLButtonElement;
+      const missingEl = document.getElementById('w-missing-items')!;
+
+      if (missing.length > 0) {
+        missingEl.classList.remove('hidden');
+        missingEl.innerHTML = '<p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Falta completar:</p>' +
+          missing.map(m => `<p class="text-xs text-error flex items-center gap-1"><span class="material-symbols-outlined text-sm">close</span>${m.label}</p>`).join('');
+        btnSubmit.disabled = true;
+      } else {
+        missingEl.classList.add('hidden');
+        btnSubmit.disabled = false;
+      }
+    }
+
+    // ─── Confirm submit modal ───────────────────────────────────
+    function showConfirmSubmitModal() {
+      const modal = document.getElementById('modal-confirm-submit')!;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      // Fill summary
+      document.getElementById('confirm-dni')!.textContent = (document.getElementById('w-dni') as HTMLInputElement).value || '—';
+
+      const frontEl = document.getElementById('confirm-front')!;
+      frontEl.textContent = hasDniFront ? 'Subido' : 'Falta';
+      frontEl.className = hasDniFront ? 'font-bold text-primary' : 'font-bold text-error';
+
+      const backEl = document.getElementById('confirm-back')!;
+      backEl.textContent = hasDniBack ? 'Subido' : 'Falta';
+      backEl.className = hasDniBack ? 'font-bold text-primary' : 'font-bold text-error';
+
+      document.getElementById('confirm-rubro')!.textContent = selectedRubroName || '—';
+
+      const profNames = getCheckedProfNames(document.getElementById('w-profession-groups')!);
+      const profsContainer = document.getElementById('confirm-professions')!;
+      profsContainer.innerHTML = profNames.map(n => `<span class="px-2 py-0.5 rounded-md text-xs font-bold bg-primary-fixed text-on-primary-fixed-variant">${n}</span>`).join('');
+    }
+
+    // Wire confirm modal buttons
+    document.getElementById('confirm-cancel')!.addEventListener('click', () => {
+      const modal = document.getElementById('modal-confirm-submit')!;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    });
+
+    document.getElementById('modal-confirm-backdrop')!.addEventListener('click', () => {
+      const modal = document.getElementById('modal-confirm-submit')!;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    });
+
+    document.getElementById('confirm-send')!.addEventListener('click', async () => {
+      if (!profileId) return;
+      const btn = document.getElementById('confirm-send') as HTMLButtonElement;
+      btn.disabled = true;
+
+      try {
+        // Ensure motivation has a value (backend requires it)
+        const motivationVal = (document.getElementById('w-motivation') as HTMLTextAreaElement)?.value.trim();
+        if (!motivationVal) {
+          await updateMotivation(profileId, '—');
+        }
+        await submitProfile(profileId);
+        // Close confirm, show pending
+        document.getElementById('modal-confirm-submit')!.classList.add('hidden');
+        document.getElementById('modal-confirm-submit')!.classList.remove('flex');
+        document.getElementById('modal-pending')!.classList.remove('hidden');
+        document.getElementById('modal-pending')!.classList.add('flex');
+      } catch (err: any) {
+        showToast(err?.body?.message || err?.message || 'Error al enviar perfil', 'error');
+        document.getElementById('modal-confirm-submit')!.classList.add('hidden');
+        document.getElementById('modal-confirm-submit')!.classList.remove('flex');
+      } finally { btn.disabled = false; }
+    });
+
+    // ─── Save current step ──────────────────────────────────────
+    async function saveCurrentStep() {
+      try {
+        switch (currentStep) {
+          case 1: await saveStep1(); break;
+          case 2: await saveStep2(); break;
+          case 3: await saveStep3(); break;
+          case 4: await saveStep4(); break;
+          case 5: await saveStep5(); break;
+        }
+      } catch {
+        // Error already shown via toast
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // NORMAL FORM LOGIC (active / suspended)
+    // ═══════════════════════════════════════════════════════════
+
+    let normalServices: string[] = [];
+
+    function initNormalForm(data: ProfessionalProfile) {
+      const normalView = document.getElementById('normal-view')!;
+      normalView.classList.remove('hidden');
+
+      const email = getEmailFromToken() || data.emailContact || '—';
+      document.getElementById('n-display-email')!.textContent = email;
+
+      // Photo
+      const nPreview = document.getElementById('n-avatar-preview') as HTMLImageElement;
+      const nSpinner = document.getElementById('n-photo-spinner')!;
+      const nFileInput = document.getElementById('n-photo-file') as HTMLInputElement;
+      const nDeleteBtn = document.getElementById('n-btn-delete-photo') as HTMLButtonElement;
+
+      const photoUrl = getProfilePhotoUrl(data.id);
+      const testImg2 = new Image();
+      testImg2.onload = () => { nPreview.src = photoUrl; hasPhoto = true; nDeleteBtn.classList.remove('hidden'); nDeleteBtn.classList.add('flex'); };
+      testImg2.onerror = () => { nPreview.src = DEFAULT_AVATAR; hasPhoto = false; };
+      testImg2.src = photoUrl;
+
+      wirePhotoUpload(nFileInput, nPreview, nSpinner, nDeleteBtn, (has) => { hasPhoto = has; });
+
+      // Delete photo modal
+      nDeleteBtn.addEventListener('click', () => { document.getElementById('modal-delete-photo')!.classList.remove('hidden'); document.getElementById('modal-delete-photo')!.classList.add('flex'); });
+      document.getElementById('modal-del-cancel')!.addEventListener('click', () => { document.getElementById('modal-delete-photo')!.classList.add('hidden'); document.getElementById('modal-delete-photo')!.classList.remove('flex'); });
+      document.getElementById('modal-delete-backdrop')!.addEventListener('click', () => { document.getElementById('modal-delete-photo')!.classList.add('hidden'); document.getElementById('modal-delete-photo')!.classList.remove('flex'); });
+      document.getElementById('modal-del-confirm')!.addEventListener('click', async () => {
+        document.getElementById('modal-delete-photo')!.classList.add('hidden'); document.getElementById('modal-delete-photo')!.classList.remove('flex');
+        nSpinner.classList.remove('hidden'); nSpinner.classList.add('flex');
+        try { await deleteProfilePhoto(); nPreview.src = DEFAULT_AVATAR; hasPhoto = false; nDeleteBtn.classList.add('hidden'); showToast('Foto eliminada', 'success'); window.dispatchEvent(new CustomEvent('sidebar:update-photo', { detail: { src: DEFAULT_AVATAR } })); }
+        catch (err: any) { showToast(err?.message || 'Error', 'error'); }
+        finally { nSpinner.classList.add('hidden'); nSpinner.classList.remove('flex'); }
+      });
+
+      // Fields
+      (document.getElementById('n-name') as HTMLInputElement).value = data.name || '';
+      document.getElementById('n-display-dni')!.textContent = data.dni || '—';
+      (document.getElementById('n-city') as HTMLInputElement).value = data.city || '';
+      (document.getElementById('n-whatsapp') as HTMLInputElement).value = data.whatsapp || '';
+      (document.getElementById('n-linkedin') as HTMLInputElement).value = data.linkedin || '';
+      // Load work modalities catalog for normal form
+      fetchCatalog('work-modalities').then(items => {
+        populateSelect(document.getElementById('n-modality') as HTMLSelectElement, items, data.workModality || '');
+      }).catch(() => {
+        (document.getElementById('n-modality') as HTMLSelectElement).value = data.workModality || '';
+      });
+      (document.getElementById('n-price-hour') as HTMLInputElement).value = data.pricePerHour || '';
+      (document.getElementById('n-bio') as HTMLTextAreaElement).value = data.bio || '';
+      (document.getElementById('n-price-ars') as HTMLInputElement).value = data.priceMin || '';
+
+      const nBio = document.getElementById('n-bio') as HTMLTextAreaElement;
+      const nBioCount = document.getElementById('n-bio-count')!;
+      nBioCount.textContent = `(${(data.bio || '').length}/300)`;
+      nBio.addEventListener('input', () => { nBioCount.textContent = `(${nBio.value.length}/300)`; });
+
+      // Location
+      const nCountry = document.getElementById('n-country') as HTMLSelectElement;
+      const nProvince = document.getElementById('n-province') as HTMLSelectElement;
+      loadCountriesInto(nCountry, data.countryId, () => { if (data.countryId) loadProvincesInto(nProvince, data.countryId, data.provinceId); });
+      nCountry.addEventListener('change', () => { const id = Number(nCountry.value); if (id) loadProvincesInto(nProvince, id, null); });
+
+      // Services
+      normalServices = [...(data.services || [])];
+      const nServContainer = document.getElementById('n-services-container')!;
+      const nServInput = document.getElementById('n-service-input') as HTMLInputElement;
+      renderServicesInto(nServContainer, normalServices, (s) => { normalServices = s; });
+      wireServiceInput(nServInput, nServContainer, normalServices, (s) => { normalServices = s; });
+
+      // Rubro (read-only)
+      document.getElementById('n-rubro-name')!.textContent = data.rubro?.name || '—';
+      const nProfList = document.getElementById('n-profession-list')!;
+      if (data.professionCategories?.length) {
+        nProfList.innerHTML = data.professionCategories.map(p =>
+          `<span class="inline-block px-2 py-0.5 rounded-md text-xs font-bold bg-primary-fixed text-on-primary-fixed-variant mr-1 mb-1">${p.name}</span>`
+        ).join('');
+      }
+
+      // Completion
+      const nCircle = document.getElementById('n-completion-circle') as unknown as SVGCircleElement;
+      const nText = document.getElementById('n-completion-text')!;
+      const nStatus = document.getElementById('n-completion-status')!;
+      setCompletion(nCircle, nText, nStatus, data.completionPct);
+
+      // Save
+      const normalForm = document.getElementById('normal-form') as HTMLFormElement;
+      const nBtnSave = document.getElementById('n-btn-save')!;
+
+      normalForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!profileId) return;
+        nBtnSave.setAttribute('disabled', '');
+        nBtnSave.innerHTML = '<div class="w-5 h-5 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin"></div> Guardando...';
+
+        try {
+          await api.patch(`/professionals/${profileId}/personal`, {
+            name: (document.getElementById('n-name') as HTMLInputElement).value.trim() || undefined,
+            city: (document.getElementById('n-city') as HTMLInputElement).value.trim() || undefined,
+            countryId: Number(nCountry.value) || undefined,
+            provinceId: Number(nProvince.value) || undefined,
+            whatsapp: (document.getElementById('n-whatsapp') as HTMLInputElement).value.trim() || undefined,
+            linkedin: (document.getElementById('n-linkedin') as HTMLInputElement).value.trim() || undefined,
+            pricePerHour: (document.getElementById('n-price-hour') as HTMLInputElement).value || undefined,
+            workModality: (document.getElementById('n-modality') as HTMLSelectElement).value || undefined,
+          });
+
+          await updateProfessionalInfo(profileId, {
+            bio: nBio.value.trim() || undefined,
+            services: normalServices,
+          });
+
+          const updated = await api.patch<ProfessionalProfile>(`/professionals/${profileId}`, {
+            name: (document.getElementById('n-name') as HTMLInputElement).value.trim() || undefined,
+            bio: nBio.value.trim() || undefined,
+            services: normalServices,
+            priceMin: (document.getElementById('n-price-ars') as HTMLInputElement).value || undefined,
+            priceMax: (document.getElementById('n-price-ars') as HTMLInputElement).value || undefined,
+            city: (document.getElementById('n-city') as HTMLInputElement).value.trim() || undefined,
+            whatsapp: (document.getElementById('n-whatsapp') as HTMLInputElement).value.trim() || undefined,
+          });
+
+          if (updated?.completionPct !== undefined) setCompletion(nCircle, nText, nStatus, updated.completionPct);
+          showToast('Perfil actualizado', 'success');
+        } catch (err: any) {
+          if (err?.status === 401) { logout(); return; }
+          showToast(err?.message || 'Error al guardar', 'error');
+        } finally {
+          nBtnSave.removeAttribute('disabled');
+          nBtnSave.innerHTML = '<span class="material-symbols-outlined text-lg" aria-hidden="true">save</span> Guardar cambios';
+        }
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════
+
+    async function init() {
+      const userId = getUserIdFromToken();
+      const token = getToken();
+      if (!userId || !token) { logout(); return; }
       api.setHeader('Authorization', `Bearer ${token}`);
 
       try {
         const data = await api.get<ProfessionalProfile>(`/professionals/by-user/${userId}`);
-        loadingEl.classList.add('hidden');
-        formEl.classList.remove('hidden');
-        populateForm(data);
+        profileData = data;
+        profileId = data.id;
+        currentStatus = data.profileStatus || 'incomplete';
 
-        // Sidebar user card is now handled by DashboardSidebar.astro
-      } catch (err: unknown) {
-        const error = err as Error & { status?: number };
-        if (error?.status === 401) {
-          logout();
+        document.getElementById('profile-loading')!.classList.add('hidden');
+
+        if (currentStatus === 'pending_review') {
+          document.getElementById('modal-pending')!.classList.remove('hidden');
+          document.getElementById('modal-pending')!.classList.add('flex');
           return;
         }
-        loadingEl.classList.add('hidden');
-        errorEl.classList.remove('hidden');
-        errorMsg.textContent = error?.message || 'No se pudo obtener la información del perfil.';
+
+        if (WIZARD_STATES.includes(currentStatus)) {
+          initWizard(data);
+        } else {
+          initNormalForm(data);
+        }
+      } catch (err: any) {
+        if (err?.status === 401) { logout(); return; }
+        document.getElementById('profile-loading')!.classList.add('hidden');
+        document.getElementById('profile-error')!.classList.remove('hidden');
+        document.getElementById('profile-error-msg')!.textContent = err?.message || 'Error al cargar el perfil.';
       }
     }
 
-    // ─── Save profile ───────────────────────────────────────────
-    formEl.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!profileId) return;
-
-      btnSave.setAttribute('disabled', '');
-      btnSave.innerHTML = '<div class="w-5 h-5 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin"></div> Guardando...';
-
-      try {
-        // PATCH personal data
-        await api.patch(`/professionals/${profileId}/personal`, {
-          name: fieldName.value.trim() || undefined,
-          city: fieldCity.value.trim() || undefined,
-          whatsapp: fieldWhatsapp.value.trim() || undefined,
-          linkedin: fieldLinkedin.value.trim() || undefined,
-          pricePerHour: fieldPriceHour.value || undefined,
-          workModality: fieldModality.value || undefined,
-        });
-
-        // PATCH professional info (professions)
-        const professionIds = getSelectedProfessionIds();
-        if (professionIds.length > 0) {
-          await updateProfessionalInfo(profileId, {
-            bio: fieldBio.value.trim() || undefined,
-            services: currentServices,
-            professionCategoryIds: professionIds,
-          });
-        }
-
-        // PATCH general profile
-        const updatedProfile = await api.patch<ProfessionalProfile>(`/professionals/${profileId}`, {
-          name: fieldName.value.trim() || undefined,
-          bio: fieldBio.value.trim() || undefined,
-          services: currentServices,
-          priceMin: fieldPriceMin.value || undefined,
-          priceMax: fieldPriceMax.value || undefined,
-          city: fieldCity.value.trim() || undefined,
-          emailContact: fieldEmailContact.value.trim() || undefined,
-          whatsapp: fieldWhatsapp.value.trim() || undefined,
-        });
-
-        // Update completion
-        if (updatedProfile?.completionPct !== undefined) {
-          updateCompletion(updatedProfile.completionPct);
-        }
-
-        showToast('Perfil actualizado correctamente', 'success');
-      } catch (err: unknown) {
-        const error = err as Error & { status?: number };
-        if (error?.status === 401) {
-          logout();
-          return;
-        }
-        showToast(error?.message || 'Error al guardar los cambios', 'error');
-      } finally {
-        btnSave.removeAttribute('disabled');
-        btnSave.innerHTML = '<span class="material-symbols-outlined text-lg" aria-hidden="true">save</span> Guardar cambios';
-      }
-    });
-
-    // ─── Init ───────────────────────────────────────────────────
-    loadProfile();
+    init();
   </script>
 </DashboardLayout>

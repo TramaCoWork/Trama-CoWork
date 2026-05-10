@@ -4,7 +4,7 @@ import logoSrc from '../assets/images/logo-trama-apaisado.png';
 const currentPath = Astro.url.pathname;
 
 const navLinks = [
-  { href: '/categorias', label: 'Áreas Profesionales' },
+  { href: '/rubros', label: 'Áreas Profesionales' },
   { href: '/profesionales', label: 'Perfiles Profesionales' },
   { href: '/about', label: 'Sobre Nosotros' },
 ];
@@ -43,6 +43,16 @@ function isActive(href: string): boolean {
         >
           Dashboard
         </a>
+        <a
+          id="nav-comunidad"
+          href="/dashboard/comunidad"
+          class={`hidden ${isActive('/dashboard/comunidad')
+            ? 'text-primary font-bold border-b-2 border-primary pb-1'
+            : 'text-on-surface-variant hover:text-primary transition-colors duration-200'}`}
+          aria-current={isActive('/dashboard/comunidad') ? 'page' : undefined}
+        >
+          Comunidad
+        </a>
       </div>
     </div>
     <div class="flex items-center gap-4">
@@ -73,12 +83,14 @@ function isActive(href: string): boolean {
   restoreSession();
 
   const navDashboard = document.getElementById('nav-dashboard');
+  const navComunidad = document.getElementById('nav-comunidad');
   const navGuest = document.getElementById('nav-guest');
   const navAuth = document.getElementById('nav-auth');
   const btnLogout = document.getElementById('btn-logout');
 
   if (isAuthenticated()) {
     navDashboard?.classList.remove('hidden');
+    navComunidad?.classList.remove('hidden');
     navGuest?.classList.add('hidden');
     navAuth?.classList.remove('hidden');
     navAuth?.classList.add('flex');

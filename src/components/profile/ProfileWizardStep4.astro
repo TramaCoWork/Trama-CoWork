@@ -1,0 +1,86 @@
+<!-- Step 4: Perfil profesional -->
+<div id="wizard-step-4" class="wizard-step hidden">
+  <div class="bg-surface-container-low rounded-3xl p-8 space-y-6">
+    <div class="flex items-center gap-3 mb-2">
+      <span class="material-symbols-outlined text-primary" aria-hidden="true">account_circle</span>
+      <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Perfil profesional</h2>
+    </div>
+
+    <!-- Profile photo -->
+    <div>
+      <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3 block">Foto de perfil</label>
+      <div class="flex items-center gap-6">
+        <div class="relative shrink-0 group">
+          <img id="w-avatar-preview" src="/images/default-avatar.svg" alt="Foto de perfil"
+            class="w-24 h-24 rounded-full object-cover border-4 border-surface-container-lowest shadow-lg" />
+          <label for="w-photo-file"
+            class="absolute inset-0 rounded-full flex items-center justify-center bg-on-surface/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" title="Subir foto">
+            <span class="material-symbols-outlined text-2xl text-white" aria-hidden="true">photo_camera</span>
+          </label>
+          <input id="w-photo-file" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" />
+          <div id="w-photo-spinner" class="hidden absolute inset-0 rounded-full flex items-center justify-center bg-on-surface/60">
+            <div class="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+          </div>
+        </div>
+        <div>
+          <p class="text-sm text-on-surface font-medium">JPG, PNG o WebP, max 2MB</p>
+          <p class="text-xs text-on-surface-variant mt-1">Hacé click en la imagen para subir</p>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <label for="w-bio" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">
+        Bio *
+        <span id="w-bio-count" class="text-outline font-medium normal-case tracking-normal ml-2">(0/300)</span>
+      </label>
+      <textarea id="w-bio" maxlength="300" rows="4" placeholder="Contá brevemente sobre vos y tu experiencia profesional..."
+        class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"></textarea>
+    </div>
+
+    <div>
+      <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Servicios *</label>
+      <div id="w-services-container" class="flex flex-wrap gap-2 mb-3 min-h-[2.5rem]"></div>
+      <div class="relative">
+        <input id="w-service-input" type="text" placeholder="Escribí un servicio y presioná Enter"
+          class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-outline uppercase tracking-widest">Enter</span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-4">
+      <div>
+        <label for="w-price-hour" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Precio por hora (USD)</label>
+        <div class="relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-outline font-bold">U$</span>
+          <input id="w-price-hour" type="number" min="0" step="0.01" placeholder="0.00"
+            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl pl-10 pr-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+        </div>
+      </div>
+      <div>
+        <label for="w-price-ars" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Precio por hora (ARS)</label>
+        <div class="relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-outline font-bold">$</span>
+          <input id="w-price-ars" type="number" min="0" step="0.01" placeholder="0.00"
+            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl pl-10 pr-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+        </div>
+      </div>
+      <div>
+        <label for="w-modality" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Modalidad</label>
+        <select id="w-modality"
+          class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+          <option value="">Seleccionar...</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label for="w-linkedin" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">LinkedIn</label>
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-lg" aria-hidden="true">link</span>
+        <input id="w-linkedin" type="url" placeholder="https://linkedin.com/in/tu-perfil"
+          class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl pl-12 pr-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+      </div>
+    </div>
+  </div>
+</div>

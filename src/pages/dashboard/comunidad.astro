@@ -1,0 +1,570 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="Comunidad | TRAMA">
+  <div class="flex flex-col h-[calc(100vh-6rem)]">
+    <!-- Header -->
+    <header class="flex items-center justify-between pb-6 border-b border-outline-variant/15 shrink-0">
+      <div>
+        <h1 class="text-2xl font-extrabold text-on-surface tracking-tight">Comunidad</h1>
+        <p class="text-sm text-on-surface-variant font-medium mt-1">Conecta con otros profesionales de la red.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          id="btn-view-feed"
+          type="button"
+          class="px-4 py-2 rounded-lg text-sm font-bold bg-primary text-on-primary transition-all"
+        >
+          <span class="material-symbols-outlined text-sm align-middle mr-1" aria-hidden="true">forum</span>
+          Feed
+        </button>
+        <button
+          id="btn-view-myposts"
+          type="button"
+          class="px-4 py-2 rounded-lg text-sm font-bold text-on-surface-variant bg-surface-container-low hover:bg-surface-container transition-all"
+        >
+          <span class="material-symbols-outlined text-sm align-middle mr-1" aria-hidden="true">person</span>
+          Mis Posts
+        </button>
+      </div>
+    </header>
+
+    <!-- Content area -->
+    <div class="flex flex-1 gap-6 pt-6 min-h-0">
+      <!-- Channel sidebar -->
+      <aside id="channels-sidebar" class="w-56 shrink-0 flex flex-col gap-1">
+        <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] px-3 mb-2">Canales</p>
+        <div id="channels-list" class="space-y-0.5">
+          <div class="flex items-center justify-center py-8">
+            <span class="material-symbols-outlined text-2xl text-primary animate-spin" aria-hidden="true">schedule</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <div class="flex-1 flex flex-col min-h-0">
+        <!-- Feed view -->
+        <div id="view-feed" class="flex-1 flex flex-col min-h-0">
+          <!-- Channel name -->
+          <div class="flex items-center gap-3 mb-4 shrink-0">
+            <span class="material-symbols-outlined text-primary" aria-hidden="true">tag</span>
+            <h2 id="channel-name" class="text-lg font-bold text-on-surface">general</h2>
+          </div>
+
+          <!-- New post form -->
+          <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/15 p-4 mb-4 shrink-0">
+            <form id="new-post-form" class="flex gap-3">
+              <label for="new-post-content" class="sr-only">Escribir un post</label>
+              <input
+                id="new-post-content"
+                class="flex-1 bg-surface-container-low border-none rounded-lg px-4 py-3 text-sm font-medium text-on-surface placeholder:text-outline/50 focus:ring-2 focus:ring-primary/20 transition-all"
+                placeholder="Escribe algo para la comunidad..."
+                type="text"
+                maxlength="2000"
+                required
+              />
+              <button
+                type="submit"
+                class="px-5 py-3 bg-primary text-on-primary rounded-lg font-bold text-sm hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span class="material-symbols-outlined text-sm" aria-hidden="true">send</span>
+                Publicar
+              </button>
+            </form>
+          </div>
+
+          <!-- Posts list -->
+          <div id="posts-container" class="flex-1 overflow-y-auto space-y-3 pr-1">
+            <div class="flex items-center justify-center py-16">
+              <div class="text-center space-y-3">
+                <span class="material-symbols-outlined text-3xl text-primary animate-spin" aria-hidden="true">schedule</span>
+                <p class="text-sm text-on-surface-variant font-medium">Cargando..</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- My Posts view (hidden by default) -->
+        <div id="view-myposts" class="flex-1 flex flex-col min-h-0 hidden">
+          <div class="flex items-center justify-between mb-4 shrink-0">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-primary" aria-hidden="true">person</span>
+              <h2 class="text-lg font-bold text-on-surface">Mis Posts</h2>
+            </div>
+            <div class="flex items-center gap-2">
+              <label for="myposts-channel-filter" class="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Canal:</label>
+              <select
+                id="myposts-channel-filter"
+                class="bg-surface-container-low border-none rounded-lg px-3 py-2 text-sm font-medium text-on-surface focus:ring-2 focus:ring-primary/20 cursor-pointer"
+              >
+                <option value="">Todos</option>
+              </select>
+            </div>
+          </div>
+          <div id="myposts-container" class="flex-1 overflow-y-auto space-y-4 pr-1">
+            <div class="flex items-center justify-center py-16">
+              <div class="text-center space-y-3">
+                <span class="material-symbols-outlined text-3xl text-primary animate-spin" aria-hidden="true">schedule</span>
+                <p class="text-sm text-on-surface-variant font-medium">Cargando..</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DashboardLayout>
+
+<script>
+  import {
+    fetchChannels,
+    fetchPosts,
+    fetchMyPosts,
+    createPost,
+    deletePost,
+    updatePostStatus,
+    createComment,
+    deleteComment,
+    type Channel,
+    type Post,
+    type Comment,
+  } from '../../services/communityService';
+  import { getUserIdFromToken, getToken } from '../../services/authService';
+  import { api } from '../../services/apiClient';
+
+  // ─── Auth ─────────────────────────────────────────────────────
+  const token = getToken();
+  const userId = getUserIdFromToken();
+  if (!token) {
+    window.location.href = '/login';
+  } else {
+    api.setHeader('Authorization', `Bearer ${token}`);
+  }
+
+  // ─── DOM refs ─────────────────────────────────────────────────
+  const channelsList = document.getElementById('channels-list')!;
+  const channelNameEl = document.getElementById('channel-name')!;
+  const postsContainer = document.getElementById('posts-container')!;
+  const mypostsContainer = document.getElementById('myposts-container')!;
+  const newPostForm = document.getElementById('new-post-form') as HTMLFormElement;
+  const newPostInput = document.getElementById('new-post-content') as HTMLInputElement;
+  const btnViewFeed = document.getElementById('btn-view-feed')!;
+  const btnViewMyposts = document.getElementById('btn-view-myposts')!;
+  const viewFeed = document.getElementById('view-feed')!;
+  const viewMyposts = document.getElementById('view-myposts')!;
+  const channelsSidebar = document.getElementById('channels-sidebar')!;
+
+  // ─── State ────────────────────────────────────────────────────
+  let currentChannel = 'general';
+  let channels: Channel[] = [];
+  let allMyPosts: Post[] = [];
+  let myPostsChannelFilter = '';
+  const mypostsChannelSelect = document.getElementById('myposts-channel-filter') as HTMLSelectElement;
+
+  // ─── Helpers ──────────────────────────────────────────────────
+  function timeAgo(dateStr: string): string {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'ahora';
+    if (mins < 60) return `hace ${mins}m`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `hace ${hrs}h`;
+    const days = Math.floor(hrs / 24);
+    return `hace ${days}d`;
+  }
+
+  function escapeHtml(str: string): string {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // ─── Render channels ─────────────────────────────────────────
+  function renderChannels() {
+    channelsList.innerHTML = channels.map(ch => {
+      const isActive = ch.slug === currentChannel;
+      return `
+        <button
+          data-channel="${ch.slug}"
+          class="channel-btn w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2.5 transition-all ${
+            isActive
+              ? 'bg-primary/10 text-primary font-bold'
+              : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
+          }"
+        >
+          <span class="material-symbols-outlined text-base" aria-hidden="true">tag</span>
+          ${escapeHtml(ch.name)}
+        </button>`;
+    }).join('');
+
+    // Bind clicks
+    channelsList.querySelectorAll('.channel-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentChannel = (btn as HTMLElement).dataset.channel!;
+        renderChannels();
+        channelNameEl.textContent = channels.find(c => c.slug === currentChannel)?.name || currentChannel;
+        loadPosts();
+      });
+    });
+  }
+
+  // ─── Render feed post ─────────────────────────────────────────
+  function renderFeedPost(post: Post): string {
+    const isOwner = post.userId === userId;
+    const commentCount = post._count?.comments || 0;
+
+    return `
+      <article class="bg-surface-container-lowest rounded-xl border border-outline-variant/10 p-4 hover:border-outline-variant/25 transition-all" data-post-id="${post.id}">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-primary text-sm" aria-hidden="true">person</span>
+            </div>
+            <div>
+              <span class="text-sm font-bold text-on-surface">${escapeHtml(post.user?.email || 'Usuario')}</span>
+              <span class="text-xs text-on-surface-variant ml-2">${timeAgo(post.createdAt)}</span>
+            </div>
+          </div>
+          ${isOwner ? `
+            <button class="btn-delete-post text-on-surface-variant hover:text-error text-xs transition-colors p-1" data-post-id="${post.id}" title="Eliminar post">
+              <span class="material-symbols-outlined text-base" aria-hidden="true">delete</span>
+            </button>` : ''}
+        </div>
+        <p class="text-sm text-on-surface leading-relaxed pl-11">${escapeHtml(post.content)}</p>
+        <div class="pl-11 mt-3 flex items-center gap-4">
+          <button class="btn-toggle-comments text-xs text-on-surface-variant hover:text-primary font-semibold flex items-center gap-1 transition-colors" data-post-id="${post.id}">
+            <span class="material-symbols-outlined text-sm" aria-hidden="true">comment</span>
+            ${commentCount} ${commentCount === 1 ? 'comentario' : 'comentarios'}
+          </button>
+        </div>
+        <div class="comments-section hidden pl-11 mt-3 space-y-2" data-post-id="${post.id}">
+          <div class="comments-list space-y-2"></div>
+          <form class="comment-form flex gap-2 mt-2">
+            <input
+              class="flex-1 bg-surface-container-low border-none rounded-lg px-3 py-2 text-xs font-medium text-on-surface placeholder:text-outline/50 focus:ring-2 focus:ring-primary/20"
+              placeholder="Escribe un comentario..."
+              type="text"
+              maxlength="500"
+              required
+            />
+            <button type="submit" class="px-3 py-2 bg-primary text-on-primary rounded-lg text-xs font-bold hover:brightness-110 active:scale-95 transition-all">
+              <span class="material-symbols-outlined text-sm" aria-hidden="true">send</span>
+            </button>
+          </form>
+        </div>
+      </article>`;
+  }
+
+  // ─── Render my post (with comments visible + status toggle) ───
+  function renderMyPost(post: Post): string {
+    const comments = post.comments || [];
+    const isPaused = post.status === 'paused';
+    const statusLabel = isPaused ? 'Pausado' : 'Publicado';
+    const statusIcon = isPaused ? 'pause_circle' : 'check_circle';
+    const statusColor = isPaused ? 'text-outline' : 'text-primary';
+    const badgeClass = isPaused
+      ? 'bg-outline/10 text-outline'
+      : 'bg-primary/10 text-primary';
+    const cardOpacity = isPaused ? 'opacity-60' : '';
+
+    return `
+      <article class="bg-surface-container-lowest rounded-xl border border-outline-variant/10 p-5 transition-all ${cardOpacity}" data-post-id="${post.id}">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div class="flex-1">
+            <p class="text-sm text-on-surface leading-relaxed font-medium">${escapeHtml(post.content)}</p>
+            <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+              <span class="text-xs text-on-surface-variant">${timeAgo(post.createdAt)}</span>
+              ${post.channelSlug ? `<span class="text-xs text-on-surface-variant">· #${escapeHtml(post.channelSlug)}</span>` : ''}
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${badgeClass}">
+                <span class="material-symbols-outlined text-xs" aria-hidden="true">${statusIcon}</span>
+                ${statusLabel}
+              </span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button
+              class="btn-toggle-status px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${isPaused ? 'text-primary hover:bg-primary/10' : 'text-outline hover:bg-outline/10'}"
+              data-post-id="${post.id}"
+              data-current-status="${post.status || 'published'}"
+              title="${isPaused ? 'Publicar' : 'Pausar'}"
+            >
+              <span class="material-symbols-outlined text-sm" aria-hidden="true">${isPaused ? 'play_arrow' : 'pause'}</span>
+              ${isPaused ? 'Publicar' : 'Pausar'}
+            </button>
+            <button class="btn-delete-mypost text-on-surface-variant hover:text-error text-xs transition-colors p-1.5" data-post-id="${post.id}" title="Eliminar post">
+              <span class="material-symbols-outlined text-base" aria-hidden="true">delete</span>
+            </button>
+          </div>
+        </div>
+        ${comments.length > 0 ? `
+          <div class="border-t border-outline-variant/10 pt-3 mt-3 space-y-2">
+            <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em]">Comentarios recibidos (${comments.length})</p>
+            ${comments.map(c => `
+              <div class="flex items-start gap-2 bg-surface-container-low rounded-lg p-3">
+                <div class="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-secondary text-xs" aria-hidden="true">person</span>
+                </div>
+                <div class="flex-1">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-on-surface">${escapeHtml(c.user?.email || 'Usuario')}</span>
+                    <span class="text-[10px] text-on-surface-variant">${timeAgo(c.createdAt)}</span>
+                  </div>
+                  <p class="text-xs text-on-surface-variant mt-0.5">${escapeHtml(c.content)}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <p class="text-xs text-on-surface-variant italic mt-3 pt-3 border-t border-outline-variant/10">Sin comentarios aún.</p>
+        `}
+      </article>`;
+  }
+
+  // ─── Load & render posts ──────────────────────────────────────
+  async function loadPosts() {
+    postsContainer.innerHTML = `
+      <div class="flex items-center justify-center py-16">
+        <div class="text-center space-y-3">
+          <span class="material-symbols-outlined text-3xl text-primary animate-spin" aria-hidden="true">schedule</span>
+          <p class="text-sm text-on-surface-variant font-medium">Cargando..</p>
+        </div>
+      </div>`;
+
+    try {
+      const result = await fetchPosts(currentChannel);
+      const posts = Array.isArray(result) ? result : (result as any).data || [];
+
+      if (posts.length === 0) {
+        postsContainer.innerHTML = `
+          <div class="text-center py-16">
+            <span class="material-symbols-outlined text-4xl text-outline mb-3 block" aria-hidden="true">forum</span>
+            <p class="text-on-surface-variant font-medium">No hay posts en este canal todavía.</p>
+            <p class="text-on-surface-variant text-sm mt-1">Se el primero en publicar algo.</p>
+          </div>`;
+        return;
+      }
+
+      postsContainer.innerHTML = posts.map(renderFeedPost).join('');
+      bindPostActions();
+    } catch (err) {
+      console.error('Error cargando posts:', err);
+      postsContainer.innerHTML = `
+        <div class="text-center py-16">
+          <span class="material-symbols-outlined text-4xl text-error mb-3 block" aria-hidden="true">error</span>
+          <p class="text-on-surface-variant font-medium">Error al cargar los posts.</p>
+        </div>`;
+    }
+  }
+
+  // ─── Load my posts ────────────────────────────────────────────
+  async function loadMyPosts() {
+    mypostsContainer.innerHTML = `
+      <div class="flex items-center justify-center py-16">
+        <div class="text-center space-y-3">
+          <span class="material-symbols-outlined text-3xl text-primary animate-spin" aria-hidden="true">schedule</span>
+          <p class="text-sm text-on-surface-variant font-medium">Cargando..</p>
+        </div>
+      </div>`;
+
+    try {
+      const result = await fetchMyPosts();
+      allMyPosts = Array.isArray(result) ? result : (result as any).data || [];
+      renderFilteredMyPosts();
+    } catch (err) {
+      console.error('Error cargando mis posts:', err);
+      mypostsContainer.innerHTML = `
+        <div class="text-center py-16">
+          <span class="material-symbols-outlined text-4xl text-error mb-3 block" aria-hidden="true">error</span>
+          <p class="text-on-surface-variant font-medium">Error al cargar tus posts.</p>
+        </div>`;
+    }
+  }
+
+  // ─── Render filtered my posts (client-side channel filter) ────
+  function renderFilteredMyPosts() {
+    const filtered = myPostsChannelFilter
+      ? allMyPosts.filter(p => p.channelSlug === myPostsChannelFilter)
+      : allMyPosts;
+
+    if (filtered.length === 0) {
+      mypostsContainer.innerHTML = `
+        <div class="text-center py-16">
+          <span class="material-symbols-outlined text-4xl text-outline mb-3 block" aria-hidden="true">edit_note</span>
+          <p class="text-on-surface-variant font-medium">${myPostsChannelFilter ? 'No tenés posts en este canal.' : 'No has publicado nada todavía.'}</p>
+        </div>`;
+      return;
+    }
+
+    mypostsContainer.innerHTML = filtered.map(renderMyPost).join('');
+    bindMyPostActions();
+  }
+
+  // ─── Channel filter for my posts ──────────────────────────────
+  mypostsChannelSelect.addEventListener('change', () => {
+    myPostsChannelFilter = mypostsChannelSelect.value;
+    renderFilteredMyPosts();
+  });
+
+  // ─── Bind actions on feed posts ───────────────────────────────
+  function bindPostActions() {
+    // Delete post
+    postsContainer.querySelectorAll('.btn-delete-post').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const postId = (btn as HTMLElement).dataset.postId!;
+        if (!confirm('¿Eliminar este post?')) return;
+        try {
+          await deletePost(postId);
+          loadPosts();
+        } catch (err) {
+          console.error('Error eliminando post:', err);
+        }
+      });
+    });
+
+    // Toggle comments section
+    postsContainer.querySelectorAll('.btn-toggle-comments').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const postId = (btn as HTMLElement).dataset.postId!;
+        const section = postsContainer.querySelector(`.comments-section[data-post-id="${postId}"]`) as HTMLElement;
+        if (section) section.classList.toggle('hidden');
+      });
+    });
+
+    // Submit comment
+    postsContainer.querySelectorAll('.comment-form').forEach(form => {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = form.querySelector('input') as HTMLInputElement;
+        const content = input.value.trim();
+        if (!content) return;
+
+        const section = form.closest('.comments-section') as HTMLElement;
+        const postId = section?.dataset.postId;
+        if (!postId) return;
+
+        const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+        submitBtn.disabled = true;
+
+        try {
+          await createComment(postId, content);
+          input.value = '';
+          loadPosts(); // Reload to show new comment count
+        } catch (err) {
+          console.error('Error creando comentario:', err);
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+    });
+  }
+
+  // ─── Bind actions on my posts ─────────────────────────────────
+  function bindMyPostActions() {
+    // Toggle status (published/paused)
+    mypostsContainer.querySelectorAll('.btn-toggle-status').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const postId = (btn as HTMLElement).dataset.postId!;
+        const currentStatus = (btn as HTMLElement).dataset.currentStatus as 'published' | 'paused';
+        const newStatus = currentStatus === 'published' ? 'paused' : 'published';
+
+        (btn as HTMLButtonElement).disabled = true;
+        try {
+          await updatePostStatus(postId, newStatus);
+          // Update local data
+          const post = allMyPosts.find(p => p.id === postId);
+          if (post) post.status = newStatus;
+          renderFilteredMyPosts();
+        } catch (err) {
+          console.error('Error cambiando estado del post:', err);
+        }
+      });
+    });
+
+    // Delete post
+    mypostsContainer.querySelectorAll('.btn-delete-mypost').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const postId = (btn as HTMLElement).dataset.postId!;
+        if (!confirm('¿Eliminar este post?')) return;
+        try {
+          await deletePost(postId);
+          allMyPosts = allMyPosts.filter(p => p.id !== postId);
+          renderFilteredMyPosts();
+        } catch (err) {
+          console.error('Error eliminando post:', err);
+        }
+      });
+    });
+  }
+
+  // ─── New post form ────────────────────────────────────────────
+  newPostForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const content = newPostInput.value.trim();
+    if (!content) return;
+
+    const submitBtn = newPostForm.querySelector('button[type="submit"]') as HTMLButtonElement;
+    submitBtn.disabled = true;
+
+    try {
+      await createPost(content, currentChannel);
+      newPostInput.value = '';
+      loadPosts();
+    } catch (err) {
+      console.error('Error creando post:', err);
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  // ─── View toggle ──────────────────────────────────────────────
+  btnViewFeed.addEventListener('click', () => {
+    viewFeed.classList.remove('hidden');
+    viewMyposts.classList.add('hidden');
+    channelsSidebar.classList.remove('hidden');
+    btnViewFeed.className = 'px-4 py-2 rounded-lg text-sm font-bold bg-primary text-on-primary transition-all';
+    btnViewMyposts.className = 'px-4 py-2 rounded-lg text-sm font-bold text-on-surface-variant bg-surface-container-low hover:bg-surface-container transition-all';
+  });
+
+  btnViewMyposts.addEventListener('click', () => {
+    viewFeed.classList.add('hidden');
+    viewMyposts.classList.remove('hidden');
+    channelsSidebar.classList.add('hidden');
+    btnViewMyposts.className = 'px-4 py-2 rounded-lg text-sm font-bold bg-primary text-on-primary transition-all';
+    btnViewFeed.className = 'px-4 py-2 rounded-lg text-sm font-bold text-on-surface-variant bg-surface-container-low hover:bg-surface-container transition-all';
+    loadMyPosts();
+  });
+
+  // ─── Init ─────────────────────────────────────────────────────
+  async function init() {
+    try {
+      channels = await fetchChannels();
+      renderChannels();
+
+      // Populate my-posts channel filter
+      channels.forEach(ch => {
+        const opt = document.createElement('option');
+        opt.value = ch.slug;
+        opt.textContent = ch.name;
+        mypostsChannelSelect.appendChild(opt);
+      });
+
+      // Set initial channel name
+      const ch = channels.find(c => c.slug === currentChannel);
+      if (ch) channelNameEl.textContent = ch.name;
+
+      loadPosts();
+    } catch (err) {
+      console.error('Error inicializando comunidad:', err);
+      channelsList.innerHTML = `
+        <p class="text-xs text-error px-3">Error al cargar canales</p>`;
+      postsContainer.innerHTML = `
+        <div class="text-center py-16">
+          <span class="material-symbols-outlined text-4xl text-error mb-3 block" aria-hidden="true">error</span>
+          <p class="text-on-surface-variant font-medium">Error al cargar la comunidad.</p>
+        </div>`;
+    }
+  }
+
+  init();
+</script>

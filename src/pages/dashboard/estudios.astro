@@ -49,218 +49,107 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div id="delete-modal" class="fixed inset-0 z-50 hidden">
-      <div class="absolute inset-0 bg-scrim/40 backdrop-blur-sm" id="delete-modal-backdrop"></div>
-      <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="bg-surface-container-lowest rounded-3xl p-8 max-w-sm w-full shadow-2xl relative">
-          <span class="material-symbols-outlined text-4xl text-error mb-4 block text-center" aria-hidden="true">delete_forever</span>
-          <h3 class="text-lg font-bold text-on-surface text-center mb-2">Eliminar registro</h3>
-          <p id="delete-modal-msg" class="text-sm text-on-surface-variant text-center mb-6">¿Estás seguro? Esta acción no se puede deshacer.</p>
-          <div class="flex gap-3">
-            <button id="delete-modal-cancel" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors">
-              Cancelar
-            </button>
-            <button id="delete-modal-confirm" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm bg-error text-on-error hover:opacity-90 transition-opacity">
-              Eliminar
-            </button>
+    <!-- Single Column -->
+    <div class="space-y-6">
+      <div class="bg-surface-container-low rounded-3xl p-8">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary" aria-hidden="true">school</span>
+            <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Estudios</h2>
+          </div>
+          <button id="btn-add" type="button"
+            class="flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-bold bg-primary text-on-primary hover:opacity-90 active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-sm" aria-hidden="true">add</span>
+            Agregar
+          </button>
+        </div>
+
+        <!-- Add Form (hidden by default) -->
+        <div id="add-form" class="hidden mb-6">
+          <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/15 space-y-4">
+            <h3 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant">Nuevo registro</h3>
+
+            <div>
+              <label for="edu-level" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Nivel</label>
+              <select id="edu-level" required
+                class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+                <option value="">Seleccionar...</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="edu-title" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Título / Nombre del curso</label>
+              <input id="edu-title" type="text" required placeholder="Ej: Licenciatura en Psicología"
+                class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+            </div>
+
+            <div>
+              <label for="edu-institution" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Institución</label>
+              <input id="edu-institution" type="text" required placeholder="Ej: Universidad de Buenos Aires"
+                class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+            </div>
+
+            <div>
+              <label for="edu-year" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Año de egreso (opcional)</label>
+              <input id="edu-year" type="number" min="1950" max="2099" placeholder="2024"
+                class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+            </div>
+
+            <div>
+              <label for="edu-profession" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Profesión relacionada (opcional)</label>
+              <select id="edu-profession"
+                class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+                <option value="">Sin profesión asociada</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="edu-file" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Comprobante PDF (opcional, max 5MB)</label>
+              <input id="edu-file" type="file" accept=".pdf,.jpg,.jpeg,.png"
+                class="w-full text-sm text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-primary-container file:text-on-primary-container file:cursor-pointer hover:file:opacity-90" />
+            </div>
+
+            <div class="flex gap-3 pt-2">
+              <button id="btn-cancel" type="button" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors">
+                Cancelar
+              </button>
+              <button id="btn-preview" type="button" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-sm" aria-hidden="true">visibility</span>
+                Revisar
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Two Column Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-      <!-- Left Column: Formación Académica -->
-      <div class="space-y-6">
-        <div class="bg-surface-container-low rounded-3xl p-8">
-          <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-primary" aria-hidden="true">school</span>
-              <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Formación académica</h2>
+        <!-- Preview (hidden by default) -->
+        <div id="preview-wrapper" class="hidden mb-6">
+          <div class="bg-surface-container-lowest rounded-2xl p-6 border-2 border-primary/30 space-y-3">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="material-symbols-outlined text-primary text-lg" aria-hidden="true">preview</span>
+              <h3 class="text-sm font-bold uppercase tracking-widest text-primary">Resumen antes de guardar</h3>
             </div>
-            <button id="btn-add-education" type="button"
-              class="flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-bold bg-primary text-on-primary hover:opacity-90 active:scale-95 transition-all">
-              <span class="material-symbols-outlined text-sm" aria-hidden="true">add</span>
-              Agregar
-            </button>
-          </div>
-
-          <!-- Add Education Form (hidden by default) -->
-          <div id="education-form" class="hidden mb-6">
-            <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/15 space-y-4">
-              <h3 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant">Nueva formación</h3>
-
-              <div>
-                <label for="edu-level" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Nivel</label>
-                <select id="edu-level" required
-                  class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
-                  <option value="">Seleccionar...</option>
-                  <option value="secundario">Secundario</option>
-                  <option value="terciario">Terciario</option>
-                  <option value="universitario">Universitario</option>
-                  <option value="posgrado">Posgrado</option>
-                  <option value="maestria">Maestría</option>
-                  <option value="doctorado">Doctorado</option>
-                </select>
-              </div>
-
-              <div>
-                <label for="edu-title" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Título obtenido</label>
-                <input id="edu-title" type="text" required placeholder="Ej: Licenciatura en Psicología"
-                  class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
-              </div>
-
-              <div>
-                <label for="edu-institution" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Institución</label>
-                <input id="edu-institution" type="text" required placeholder="Ej: Universidad de Buenos Aires"
-                  class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
-              </div>
-
-              <div>
-                <label for="edu-year" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Año de egreso (opcional)</label>
-                <input id="edu-year" type="number" min="1950" max="2099" placeholder="2024"
-                  class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
-              </div>
-
-              <div>
-                <label for="edu-file" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Comprobante PDF (opcional, max 5MB)</label>
-                <input id="edu-file" type="file" accept=".pdf,.jpg,.jpeg,.png"
-                  class="w-full text-sm text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-primary-container file:text-on-primary-container file:cursor-pointer hover:file:opacity-90" />
-              </div>
-
-              <div class="flex gap-3 pt-2">
-                <button id="edu-cancel" type="button" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors">
-                  Cancelar
-                </button>
-                <button id="edu-preview" type="button" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                  <span class="material-symbols-outlined text-sm" aria-hidden="true">visibility</span>
-                  Revisar
-                </button>
-              </div>
+            <div id="preview-content"></div>
+            <div class="flex gap-3 pt-3">
+              <button id="btn-preview-back" type="button" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
+                Volver a editar
+              </button>
+              <button id="btn-save" type="button" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-sm" aria-hidden="true">check_circle</span>
+                Confirmar y guardar
+              </button>
             </div>
-          </div>
-
-          <!-- Education Preview (hidden by default) -->
-          <div id="education-preview" class="hidden mb-6">
-            <div class="bg-surface-container-lowest rounded-2xl p-6 border-2 border-primary/30 space-y-3">
-              <div class="flex items-center gap-2 mb-2">
-                <span class="material-symbols-outlined text-primary text-lg" aria-hidden="true">preview</span>
-                <h3 class="text-sm font-bold uppercase tracking-widest text-primary">Resumen antes de guardar</h3>
-              </div>
-              <div id="edu-preview-content"></div>
-              <div class="flex gap-3 pt-3">
-                <button id="edu-preview-back" type="button" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors flex items-center justify-center gap-2">
-                  <span class="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
-                  Volver a editar
-                </button>
-                <button id="edu-save" type="button" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                  <span class="material-symbols-outlined text-sm" aria-hidden="true">check_circle</span>
-                  Confirmar y guardar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Education List -->
-          <div id="education-list" class="space-y-4"></div>
-
-          <!-- Education Empty State -->
-          <div id="education-empty" class="hidden text-center py-8">
-            <span class="material-symbols-outlined text-4xl text-outline/40 mb-3 block" aria-hidden="true">menu_book</span>
-            <p class="text-sm font-medium text-on-surface-variant">No tenés formación cargada</p>
-            <p class="text-xs text-outline mt-1">Hacé click en "Agregar" para sumar tu primera formación.</p>
           </div>
         </div>
-      </div>
 
-      <!-- Right Column: Certificaciones -->
-      <div class="space-y-6">
-        <div class="bg-surface-container-low rounded-3xl p-8">
-          <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-primary" aria-hidden="true">workspace_premium</span>
-              <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Certificaciones</h2>
-            </div>
-            <button id="btn-add-cert" type="button"
-              class="flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-bold bg-primary text-on-primary hover:opacity-90 active:scale-95 transition-all">
-              <span class="material-symbols-outlined text-sm" aria-hidden="true">add</span>
-              Agregar
-            </button>
-          </div>
+        <!-- List -->
+        <div id="records-list" class="space-y-4"></div>
 
-          <!-- Add Certification Form (hidden by default) -->
-          <div id="cert-form" class="hidden mb-6">
-            <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/15 space-y-4">
-              <h3 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant">Nueva certificación</h3>
-
-              <div>
-                <label for="cert-name" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Nombre del curso / certificación</label>
-                <input id="cert-name" type="text" required placeholder="Ej: Coaching Ontológico"
-                  class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
-              </div>
-
-              <div>
-                <label for="cert-institution" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Institución</label>
-                <input id="cert-institution" type="text" required placeholder="Ej: Instituto de Formación"
-                  class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
-              </div>
-
-              <div>
-                <label for="cert-year" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Año (opcional)</label>
-                <input id="cert-year" type="number" min="1950" max="2099" placeholder="2024"
-                  class="w-full bg-surface-container-low border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
-              </div>
-
-              <div>
-                <label for="cert-file" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Comprobante PDF (opcional, max 5MB)</label>
-                <input id="cert-file" type="file" accept=".pdf,.jpg,.jpeg,.png"
-                  class="w-full text-sm text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-primary-container file:text-on-primary-container file:cursor-pointer hover:file:opacity-90" />
-              </div>
-
-              <div class="flex gap-3 pt-2">
-                <button id="cert-cancel" type="button" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors">
-                  Cancelar
-                </button>
-                <button id="cert-preview" type="button" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                  <span class="material-symbols-outlined text-sm" aria-hidden="true">visibility</span>
-                  Revisar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Certification Preview (hidden by default) -->
-          <div id="cert-preview-wrapper" class="hidden mb-6">
-            <div class="bg-surface-container-lowest rounded-2xl p-6 border-2 border-primary/30 space-y-3">
-              <div class="flex items-center gap-2 mb-2">
-                <span class="material-symbols-outlined text-primary text-lg" aria-hidden="true">preview</span>
-                <h3 class="text-sm font-bold uppercase tracking-widest text-primary">Resumen antes de guardar</h3>
-              </div>
-              <div id="cert-preview-content"></div>
-              <div class="flex gap-3 pt-3">
-                <button id="cert-preview-back" type="button" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors flex items-center justify-center gap-2">
-                  <span class="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
-                  Volver a editar
-                </button>
-                <button id="cert-save" type="button" class="flex-1 px-4 py-3 rounded-xl font-bold text-sm bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                  <span class="material-symbols-outlined text-sm" aria-hidden="true">check_circle</span>
-                  Confirmar y guardar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Certifications List -->
-          <div id="cert-list" class="space-y-4"></div>
-
-          <!-- Certifications Empty State -->
-          <div id="cert-empty" class="hidden text-center py-8">
-            <span class="material-symbols-outlined text-4xl text-outline/40 mb-3 block" aria-hidden="true">card_membership</span>
-            <p class="text-sm font-medium text-on-surface-variant">No tenés certificaciones cargadas</p>
-            <p class="text-xs text-outline mt-1">Hacé click en "Agregar" para sumar tu primera certificación.</p>
-          </div>
+        <!-- Empty State -->
+        <div id="records-empty" class="hidden text-center py-8">
+          <span class="material-symbols-outlined text-4xl text-outline/40 mb-3 block" aria-hidden="true">menu_book</span>
+          <p class="text-sm font-medium text-on-surface-variant">No tenés estudios cargados</p>
+          <p class="text-xs text-outline mt-1">Hacé click en "Agregar" para sumar tu primer registro.</p>
         </div>
       </div>
     </div>
@@ -269,24 +158,16 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
   <script>
     import { getUserIdFromToken, getToken, logout } from '../../services/authService';
     import { api } from '../../services/apiClient';
-    import type { Education, Certification, EducationLevel, DocumentVerificationStatus } from '../../services/educationService';
-
-    const LEVEL_LABELS: Record<string, string> = {
-      secundario: 'Secundario',
-      terciario: 'Terciario',
-      universitario: 'Universitario',
-      posgrado: 'Posgrado',
-      maestria: 'Maestría',
-      doctorado: 'Doctorado',
-    };
+    import { fetchCatalog, getCatalogLabel, populateSelect } from '../../services/catalogService';
+    import type { Education, EducationLevel, DocumentVerificationStatus } from '../../services/educationService';
+    import type { ProfessionalProfile } from '../../services/profileService';
 
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
     // ─── State ──────────────────────────────────────────────────
     let profileId: string | null = null;
-    let educationList: Education[] = [];
-    let certList: Certification[] = [];
-    let pendingDelete: (() => Promise<void>) | null = null;
+    let records: Education[] = [];
+    let professions: { id: number; name: string }[] = [];
 
     // ─── DOM refs ───────────────────────────────────────────────
     const loadingEl = document.getElementById('estudios-loading')!;
@@ -296,43 +177,18 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
     const counterBadge = document.getElementById('counter-badge')!;
     const counterText = document.getElementById('counter-text')!;
 
-    // Education form
-    const eduFormWrapper = document.getElementById('education-form')!;
+    // Form
+    const addFormWrapper = document.getElementById('add-form')!;
     const eduLevel = document.getElementById('edu-level') as HTMLSelectElement;
     const eduTitle = document.getElementById('edu-title') as HTMLInputElement;
     const eduInstitution = document.getElementById('edu-institution') as HTMLInputElement;
     const eduYear = document.getElementById('edu-year') as HTMLInputElement;
+    const eduProfession = document.getElementById('edu-profession') as HTMLSelectElement;
     const eduFile = document.getElementById('edu-file') as HTMLInputElement;
-    const eduPreviewBtn = document.getElementById('edu-preview')!;
-    const eduSave = document.getElementById('edu-save')!;
-    const eduCancel = document.getElementById('edu-cancel')!;
-    const eduListEl = document.getElementById('education-list')!;
-    const eduEmpty = document.getElementById('education-empty')!;
-    const eduPreviewWrapper = document.getElementById('education-preview')!;
-    const eduPreviewContent = document.getElementById('edu-preview-content')!;
-    const eduPreviewBack = document.getElementById('edu-preview-back')!;
-
-    // Cert form
-    const certFormWrapper = document.getElementById('cert-form')!;
-    const certName = document.getElementById('cert-name') as HTMLInputElement;
-    const certInstitution = document.getElementById('cert-institution') as HTMLInputElement;
-    const certYear = document.getElementById('cert-year') as HTMLInputElement;
-    const certFile = document.getElementById('cert-file') as HTMLInputElement;
-    const certPreviewBtn = document.getElementById('cert-preview')!;
-    const certSave = document.getElementById('cert-save')!;
-    const certCancel = document.getElementById('cert-cancel')!;
-    const certListEl = document.getElementById('cert-list')!;
-    const certEmpty = document.getElementById('cert-empty')!;
-    const certPreviewWrapperEl = document.getElementById('cert-preview-wrapper')!;
-    const certPreviewContent = document.getElementById('cert-preview-content')!;
-    const certPreviewBack = document.getElementById('cert-preview-back')!;
-
-    // Delete modal
-    const deleteModal = document.getElementById('delete-modal')!;
-    const deleteModalBackdrop = document.getElementById('delete-modal-backdrop')!;
-    const deleteModalMsg = document.getElementById('delete-modal-msg')!;
-    const deleteModalCancel = document.getElementById('delete-modal-cancel')!;
-    const deleteModalConfirm = document.getElementById('delete-modal-confirm')!;
+    const previewWrapper = document.getElementById('preview-wrapper')!;
+    const previewContent = document.getElementById('preview-content')!;
+    const recordsList = document.getElementById('records-list')!;
+    const recordsEmpty = document.getElementById('records-empty')!;
 
     // ─── Toast ──────────────────────────────────────────────────
     function showToast(message: string, type: 'success' | 'error') {
@@ -361,54 +217,65 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       }, 3500);
     }
 
-    // ─── Delete modal ───────────────────────────────────────────
-    function openDeleteModal(message: string, onConfirm: () => Promise<void>) {
-      deleteModalMsg.textContent = message;
-      pendingDelete = onConfirm;
-      deleteModal.classList.remove('hidden');
-    }
-
-    function closeDeleteModal() {
-      deleteModal.classList.add('hidden');
-      pendingDelete = null;
-    }
-
-    deleteModalCancel.addEventListener('click', closeDeleteModal);
-    deleteModalBackdrop.addEventListener('click', closeDeleteModal);
-
-    deleteModalConfirm.addEventListener('click', async () => {
-      if (!pendingDelete) return;
-      deleteModalConfirm.setAttribute('disabled', '');
-      deleteModalConfirm.textContent = 'Eliminando...';
-      try {
-        await pendingDelete();
-        showToast('Eliminado correctamente', 'success');
-      } catch (err: unknown) {
-        const error = err as Error & { status?: number };
-        if (error?.status === 401) { logout(); return; }
-        showToast(error?.message || 'Error al eliminar', 'error');
-      } finally {
-        deleteModalConfirm.removeAttribute('disabled');
-        deleteModalConfirm.textContent = 'Eliminar';
-        closeDeleteModal();
-      }
-    });
-
     // ─── Counter ────────────────────────────────────────────────
     function updateCounter() {
-      const total = educationList.length + certList.length;
+      const total = records.length;
       counterText.textContent = `${total} registro${total !== 1 ? 's' : ''}`;
       counterBadge.classList.remove('hidden');
     }
 
-    // ─── Format file size ───────────────────────────────────────
+    // ─── Helpers ────────────────────────────────────────────────
     function formatSize(bytes: number): string {
       if (bytes < 1024) return `${bytes} B`;
       if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
       return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
     }
 
-    // ─── Verification badge ─────────────────────────────────────
+    function verificationBadge(status: DocumentVerificationStatus, notes: string | null): string {
+      const config: Record<DocumentVerificationStatus, { icon: string; label: string; cls: string }> = {
+        pending: {
+          icon: 'schedule',
+          label: 'Pendiente',
+          cls: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+        },
+        approved: {
+          icon: 'verified',
+          label: 'Verificado',
+          cls: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+        },
+        rejected: {
+          icon: 'cancel',
+          label: 'Rechazado',
+          cls: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+        },
+      };
+
+      const c = config[status] || config.pending;
+      const safeNotes = notes ? notes.replaceAll('"', '&quot;') : '';
+      const tooltip = status === 'rejected' && notes ? ` title="${safeNotes}"` : '';
+
+      let html = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide ${c.cls}"${tooltip}>
+        <span class="material-symbols-outlined text-xs" aria-hidden="true">${c.icon}</span>
+        ${c.label}
+      </span>`;
+
+      if (status === 'rejected' && notes) {
+        html += `<p class="text-[10px] text-error mt-1 truncate" title="${safeNotes}">${notes}</p>`;
+      }
+
+      return html;
+    }
+
+    function detailRow(label: string, value: string): string {
+      return `<div class="flex items-baseline gap-3">
+        <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant w-24 shrink-0">${label}</span>
+        <span class="text-sm font-medium text-on-surface">${value}</span>
+      </div>`;
+    }
+
+    function previewRow(label: string, value: string): string {
+      return detailRow(label, value);
+    }
 
     // ─── Authenticated download ─────────────────────────────────
     async function downloadDocument(docId: string, fileName: string) {
@@ -453,7 +320,6 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
     const activeBlobUrls = new Map<string, string>();
 
     async function fetchDocumentPreview(docId: string, mimeType: string, container: HTMLElement) {
-      // Show spinner while loading
       container.innerHTML = `<div class="flex items-center justify-center py-8">
         <div class="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
         <span class="ml-3 text-xs text-on-surface-variant">Cargando preview...</span>
@@ -496,7 +362,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       }
     }
 
-    function bindExpandButtons(container: HTMLElement, type: 'edu' | 'cert') {
+    function bindExpandButtons(container: HTMLElement) {
       container.querySelectorAll<HTMLElement>('[data-expand]').forEach((btn) => {
         btn.addEventListener('click', () => {
           const id = btn.dataset.expand!;
@@ -505,7 +371,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
 
           const isHidden = expandEl.classList.contains('hidden');
 
-          // Collapse all other panels in this container first
+          // Collapse all other panels first
           container.querySelectorAll<HTMLElement>('[data-expand-panel]').forEach((panel) => {
             if (panel !== expandEl && !panel.classList.contains('hidden')) {
               panel.classList.add('hidden');
@@ -516,7 +382,6 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
 
           if (isHidden) {
             expandEl.classList.remove('hidden');
-            // Load preview if there's a doc
             const previewContainer = expandEl.querySelector('[data-preview-area]') as HTMLElement | null;
             const docId = expandEl.dataset.docId;
             const docMime = expandEl.dataset.docMime;
@@ -531,7 +396,6 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
         });
       });
 
-      // Collapse buttons inside panels
       container.querySelectorAll<HTMLElement>('[data-collapse]').forEach((btn) => {
         btn.addEventListener('click', () => {
           const id = btn.dataset.collapse!;
@@ -544,64 +408,24 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
         });
       });
     }
-    function verificationBadge(status: DocumentVerificationStatus, notes: string | null): string {
-      const config: Record<DocumentVerificationStatus, { icon: string; label: string; cls: string }> = {
-        pending: {
-          icon: 'schedule',
-          label: 'Pendiente',
-          cls: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-        },
-        approved: {
-          icon: 'verified',
-          label: 'Verificado',
-          cls: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-        },
-        rejected: {
-          icon: 'cancel',
-          label: 'Rechazado',
-          cls: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-        },
-      };
 
-      const c = config[status] || config.pending;
-      const safeNotes = notes ? notes.replaceAll('"', '&quot;') : '';
-      const tooltip = status === 'rejected' && notes
-        ? ` title="${safeNotes}"`
-        : '';
-
-      let html = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide ${c.cls}"${tooltip}>
-        <span class="material-symbols-outlined text-xs" aria-hidden="true">${c.icon}</span>
-        ${c.label}
-      </span>`;
-
-      if (status === 'rejected' && notes) {
-        html += `<p class="text-[10px] text-error mt-1 truncate" title="${safeNotes}">${notes}</p>`;
-      }
-
-      return html;
-    }
-
-    // ─── Detail row helper ─────────────────────────────────────
-    function detailRow(label: string, value: string): string {
-      return `<div class="flex items-baseline gap-3">
-        <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant w-24 shrink-0">${label}</span>
-        <span class="text-sm font-medium text-on-surface">${value}</span>
-      </div>`;
-    }
-
-    // ─── Render education cards ─────────────────────────────────
-    function renderEducation() {
-      if (educationList.length === 0) {
-        eduListEl.innerHTML = '';
-        eduEmpty.classList.remove('hidden');
+    // ─── Render list ────────────────────────────────────────────
+    function renderList() {
+      if (records.length === 0) {
+        recordsList.innerHTML = '';
+        recordsEmpty.classList.remove('hidden');
         return;
       }
-      eduEmpty.classList.add('hidden');
+      recordsEmpty.classList.add('hidden');
 
-      eduListEl.innerHTML = educationList.map((edu) => {
-        const doc = edu.documents?.[0];
-        const levelLabel = LEVEL_LABELS[edu.level] || edu.level;
-        const yearStr = edu.year ? ` · ${edu.year}` : '';
+      recordsList.innerHTML = records.map((rec) => {
+        const doc = rec.documents?.[0];
+        const levelLabel = getCatalogLabel('education-levels', rec.level);
+        const yearStr = rec.year ? ` · ${rec.year}` : '';
+        const profName = rec.professionId
+          ? professions.find(p => p.id === rec.professionId)?.name || ''
+          : '';
+
         const docHtml = doc
           ? `<div class="flex items-center gap-2 mt-3 p-3 bg-surface-container rounded-xl">
               <span class="material-symbols-outlined text-error text-lg" aria-hidden="true">picture_as_pdf</span>
@@ -619,7 +443,6 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
             </div>`
           : '';
 
-        // Expandable detail panel
         const docPreviewArea = doc
           ? `<div class="mt-4"><p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Documento adjunto</p><div data-preview-area></div></div>`
           : '';
@@ -628,15 +451,18 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
           ? detailRow('Estado', verificationBadge(doc.verificationStatus, doc.verificationNotes))
           : '';
 
-        const expandPanel = `<div data-expand-panel="${edu.id}" ${doc ? `data-doc-id="${doc.id}" data-doc-mime="${doc.mimeType}"` : ''} class="hidden mt-4 pt-4 border-t border-outline-variant/15 space-y-2">
+        const profRow = profName ? detailRow('Profesión', profName) : '';
+
+        const expandPanel = `<div data-expand-panel="${rec.id}" ${doc ? `data-doc-id="${doc.id}" data-doc-mime="${doc.mimeType}"` : ''} class="hidden mt-4 pt-4 border-t border-outline-variant/15 space-y-2">
           ${detailRow('Nivel', `<span class="inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-primary-fixed text-on-primary-fixed-variant">${levelLabel}</span>`)}
-          ${detailRow('Título', edu.title)}
-          ${detailRow('Institución', edu.institution)}
-          ${edu.year ? detailRow('Año', String(edu.year)) : ''}
+          ${detailRow('Título', rec.title)}
+          ${detailRow('Institución', rec.institution)}
+          ${rec.year ? detailRow('Año', String(rec.year)) : ''}
+          ${profRow}
           ${verStatusRow}
           ${docPreviewArea}
           <div class="flex justify-end pt-2">
-            <button type="button" data-collapse="${edu.id}" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container transition-colors">
+            <button type="button" data-collapse="${rec.id}" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container transition-colors">
               <span class="material-symbols-outlined text-sm" aria-hidden="true">expand_less</span>
               Cerrar
             </button>
@@ -646,21 +472,18 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
         return `<div class="bg-surface-container-lowest rounded-2xl p-5 border border-outline-variant/10 hover:border-outline-variant/25 transition-colors">
           <div class="flex items-start justify-between">
             <div class="flex-1 min-w-0">
-              <h3 class="text-base font-bold text-on-surface">${edu.title}</h3>
-              <p class="text-sm text-on-surface-variant mt-1">${edu.institution}</p>
-              <div class="flex items-center gap-2 mt-2">
+              <h3 class="text-base font-bold text-on-surface">${rec.title}</h3>
+              <p class="text-sm text-on-surface-variant mt-1">${rec.institution}</p>
+              <div class="flex items-center gap-2 mt-2 flex-wrap">
                 <span class="inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-primary-fixed text-on-primary-fixed-variant">${levelLabel}</span>
                 <span class="text-xs text-outline">${yearStr}</span>
+                ${profName ? `<span class="text-xs text-on-surface-variant">· ${profName}</span>` : ''}
               </div>
             </div>
             <div class="flex items-center gap-1 shrink-0 ml-3">
-              <button type="button" data-expand="${edu.id}"
+              <button type="button" data-expand="${rec.id}"
                 class="p-2 rounded-xl hover:bg-surface-container transition-colors" title="Ver detalle">
                 <span class="material-symbols-outlined text-primary" aria-hidden="true">visibility</span>
-              </button>
-              <button type="button" data-delete-edu="${edu.id}"
-                class="p-2 rounded-xl hover:bg-error-container transition-colors" title="Eliminar formación y documento">
-                <span class="material-symbols-outlined text-error" aria-hidden="true">delete</span>
               </button>
             </div>
           </div>
@@ -669,179 +492,29 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
         </div>`;
       }).join('');
 
-      // Bind download buttons (education)
-      bindDownloadButtons(eduListEl);
-
-      // Bind expand buttons (education)
-      bindExpandButtons(eduListEl, 'edu');
-
-      // Bind delete education buttons
-      eduListEl.querySelectorAll<HTMLElement>('[data-delete-edu]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const eduId = btn.dataset.deleteEdu!;
-          const edu = educationList.find((e) => e.id === eduId);
-          openDeleteModal(
-            `¿Eliminar "${edu?.title || ''}"? Se eliminará también el documento adjunto si existe.`,
-            async () => {
-              // Delete documents first
-              if (edu?.documents) {
-                for (const d of edu.documents) {
-                  await api.del(`/uploads/document/${d.id}`);
-                }
-              }
-              await api.del(`/professionals/${profileId}/education/${eduId}`);
-              educationList = educationList.filter((e) => e.id !== eduId);
-              renderEducation();
-              updateCounter();
-            },
-          );
-        });
-      });
+      bindDownloadButtons(recordsList);
+      bindExpandButtons(recordsList);
     }
 
-    // ─── Render certification cards ─────────────────────────────
-    function renderCertifications() {
-      if (certList.length === 0) {
-        certListEl.innerHTML = '';
-        certEmpty.classList.remove('hidden');
-        return;
-      }
-      certEmpty.classList.add('hidden');
-
-      certListEl.innerHTML = certList.map((cert) => {
-        const doc = cert.documents?.[0];
-        const yearStr = cert.year ? ` · ${cert.year}` : '';
-        const docHtml = doc
-          ? `<div class="flex items-center gap-2 mt-3 p-3 bg-surface-container rounded-xl">
-              <span class="material-symbols-outlined text-error text-lg" aria-hidden="true">picture_as_pdf</span>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2">
-                  <p class="text-xs font-bold text-on-surface truncate">${doc.originalName}</p>
-                  ${verificationBadge(doc.verificationStatus, doc.verificationNotes)}
-                </div>
-                <p class="text-[10px] text-outline">${formatSize(doc.sizeBytes)}</p>
-              </div>
-              <button type="button" data-download-doc="${doc.id}" data-download-name="${doc.originalName}"
-                class="p-1.5 rounded-lg hover:bg-surface-container-high transition-colors" title="Descargar">
-                <span class="material-symbols-outlined text-sm text-primary" aria-hidden="true">download</span>
-              </button>
-            </div>`
-          : '';
-
-        // Expandable detail panel
-        const docPreviewArea = doc
-          ? `<div class="mt-4"><p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Documento adjunto</p><div data-preview-area></div></div>`
-          : '';
-
-        const verStatusRow = doc
-          ? detailRow('Estado', verificationBadge(doc.verificationStatus, doc.verificationNotes))
-          : '';
-
-        const expandPanel = `<div data-expand-panel="${cert.id}" ${doc ? `data-doc-id="${doc.id}" data-doc-mime="${doc.mimeType}"` : ''} class="hidden mt-4 pt-4 border-t border-outline-variant/15 space-y-2">
-          ${detailRow('Nombre', cert.name)}
-          ${detailRow('Institución', cert.institution)}
-          ${cert.year ? detailRow('Año', String(cert.year)) : ''}
-          ${verStatusRow}
-          ${docPreviewArea}
-          <div class="flex justify-end pt-2">
-            <button type="button" data-collapse="${cert.id}" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container transition-colors">
-              <span class="material-symbols-outlined text-sm" aria-hidden="true">expand_less</span>
-              Cerrar
-            </button>
-          </div>
-        </div>`;
-
-        return `<div class="bg-surface-container-lowest rounded-2xl p-5 border border-outline-variant/10 hover:border-outline-variant/25 transition-colors">
-          <div class="flex items-start justify-between">
-            <div class="flex-1 min-w-0">
-              <h3 class="text-base font-bold text-on-surface">${cert.name}</h3>
-              <p class="text-sm text-on-surface-variant mt-1">${cert.institution}${yearStr}</p>
-            </div>
-            <div class="flex items-center gap-1 shrink-0 ml-3">
-              <button type="button" data-expand="${cert.id}"
-                class="p-2 rounded-xl hover:bg-surface-container transition-colors" title="Ver detalle">
-                <span class="material-symbols-outlined text-primary" aria-hidden="true">visibility</span>
-              </button>
-              <button type="button" data-delete-cert="${cert.id}"
-                class="p-2 rounded-xl hover:bg-error-container transition-colors" title="Eliminar certificación y documento">
-                <span class="material-symbols-outlined text-error" aria-hidden="true">delete</span>
-              </button>
-            </div>
-          </div>
-          ${docHtml}
-          ${expandPanel}
-        </div>`;
-      }).join('');
-
-      // Bind download buttons (certifications)
-      bindDownloadButtons(certListEl);
-
-      // Bind expand buttons (certifications)
-      bindExpandButtons(certListEl, 'cert');
-
-      // Bind delete cert buttons
-      certListEl.querySelectorAll<HTMLElement>('[data-delete-cert]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const certId = btn.dataset.deleteCert!;
-          const cert = certList.find((c) => c.id === certId);
-          openDeleteModal(
-            `¿Eliminar "${cert?.name || ''}"? Se eliminará también el documento adjunto si existe.`,
-            async () => {
-              if (cert?.documents) {
-                for (const d of cert.documents) {
-                  await api.del(`/uploads/document/${d.id}`);
-                }
-              }
-              await api.del(`/professionals/${profileId}/certifications/${certId}`);
-              certList = certList.filter((c) => c.id !== certId);
-              renderCertifications();
-              updateCounter();
-            },
-          );
-        });
-      });
-    }
-
-    // ─── Toggle forms ───────────────────────────────────────────
-    function resetEduForm() {
+    // ─── Toggle form ────────────────────────────────────────────
+    function resetForm() {
       eduLevel.value = '';
       eduTitle.value = '';
       eduInstitution.value = '';
       eduYear.value = '';
+      eduProfession.value = '';
       eduFile.value = '';
     }
 
-    function resetCertForm() {
-      certName.value = '';
-      certInstitution.value = '';
-      certYear.value = '';
-      certFile.value = '';
-    }
-
-    document.getElementById('btn-add-education')!.addEventListener('click', () => {
-      resetEduForm();
-      eduFormWrapper.classList.toggle('hidden');
-      eduPreviewWrapper.classList.add('hidden');
-      certFormWrapper.classList.add('hidden');
-      certPreviewWrapperEl.classList.add('hidden');
+    document.getElementById('btn-add')!.addEventListener('click', () => {
+      resetForm();
+      addFormWrapper.classList.toggle('hidden');
+      previewWrapper.classList.add('hidden');
     });
 
-    eduCancel.addEventListener('click', () => {
-      eduFormWrapper.classList.add('hidden');
-      eduPreviewWrapper.classList.add('hidden');
-    });
-
-    document.getElementById('btn-add-cert')!.addEventListener('click', () => {
-      resetCertForm();
-      certFormWrapper.classList.toggle('hidden');
-      certPreviewWrapperEl.classList.add('hidden');
-      eduFormWrapper.classList.add('hidden');
-      eduPreviewWrapper.classList.add('hidden');
-    });
-
-    certCancel.addEventListener('click', () => {
-      certFormWrapper.classList.add('hidden');
-      certPreviewWrapperEl.classList.add('hidden');
+    document.getElementById('btn-cancel')!.addEventListener('click', () => {
+      addFormWrapper.classList.add('hidden');
+      previewWrapper.classList.add('hidden');
     });
 
     // ─── Validate file ──────────────────────────────────────────
@@ -856,49 +529,30 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
     }
 
     // ─── Preview rendering ──────────────────────────────────────
-    function previewRow(label: string, value: string): string {
-      return `<div class="flex items-baseline gap-3">
-        <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant w-24 shrink-0">${label}</span>
-        <span class="text-sm font-medium text-on-surface">${value}</span>
-      </div>`;
-    }
-
-    function renderEduPreview() {
+    function renderPreview() {
       const level = eduLevel.value;
       const title = eduTitle.value.trim();
       const institution = eduInstitution.value.trim();
       const year = eduYear.value;
       const file = eduFile.files?.[0];
-      const levelLabel = LEVEL_LABELS[level] || level;
+      const levelLabel = getCatalogLabel('education-levels', level);
+      const profId = eduProfession.value;
+      const profName = profId ? professions.find(p => p.id === Number(profId))?.name || '' : '';
 
       let html = previewRow('Nivel', levelLabel);
       html += previewRow('Título', title);
       html += previewRow('Institución', institution);
       if (year) html += previewRow('Año', year);
+      if (profName) html += previewRow('Profesión', profName);
       if (file) html += previewRow('Documento', `${file.name} (${formatSize(file.size)})`);
       else html += previewRow('Documento', '<span class="text-outline italic">Sin adjunto</span>');
 
-      eduPreviewContent.innerHTML = html;
+      previewContent.innerHTML = html;
     }
 
-    function renderCertPreview() {
-      const name = certName.value.trim();
-      const institution = certInstitution.value.trim();
-      const year = certYear.value;
-      const file = certFile.files?.[0];
-
-      let html = previewRow('Nombre', name);
-      html += previewRow('Institución', institution);
-      if (year) html += previewRow('Año', year);
-      if (file) html += previewRow('Documento', `${file.name} (${formatSize(file.size)})`);
-      else html += previewRow('Documento', '<span class="text-outline italic">Sin adjunto</span>');
-
-      certPreviewContent.innerHTML = html;
-    }
-
-    // ─── Education preview flow ─────────────────────────────────
-    eduPreviewBtn.addEventListener('click', () => {
-      const level = eduLevel.value as EducationLevel;
+    // ─── Preview flow ───────────────────────────────────────────
+    document.getElementById('btn-preview')!.addEventListener('click', () => {
+      const level = eduLevel.value;
       const title = eduTitle.value.trim();
       const institution = eduInstitution.value.trim();
 
@@ -910,47 +564,27 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       const file = eduFile.files?.[0] ? validateFile(eduFile) : undefined;
       if (eduFile.files?.[0] && file === null) return;
 
-      renderEduPreview();
-      eduFormWrapper.classList.add('hidden');
-      eduPreviewWrapper.classList.remove('hidden');
+      renderPreview();
+      addFormWrapper.classList.add('hidden');
+      previewWrapper.classList.remove('hidden');
     });
 
-    eduPreviewBack.addEventListener('click', () => {
-      eduPreviewWrapper.classList.add('hidden');
-      eduFormWrapper.classList.remove('hidden');
+    document.getElementById('btn-preview-back')!.addEventListener('click', () => {
+      previewWrapper.classList.add('hidden');
+      addFormWrapper.classList.remove('hidden');
     });
 
-    // ─── Certification preview flow ─────────────────────────────
-    certPreviewBtn.addEventListener('click', () => {
-      const name = certName.value.trim();
-      const institution = certInstitution.value.trim();
+    // ─── Save (from preview confirm) ────────────────────────────
+    const btnSave = document.getElementById('btn-save')!;
 
-      if (!name || !institution) {
-        showToast('Completá nombre e institución', 'error');
-        return;
-      }
-
-      const file = certFile.files?.[0] ? validateFile(certFile) : undefined;
-      if (certFile.files?.[0] && file === null) return;
-
-      renderCertPreview();
-      certFormWrapper.classList.add('hidden');
-      certPreviewWrapperEl.classList.remove('hidden');
-    });
-
-    certPreviewBack.addEventListener('click', () => {
-      certPreviewWrapperEl.classList.add('hidden');
-      certFormWrapper.classList.remove('hidden');
-    });
-
-    // ─── Save education (from preview confirm) ──────────────────
-    eduSave.addEventListener('click', async () => {
+    btnSave.addEventListener('click', async () => {
       if (!profileId) return;
 
       const level = eduLevel.value as EducationLevel;
       const title = eduTitle.value.trim();
       const institution = eduInstitution.value.trim();
       const year = eduYear.value ? Number(eduYear.value) : undefined;
+      const professionId = eduProfession.value ? Number(eduProfession.value) : undefined;
 
       if (!level || !title || !institution) {
         showToast('Completá nivel, título e institución', 'error');
@@ -960,87 +594,39 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       const file = eduFile.files?.[0] ? validateFile(eduFile) : undefined;
       if (eduFile.files?.[0] && file === null) return;
 
-      eduSave.setAttribute('disabled', '');
-      eduSave.innerHTML = '<div class="w-4 h-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin"></div> Guardando...';
+      btnSave.setAttribute('disabled', '');
+      btnSave.innerHTML = '<div class="w-4 h-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin"></div> Guardando...';
 
       try {
-        const newEdu = await api.post<Education>(`/professionals/${profileId}/education`, {
-          level, title, institution, year,
-        });
+        const body: Record<string, unknown> = { level, title, institution };
+        if (year) body.year = year;
+        if (professionId) body.professionId = professionId;
+
+        const newRec = await api.post<Education>(`/professionals/${profileId}/education`, body);
 
         if (file) {
           const formData = new FormData();
           formData.append('file', file);
-          formData.append('type', 'title');
-          formData.append('educationId', newEdu.id);
+          formData.append('type', level === 'certificacion' ? 'certificate' : 'title');
+          formData.append('educationId', newRec.id);
           const doc = await api.upload<Education['documents']>('/uploads/document', formData);
-          newEdu.documents = Array.isArray(doc) ? doc : [doc as unknown as NonNullable<Education['documents']>[0]];
+          newRec.documents = Array.isArray(doc) ? doc : [doc as unknown as NonNullable<Education['documents']>[0]];
         }
 
-        educationList.unshift(newEdu);
-        renderEducation();
+        records.unshift(newRec);
+        renderList();
         updateCounter();
-        eduPreviewWrapper.classList.add('hidden');
-        eduFormWrapper.classList.add('hidden');
-        resetEduForm();
-        showToast('Formación agregada', 'success');
+        previewWrapper.classList.add('hidden');
+        addFormWrapper.classList.add('hidden');
+        resetForm();
+        showToast('Registro agregado', 'success');
       } catch (err: unknown) {
         const error = err as Error & { status?: number };
         if (error?.status === 401) { logout(); return; }
         showToast(error?.message || 'Error al guardar', 'error');
       } finally {
-        eduSave.removeAttribute('disabled');
-        eduSave.innerHTML = '<span class="material-symbols-outlined text-sm" aria-hidden="true">check_circle</span> Confirmar y guardar';
-      }
-    });
-
-    // ─── Save certification (from preview confirm) ──────────────
-    certSave.addEventListener('click', async () => {
-      if (!profileId) return;
-
-      const name = certName.value.trim();
-      const institution = certInstitution.value.trim();
-      const year = certYear.value ? Number(certYear.value) : undefined;
-
-      if (!name || !institution) {
-        showToast('Completá nombre e institución', 'error');
-        return;
-      }
-
-      const file = certFile.files?.[0] ? validateFile(certFile) : undefined;
-      if (certFile.files?.[0] && file === null) return;
-
-      certSave.setAttribute('disabled', '');
-      certSave.innerHTML = '<div class="w-4 h-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin"></div> Guardando...';
-
-      try {
-        const newCert = await api.post<Certification>(`/professionals/${profileId}/certifications`, {
-          name, institution, year,
-        });
-
-        if (file) {
-          const formData = new FormData();
-          formData.append('file', file);
-          formData.append('type', 'certificate');
-          formData.append('certificationId', newCert.id);
-          const doc = await api.upload<Certification['documents']>('/uploads/document', formData);
-          newCert.documents = Array.isArray(doc) ? doc : [doc as unknown as NonNullable<Certification['documents']>[0]];
-        }
-
-        certList.unshift(newCert);
-        renderCertifications();
-        updateCounter();
-        certPreviewWrapperEl.classList.add('hidden');
-        certFormWrapper.classList.add('hidden');
-        resetCertForm();
-        showToast('Certificación agregada', 'success');
-      } catch (err: unknown) {
-        const error = err as Error & { status?: number };
-        if (error?.status === 401) { logout(); return; }
-        showToast(error?.message || 'Error al guardar', 'error');
-      } finally {
-        certSave.removeAttribute('disabled');
-        certSave.innerHTML = '<span class="material-symbols-outlined text-sm" aria-hidden="true">check_circle</span> Confirmar y guardar';
+        btnSave.removeAttribute('disabled');
+        btnSave.innerHTML = '<span class="material-symbols-outlined text-sm" aria-hidden="true">check_circle</span> Confirmar y guardar';
       }
     });
 
@@ -1057,24 +643,35 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       api.setHeader('Authorization', `Bearer ${token}`);
 
       try {
-        // Get profileId
-        const profile = await api.get<{ id: string }>(`/professionals/by-user/${userId}`);
+        // Get profile
+        const profile = await api.get<ProfessionalProfile>(`/professionals/by-user/${userId}`);
         profileId = profile.id;
 
-        // Load education + certifications in parallel
-        const [eduData, certData] = await Promise.all([
-          api.get<Education[]>(`/professionals/${profileId}/education`),
-          api.get<Certification[]>(`/professionals/${profileId}/certifications`),
-        ]);
+        // Extract professions from profile for the select
+        if (profile.professionCategories && profile.professionCategories.length > 0) {
+          professions = profile.professionCategories.map(pc => ({ id: pc.id, name: pc.name }));
+          // Populate profession select
+          while (eduProfession.options.length > 1) eduProfession.remove(1);
+          professions.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = String(p.id);
+            opt.textContent = p.name;
+            eduProfession.appendChild(opt);
+          });
+        }
 
-        educationList = eduData;
-        certList = certData;
+        // Populate level select from catalog
+        const levelItems = await fetchCatalog('education-levels');
+        populateSelect(eduLevel, levelItems);
+
+        // Load education records
+        const eduData = await api.get<Education[]>(`/professionals/${profileId}/education`);
+        records = eduData;
 
         loadingEl.classList.add('hidden');
         contentEl.classList.remove('hidden');
 
-        renderEducation();
-        renderCertifications();
+        renderList();
         updateCounter();
       } catch (err: unknown) {
         const error = err as Error & { status?: number };

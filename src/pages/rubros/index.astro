@@ -21,7 +21,7 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
         <input
           id="category-search"
           class="w-full pl-12 pr-4 py-4 bg-surface-container-low border-none rounded-2xl focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-outline/60 text-sm font-medium"
-          placeholder="Filtrar rubros..."
+          placeholder="Buscar..."
           type="text"
         />
       </div>
@@ -94,7 +94,7 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
   </style>
 
   <script>
-    import { fetchRubros, fetchProfessionsByRubro } from '../../services/professionCategoriesService';
+    import { fetchRubros, fetchFullTree, fetchProfessionsByRubro } from '../../services/professionCategoriesService';
     import type { Rubro, ProfessionCategory } from '../../services/professionCategoriesService';
 
     const accordionEl = document.getElementById('rubros-accordion')!;
@@ -104,6 +104,9 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
 
     // Cache for loaded sub-rubros per rubro id
     const childrenCache = new Map<number, ProfessionCategory[]>();
+
+    // Full tree (3 levels) for search
+    let fullTree: ProfessionCategory[] = [];
 
     // ─── Render a single rubro accordion card ───────────────────
     function renderRubroCard(rubro: Rubro): string {
@@ -128,7 +131,7 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
             </div>
             <span class="material-symbols-outlined accordion-icon text-outline text-xl transition-transform duration-300" aria-hidden="true">expand_more</span>
           </button>
-          <div class="accordion-body bg-surface-container-low/50" id="body-${safeId}">
+          <div class="accordion-body bg-surface-container-low/50" id="body-${safeId}" style="max-height:0;opacity:0;overflow:hidden;">
             <ul class="px-4 md:px-5 pb-4 space-y-1">
               <li class="flex flex-col items-center justify-center py-6">
                 <span class="material-symbols-outlined text-3xl text-primary animate-spin" aria-hidden="true">schedule</span>
@@ -139,20 +142,50 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
         </article>`;
     }
 
-    // ─── Render children (level 2) inside an accordion body ─────
-    function renderChildren(bodyEl: HTMLElement, rubroSlug: string, children: ProfessionCategory[]) {
+    // ─── Render children (level 2+3) inside an accordion body ───
+    // Si filterQuery es proporcionado, solo muestra sub-rubros y profesiones que coincidan
+    function renderChildren(bodyEl: HTMLElement, rubroSlug: string, children: ProfessionCategory[], filterQuery?: string) {
       const ul = bodyEl.querySelector('ul')!;
       if (children.length === 0) {
         ul.innerHTML = '<li class="p-3 text-on-surface-variant text-sm italic pl-16">Sin sub-rubros disponibles</li>';
         return;
       }
-      ul.innerHTML = children.map(child => `
+
+      let filteredChildren = children;
+
+      if (filterQuery) {
+        const q = filterQuery.toLowerCase();
+        filteredChildren = [];
+        for (const subRubro of children) {
+          const subMatches = q && subRubro.name.toLowerCase().includes(q);
+          // Filtrar profesiones (nivel 3) que coincidan
+          const matchingProfessions = (subRubro.children || []).filter(
+            prof => prof.name.toLowerCase().includes(q)
+          );
+          if (subMatches || matchingProfessions.length > 0) {
+            // Si el sub-rubro coincide, mostrar todas sus profesiones
+            // Si solo coinciden profesiones, mostrar solo esas
+            filteredChildren.push({
+              ...subRubro,
+              children: subMatches ? subRubro.children : matchingProfessions,
+            });
+          }
+        }
+      }
+
+      if (filteredChildren.length === 0) {
+        ul.innerHTML = '<li class="p-3 text-on-surface-variant text-sm italic pl-16">Sin resultados</li>';
+        return;
+      }
+
+      // Render: cada sub-rubro como link (nivel 3 no se muestra)
+      ul.innerHTML = filteredChildren.map(subRubro => `
         <li>
           <a
-            href="/profesionales?rubro=${rubroSlug}&profession_category=${child.slug}"
+            href="/profesionales?rubro=${rubroSlug}&sub_rubro=${subRubro.slug}"
             class="flex items-center justify-between p-3 rounded-xl hover:bg-surface-container-lowest transition-colors group"
           >
-            <span class="text-on-surface-variant font-medium pl-12 group-hover:text-on-surface transition-colors">${child.name}</span>
+            <span class="text-on-surface-variant font-medium pl-12 group-hover:text-on-surface transition-colors">${subRubro.name}</span>
             <span class="text-primary text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
               Ver todos
               <span class="material-symbols-outlined text-sm" aria-hidden="true">arrow_forward</span>
@@ -162,33 +195,53 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
       `).join('');
     }
 
-    // ─── Toggle accordion ───────────────────────────────────────
-    async function toggleAccordion(card: HTMLElement) {
+    // ─── Expand a card (visual only, no data load) ──────────────
+    function expandCard(card: HTMLElement) {
       const trigger = card.querySelector('.accordion-trigger')!;
       const body = card.querySelector('.accordion-body')! as HTMLElement;
       const icon = card.querySelector('.accordion-icon')! as HTMLElement;
       const title = card.querySelector('.accordion-title')! as HTMLElement;
+
+      icon.style.transform = 'rotate(180deg)';
+      title.classList.add('text-primary');
+      title.classList.remove('text-on-surface');
+      icon.classList.add('text-primary');
+      icon.classList.remove('text-outline');
+      trigger.setAttribute('aria-expanded', 'true');
+
+      // Need to set max-height after content is rendered
+      requestAnimationFrame(() => {
+        body.style.maxHeight = body.scrollHeight + 'px';
+        body.style.opacity = '1';
+      });
+    }
+
+    // ─── Collapse a card (visual only) ──────────────────────────
+    function collapseCard(card: HTMLElement) {
+      const trigger = card.querySelector('.accordion-trigger')!;
+      const body = card.querySelector('.accordion-body')! as HTMLElement;
+      const icon = card.querySelector('.accordion-icon')! as HTMLElement;
+      const title = card.querySelector('.accordion-title')! as HTMLElement;
+
+      body.style.maxHeight = '0';
+      body.style.opacity = '0';
+      icon.style.transform = '';
+      title.classList.remove('text-primary');
+      title.classList.add('text-on-surface');
+      icon.classList.remove('text-primary');
+      icon.classList.add('text-outline');
+      trigger.setAttribute('aria-expanded', 'false');
+    }
+
+    // ─── Toggle accordion (click handler) ───────────────────────
+    async function toggleAccordion(card: HTMLElement) {
+      const trigger = card.querySelector('.accordion-trigger')!;
+      const body = card.querySelector('.accordion-body')! as HTMLElement;
       const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
 
       if (isExpanded) {
-        // Collapse
-        body.style.maxHeight = '0';
-        body.style.opacity = '0';
-        icon.style.transform = '';
-        title.classList.remove('text-primary');
-        title.classList.add('text-on-surface');
-        icon.classList.remove('text-primary');
-        icon.classList.add('text-outline');
-        trigger.setAttribute('aria-expanded', 'false');
+        collapseCard(card);
       } else {
-        // Expand
-        icon.style.transform = 'rotate(180deg)';
-        title.classList.add('text-primary');
-        title.classList.remove('text-on-surface');
-        icon.classList.add('text-primary');
-        icon.classList.remove('text-outline');
-        trigger.setAttribute('aria-expanded', 'true');
-
         // Lazy-load children
         const rubroId = Number(card.dataset.rubroId);
         const rubroSlug = card.dataset.rubroSlug!;
@@ -206,27 +259,117 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
           renderChildren(body, rubroSlug, childrenCache.get(rubroId)!);
         }
 
-        // Set max-height to scrollHeight for smooth animation
-        body.style.maxHeight = body.scrollHeight + 'px';
-        body.style.opacity = '1';
+        expandCard(card);
       }
     }
 
-    // ─── Search filter ──────────────────────────────────────────
+    // ─── Search: check if a rubro tree matches the query ────────
+    function findMatchesInRubro(rubro: ProfessionCategory, query: string): boolean {
+      const q = query.toLowerCase();
+      // Check rubro name (level 1)
+      if (rubro.name.toLowerCase().includes(q)) return true;
+      // Check sub-rubros (level 2) and professions (level 3)
+      for (const subRubro of rubro.children || []) {
+        if (subRubro.name.toLowerCase().includes(q)) return true;
+        for (const prof of subRubro.children || []) {
+          if (prof.name.toLowerCase().includes(q)) return true;
+        }
+      }
+      return false;
+    }
+
+    // Does a rubro match only at level 1 (name itself)?
+    function matchesAtLevel1Only(rubro: ProfessionCategory, query: string): boolean {
+      return rubro.name.toLowerCase().includes(query.toLowerCase());
+    }
+
+    // ─── Search filter (3 levels with debounce) ─────────────────
     function bindSearch() {
+      let debounceTimer: ReturnType<typeof setTimeout>;
+
       searchInput?.addEventListener('input', () => {
-        const query = searchInput.value.toLowerCase().trim();
-        accordionEl.querySelectorAll('.rubro-card').forEach((card) => {
-          const name = (card as HTMLElement).dataset.name || '';
-          (card as HTMLElement).style.display = name.includes(query) ? '' : 'none';
-        });
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          const query = searchInput.value.trim();
+
+          accordionEl.querySelectorAll('.rubro-card').forEach((el) => {
+            const card = el as HTMLElement;
+            const rubroId = Number(card.dataset.rubroId);
+            const rubroSlug = card.dataset.rubroSlug!;
+
+            if (!query) {
+              // Empty query: show all, collapse all
+              card.style.display = '';
+              collapseCard(card);
+              return;
+            }
+
+            // Find matching rubro in fullTree
+            const treeRubro = fullTree.find(r => r.id === rubroId);
+            if (!treeRubro) {
+              card.style.display = 'none';
+              return;
+            }
+
+            const hasMatch = findMatchesInRubro(treeRubro, query);
+            if (!hasMatch) {
+              card.style.display = 'none';
+              collapseCard(card);
+              return;
+            }
+
+            // Show the card
+            card.style.display = '';
+
+            // If match is only at level 1 (rubro name), show card but don't expand
+            if (matchesAtLevel1Only(treeRubro, query)) {
+              // Don't auto-expand, just show the card
+              // But if there are also deeper matches, expand
+              const hasDeepMatch = (treeRubro.children || []).some(sub =>
+                sub.name.toLowerCase().includes(query.toLowerCase()) ||
+                (sub.children || []).some(prof => prof.name.toLowerCase().includes(query.toLowerCase()))
+              );
+              if (!hasDeepMatch) {
+                collapseCard(card);
+                return;
+              }
+            }
+
+            // Has match at level 2 or 3: expand and render filtered children
+            const body = card.querySelector('.accordion-body')! as HTMLElement;
+
+            // Use fullTree data (already has children)
+            const treeChildren = treeRubro.children || [];
+            // Also put in cache for future manual toggles
+            if (!childrenCache.has(rubroId) && treeChildren.length > 0) {
+              childrenCache.set(rubroId, treeChildren);
+            }
+
+            renderChildren(body, rubroSlug, treeChildren, query);
+            expandCard(card);
+          });
+        }, 300);
       });
     }
 
     // ─── Init ───────────────────────────────────────────────────
     async function init() {
       try {
-        const rubros = await fetchRubros();
+        // Load rubros (level 1) and full tree (3 levels) in parallel
+        const [rubros, tree] = await Promise.all([
+          fetchRubros(),
+          fetchFullTree(),
+        ]);
+
+        fullTree = tree;
+
+        // Pre-fill childrenCache from fullTree
+        for (const rubro of fullTree) {
+          if (rubro.children && rubro.children.length > 0) {
+            childrenCache.set(rubro.id, rubro.children);
+          }
+        }
+
         loadingEl.classList.add('hidden');
 
         if (rubros.length === 0) {

@@ -1,0 +1,62 @@
+<!-- Step 2: Identidad -->
+<div id="wizard-step-2" class="wizard-step hidden">
+  <div class="bg-surface-container-low rounded-3xl p-8 space-y-8">
+    <div class="flex items-center gap-3 mb-2">
+      <span class="material-symbols-outlined text-primary" aria-hidden="true">badge</span>
+      <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Identidad</h2>
+    </div>
+
+    <!-- DNI Number -->
+    <div>
+      <label for="w-dni" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">DNI / Documento de identidad *</label>
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-lg" aria-hidden="true">badge</span>
+        <input id="w-dni" type="text" placeholder="Ej. 12345678" required
+          class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl pl-12 pr-4 py-3 text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+      </div>
+    </div>
+
+    <!-- DNI Photos -->
+    <div>
+      <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-3 block">Fotos del documento de identidad (frente y dorso) *</label>
+      <div class="grid grid-cols-2 gap-4">
+        <!-- Front -->
+        <div class="relative">
+          <label for="w-dni-front" class="block border-2 border-dashed border-outline-variant/30 rounded-xl p-4 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group">
+            <div id="w-dni-front-preview" class="hidden mb-2">
+              <img id="w-dni-front-img" src="" alt="Frente DNI" class="w-full h-24 object-cover rounded-lg" />
+            </div>
+            <div id="w-dni-front-placeholder" class="flex flex-col items-center gap-2 py-4">
+              <span class="material-symbols-outlined text-2xl text-outline group-hover:text-primary transition-colors" aria-hidden="true">add_photo_alternate</span>
+              <span class="text-xs font-bold text-on-surface-variant">FRENTE</span>
+            </div>
+            <input id="w-dni-front" type="file" accept="image/jpeg,image/png,application/pdf" class="hidden" />
+          </label>
+          <span id="w-dni-front-check" class="hidden absolute -top-2 -right-2 w-6 h-6 bg-primary text-on-primary rounded-full flex items-center justify-center">
+            <span class="material-symbols-outlined text-sm">check</span>
+          </span>
+        </div>
+        <!-- Back -->
+        <div class="relative">
+          <label for="w-dni-back" class="block border-2 border-dashed border-outline-variant/30 rounded-xl p-4 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group">
+            <div id="w-dni-back-preview" class="hidden mb-2">
+              <img id="w-dni-back-img" src="" alt="Dorso DNI" class="w-full h-24 object-cover rounded-lg" />
+            </div>
+            <div id="w-dni-back-placeholder" class="flex flex-col items-center gap-2 py-4">
+              <span class="material-symbols-outlined text-2xl text-outline group-hover:text-primary transition-colors" aria-hidden="true">add_photo_alternate</span>
+              <span class="text-xs font-bold text-on-surface-variant">DORSO</span>
+            </div>
+            <input id="w-dni-back" type="file" accept="image/jpeg,image/png,application/pdf" class="hidden" />
+          </label>
+          <span id="w-dni-back-check" class="hidden absolute -top-2 -right-2 w-6 h-6 bg-primary text-on-primary rounded-full flex items-center justify-center">
+            <span class="material-symbols-outlined text-sm">check</span>
+          </span>
+        </div>
+      </div>
+      <p class="text-xs text-on-surface-variant mt-2">
+        <span class="material-symbols-outlined text-sm align-middle mr-1" aria-hidden="true">info</span>
+        JPG, PNG o PDF, max 5MB por archivo. Ambas fotos se suben al avanzar.
+      </p>
+    </div>
+  </div>
+</div>

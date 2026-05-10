@@ -12,12 +12,9 @@ vi.mock('../apiClient', () => ({
 
 import { api } from '../apiClient';
 import {
-  addCertification,
   addEducation,
-  deleteCertification,
   deleteDocument,
   deleteEducation,
-  fetchCertifications,
   fetchEducation,
   getDocumentDownloadUrl,
   uploadDocument,
@@ -72,48 +69,6 @@ describe('EducationService', () => {
       const result = await deleteEducation('prof-1', 'edu-1');
 
       expect(api.del).toHaveBeenCalledWith('/professionals/prof-1/education/edu-1');
-      expect(result).toEqual({ deleted: true });
-    });
-  });
-
-  // ─── Certifications ───────────────────────────────────────
-
-  describe('fetchCertifications', () => {
-    it('llama a GET /professionals/:id/certifications', async () => {
-      const mock = [{ id: 'cert-1', name: 'Coaching' }];
-      (api.get as any).mockResolvedValue(mock);
-
-      const result = await fetchCertifications('prof-1');
-
-      expect(api.get).toHaveBeenCalledWith('/professionals/prof-1/certifications');
-      expect(result).toEqual(mock);
-    });
-  });
-
-  describe('addCertification', () => {
-    it('llama a POST /professionals/:id/certifications con body', async () => {
-      const body = {
-        name: 'Coaching Ontológico',
-        institution: 'ICF',
-        year: 2023,
-      };
-      const mock = { id: 'cert-new', ...body };
-      (api.post as any).mockResolvedValue(mock);
-
-      const result = await addCertification('prof-1', body);
-
-      expect(api.post).toHaveBeenCalledWith('/professionals/prof-1/certifications', body);
-      expect(result).toEqual(mock);
-    });
-  });
-
-  describe('deleteCertification', () => {
-    it('llama a DELETE /professionals/:id/certifications/:certId', async () => {
-      (api.del as any).mockResolvedValue({ deleted: true });
-
-      const result = await deleteCertification('prof-1', 'cert-1');
-
-      expect(api.del).toHaveBeenCalledWith('/professionals/prof-1/certifications/cert-1');
       expect(result).toEqual({ deleted: true });
     });
   });

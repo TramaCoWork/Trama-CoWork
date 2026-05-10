@@ -1,0 +1,144 @@
+---
+import '../../styles/global.css';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Admin Login | TRAMA</title>
+    <meta name="description" content="Acceso al panel de administración de TRAMA." />
+  </head>
+  <body class="bg-surface font-body text-on-surface antialiased">
+
+    <main class="min-h-screen flex items-center justify-center p-6">
+      <div class="w-full max-w-sm space-y-10">
+
+        <!-- Branding -->
+        <div class="text-center space-y-2">
+          <span class="font-headline text-3xl font-extrabold tracking-tighter text-primary">TRAMA</span>
+          <p class="text-xs font-bold uppercase tracking-[0.25em] text-on-surface-variant">Panel de administración</p>
+        </div>
+
+        <!-- Form card -->
+        <div class="bg-surface-container-low rounded-2xl p-8 space-y-6 border border-outline-variant/10">
+
+          <form id="admin-login-form" class="space-y-5" novalidate>
+            <!-- Email -->
+            <div class="space-y-1.5">
+              <label class="block text-xs font-bold tracking-widest uppercase text-on-surface-variant" for="admin-email">
+                Email
+              </label>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-lg" aria-hidden="true">mail</span>
+                <input
+                  autocomplete="email"
+                  class="block w-full pl-11 pr-4 py-3 bg-surface-container-lowest border border-outline-variant/20 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all rounded-xl text-on-surface text-sm placeholder:text-outline/50"
+                  id="admin-email"
+                  name="email"
+                  placeholder="admin@trama.com"
+                  required
+                  type="email"
+                />
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="space-y-1.5">
+              <label class="block text-xs font-bold tracking-widest uppercase text-on-surface-variant" for="admin-password">
+                Contraseña
+              </label>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-lg" aria-hidden="true">lock</span>
+                <input
+                  autocomplete="current-password"
+                  class="block w-full pl-11 pr-4 py-3 bg-surface-container-lowest border border-outline-variant/20 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all rounded-xl text-on-surface text-sm placeholder:text-outline/50"
+                  id="admin-password"
+                  name="password"
+                  placeholder="********"
+                  required
+                  type="password"
+                />
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <button
+              id="btn-admin-login"
+              class="w-full py-3 px-6 bg-primary text-on-primary font-bold text-sm tracking-widest uppercase rounded-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              type="submit"
+            >
+              <span id="btn-admin-login-text">Ingresar</span>
+            </button>
+          </form>
+
+          <!-- Error toast (inline) -->
+          <div id="admin-login-error" class="hidden bg-error-container text-on-error-container rounded-xl px-4 py-3 text-sm font-medium flex items-center gap-2">
+            <span class="material-symbols-outlined text-error text-lg shrink-0" aria-hidden="true">error</span>
+            <span id="admin-login-error-msg">Credenciales inválidas.</span>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <p class="text-center text-[11px] text-outline tracking-wide">&copy; 2025 TRAMA. Todos los derechos reservados.</p>
+
+      </div>
+    </main>
+
+    <script>
+      import { adminLogin, isAuthenticated, getRoleFromToken, restoreSession } from '../../services/authService';
+
+      // If already authenticated as admin, redirect
+      restoreSession();
+      if (isAuthenticated() && getRoleFromToken() === 'admin') {
+        window.location.href = '/admin';
+      }
+
+      const form = document.getElementById('admin-login-form') as HTMLFormElement;
+      const btn = document.getElementById('btn-admin-login') as HTMLButtonElement;
+      const btnText = document.getElementById('btn-admin-login-text')!;
+      const errorBox = document.getElementById('admin-login-error')!;
+      const errorMsg = document.getElementById('admin-login-error-msg')!;
+
+      function showError(msg: string) {
+        errorMsg.textContent = msg;
+        errorBox.classList.remove('hidden');
+      }
+
+      function hideError() {
+        errorBox.classList.add('hidden');
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideError();
+
+        const email = (form.querySelector('#admin-email') as HTMLInputElement).value.trim();
+        const password = (form.querySelector('#admin-password') as HTMLInputElement).value;
+
+        if (!email || !password) {
+          showError('Complete todos los campos.');
+          return;
+        }
+
+        btn.disabled = true;
+        btnText.textContent = 'Ingresando...';
+
+        try {
+          await adminLogin({ email, password });
+          window.location.href = '/admin';
+        } catch (err: any) {
+          const message = err?.body?.message || err?.body?.error || 'Credenciales inválidas o sin permisos de administrador.';
+          showError(message);
+        } finally {
+          btn.disabled = false;
+          btnText.textContent = 'Ingresar';
+        }
+      });
+    </script>
+
+  </body>
+</html>

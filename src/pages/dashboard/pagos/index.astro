@@ -1,0 +1,535 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="TRAMA - Pagos">
+  <!-- Header -->
+  <header class="mb-10">
+    <div class="flex justify-between items-end">
+      <div>
+        <h1 class="text-4xl font-black text-on-surface tracking-tighter">Suscripcion</h1>
+        <p class="text-on-surface-variant font-medium mt-2">Gestioná tu plan y revisá tu historial de cobros.</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Loading -->
+  <div id="pagos-loading" class="flex items-center justify-center py-24">
+    <div class="flex flex-col items-center gap-4">
+      <div class="w-10 h-10 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      <p class="text-sm font-medium text-on-surface-variant">Cargando...</p>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div id="pagos-error" class="hidden">
+    <div class="bg-error-container text-on-error-container rounded-3xl p-8 text-center">
+      <span class="material-symbols-outlined text-4xl mb-4 block" aria-hidden="true">error</span>
+      <h2 class="text-xl font-bold mb-2">Error al cargar la informacion</h2>
+      <p id="pagos-error-msg" class="text-sm opacity-80">No se pudo obtener la informacion.</p>
+      <button onclick="location.reload()" class="mt-6 bg-error text-on-error px-6 py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity">
+        Reintentar
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div id="pagos-content" class="hidden">
+    <!-- Toast -->
+    <div id="toast" class="fixed top-6 right-6 z-50 hidden transition-all duration-300 translate-y-[-1rem] opacity-0">
+      <div id="toast-inner" class="flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm">
+        <span id="toast-icon" class="material-symbols-outlined text-xl" aria-hidden="true"></span>
+        <span id="toast-msg"></span>
+      </div>
+    </div>
+
+    <!-- STATE A: No subscription — show plans -->
+    <div id="state-no-sub" class="hidden">
+      <!-- Cancelled banner (shown only if previously had a subscription) -->
+      <div id="cancelled-banner" class="hidden mb-6">
+        <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/40 rounded-2xl p-6 flex items-start gap-4">
+          <span class="material-symbols-outlined text-yellow-600 dark:text-yellow-400 text-2xl shrink-0" aria-hidden="true">info</span>
+          <div>
+            <p class="text-sm font-bold text-yellow-800 dark:text-yellow-200">Tu suscripcion anterior fue cancelada</p>
+            <p id="cancelled-date" class="text-xs text-yellow-700 dark:text-yellow-300 mt-1"></p>
+            <p class="text-xs text-yellow-700 dark:text-yellow-300 mt-1">Podes volver a suscribirte eligiendo un plan a continuacion.</p>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="text-xl font-extrabold text-on-surface tracking-tight mb-6">Planes disponibles</h2>
+      <div id="plans-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+      <!-- No plans available -->
+      <div id="no-plans" class="hidden text-center py-12">
+        <span class="material-symbols-outlined text-4xl text-outline/40 mb-3 block" aria-hidden="true">credit_card_off</span>
+        <p class="text-sm font-medium text-on-surface-variant">No hay planes disponibles en este momento</p>
+        <p class="text-xs text-outline mt-1">Intenta de nuevo mas tarde.</p>
+      </div>
+    </div>
+
+    <!-- STATE B: Active subscription -->
+    <div id="state-active-sub" class="hidden space-y-8">
+      <!-- Current subscription card -->
+      <div class="bg-surface-container-low rounded-3xl p-8">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="material-symbols-outlined text-primary" aria-hidden="true">verified</span>
+          <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Tu suscripcion</h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Plan</p>
+            <p id="sub-plan-name" class="text-sm font-bold text-on-surface">—</p>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Estado</p>
+            <div id="sub-status-badge"></div>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Desde</p>
+            <p id="sub-start-date" class="text-sm font-medium text-on-surface">—</p>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Monto</p>
+            <p id="sub-amount" class="text-sm font-medium text-on-surface">—</p>
+          </div>
+        </div>
+
+        <!-- Pending payment action (hidden by default) -->
+        <div id="pending-payment-action" class="hidden mt-6">
+          <div class="bg-tertiary-fixed/10 border border-tertiary/20 rounded-2xl p-6">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-on-tertiary-fixed-variant text-xl" aria-hidden="true">pending</span>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-base font-bold text-on-surface mb-1">Tu pago esta pendiente</h3>
+                <p class="text-sm text-on-surface-variant leading-relaxed">Todavia no completaste el pago en Mercado Pago. Hace click en el boton para retomar el proceso y activar tu plan.</p>
+                <button id="btn-resume-payment" type="button"
+                  class="mt-4 inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all">
+                  <span class="material-symbols-outlined text-sm" aria-hidden="true">credit_card</span>
+                  Completar pago
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-outline-variant/15 flex items-center justify-between">
+          <p class="text-xs text-on-surface-variant">Si cancelás tu suscripcion, perderas acceso a los beneficios del plan.</p>
+          <a href="/dashboard/pagos/cancelar" id="btn-cancel-sub"
+            class="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-error border border-error/30 hover:bg-error/10 transition-all">
+            <span class="material-symbols-outlined text-sm" aria-hidden="true">cancel</span>
+            Cancelar suscripcion
+          </a>
+        </div>
+      </div>
+
+      <!-- Payment history -->
+      <div class="bg-surface-container-low rounded-3xl p-8">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="material-symbols-outlined text-primary" aria-hidden="true">receipt_long</span>
+          <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Historial de cobros</h2>
+        </div>
+
+        <!-- Loading payments -->
+        <div id="payments-loading" class="flex items-center justify-center py-8">
+          <div class="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+          <span class="ml-3 text-xs text-on-surface-variant">Cargando historial...</span>
+        </div>
+
+        <!-- Payments table -->
+        <div id="payments-table-wrapper" class="hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-outline-variant/15">
+                  <th class="text-left text-[10px] font-bold uppercase tracking-widest text-on-surface-variant py-3 px-4">Fecha</th>
+                  <th class="text-left text-[10px] font-bold uppercase tracking-widest text-on-surface-variant py-3 px-4">Monto</th>
+                  <th class="text-left text-[10px] font-bold uppercase tracking-widest text-on-surface-variant py-3 px-4">Estado</th>
+                  <th class="text-left text-[10px] font-bold uppercase tracking-widest text-on-surface-variant py-3 px-4">ID Pago</th>
+                </tr>
+              </thead>
+              <tbody id="payments-tbody"></tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div id="payments-pagination" class="hidden flex items-center justify-between mt-6 pt-4 border-t border-outline-variant/15">
+            <p id="payments-info" class="text-xs text-on-surface-variant"></p>
+            <div class="flex gap-2">
+              <button id="payments-prev" type="button" class="px-4 py-2 rounded-xl text-xs font-bold text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                Anterior
+              </button>
+              <button id="payments-next" type="button" class="px-4 py-2 rounded-xl text-xs font-bold text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                Siguiente
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- No payments -->
+        <div id="payments-empty" class="hidden text-center py-8">
+          <span class="material-symbols-outlined text-4xl text-outline/40 mb-3 block" aria-hidden="true">receipt</span>
+          <p class="text-sm font-medium text-on-surface-variant">No hay cobros registrados todavia</p>
+          <p class="text-xs text-outline mt-1">El primer cobro se registrara cuando se procese tu pago.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import { getUserIdFromToken, getToken, getEmailFromToken, logout } from '../../../services/authService';
+    import { api } from '../../../services/apiClient';
+    import type { ProfessionalProfile } from '../../../services/profileService';
+    import type {
+      SubscriptionPlan,
+      Subscription,
+      SubscriptionPayment,
+      PaginatedPayments,
+      CreateSubscriptionResponse,
+    } from '../../../services/subscriptionService';
+
+    // ─── DOM refs ───────────────────────────────────────────────
+    const loadingEl = document.getElementById('pagos-loading')!;
+    const errorEl = document.getElementById('pagos-error')!;
+    const errorMsg = document.getElementById('pagos-error-msg')!;
+    const contentEl = document.getElementById('pagos-content')!;
+
+    const stateNoSub = document.getElementById('state-no-sub')!;
+    const stateActiveSub = document.getElementById('state-active-sub')!;
+
+    const cancelledBanner = document.getElementById('cancelled-banner')!;
+    const cancelledDate = document.getElementById('cancelled-date')!;
+    const plansGrid = document.getElementById('plans-grid')!;
+    const noPlans = document.getElementById('no-plans')!;
+
+    const subPlanName = document.getElementById('sub-plan-name')!;
+    const subStatusBadge = document.getElementById('sub-status-badge')!;
+    const subStartDate = document.getElementById('sub-start-date')!;
+    const subAmount = document.getElementById('sub-amount')!;
+
+    const paymentsLoading = document.getElementById('payments-loading')!;
+    const paymentsTableWrapper = document.getElementById('payments-table-wrapper')!;
+    const paymentsTbody = document.getElementById('payments-tbody')!;
+    const paymentsEmpty = document.getElementById('payments-empty')!;
+    const paymentsPagination = document.getElementById('payments-pagination')!;
+    const paymentsInfo = document.getElementById('payments-info')!;
+    const paymentsPrev = document.getElementById('payments-prev')! as HTMLButtonElement;
+    const paymentsNext = document.getElementById('payments-next')! as HTMLButtonElement;
+
+    // ─── State ──────────────────────────────────────────────────
+    let userEmail = '';
+    let currentPaymentPage = 1;
+    const PAYMENTS_PER_PAGE = 10;
+
+    // ─── Toast ──────────────────────────────────────────────────
+    function showToast(message: string, type: 'success' | 'error') {
+      const toast = document.getElementById('toast')!;
+      const inner = document.getElementById('toast-inner')!;
+      const icon = document.getElementById('toast-icon')!;
+      const msg = document.getElementById('toast-msg')!;
+
+      msg.textContent = message;
+      if (type === 'success') {
+        inner.className = 'flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm bg-primary text-on-primary';
+        icon.textContent = 'check_circle';
+      } else {
+        inner.className = 'flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm bg-error text-on-error';
+        icon.textContent = 'error';
+      }
+
+      toast.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-[-1rem]', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-[-1rem]', 'opacity-0');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+      }, 3500);
+    }
+
+    // ─── Helpers ────────────────────────────────────────────────
+    function formatDate(iso: string): string {
+      return new Date(iso).toLocaleDateString('es-AR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+      });
+    }
+
+    function formatCurrency(amount: number, currency: string): string {
+      return new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: currency || 'ARS',
+        minimumFractionDigits: 0,
+      }).format(amount);
+    }
+
+    function frequencyLabel(freq: number, type: string): string {
+      const labels: Record<string, string> = { days: 'dia', months: 'mes', years: 'año' };
+      const label = labels[type] || type;
+      if (freq === 1) return `/${label}`;
+      return `cada ${freq} ${label}${freq > 1 ? (type === 'months' ? 'es' : 's') : ''}`;
+    }
+
+    function statusBadge(status: string): string {
+      const config: Record<string, { icon: string; label: string; cls: string }> = {
+        active: { icon: 'check_circle', label: 'Activa', cls: 'bg-primary/10 text-primary' },
+        authorized: { icon: 'check_circle', label: 'Autorizada', cls: 'bg-primary/10 text-primary' },
+        pending: { icon: 'schedule', label: 'Pendiente de pago', cls: 'bg-tertiary-fixed/30 text-on-tertiary-fixed-variant' },
+        paused: { icon: 'pause_circle', label: 'Pausada', cls: 'bg-tertiary-fixed/30 text-on-tertiary-fixed-variant' },
+        cancelled: { icon: 'cancel', label: 'Cancelada', cls: 'bg-error-container text-on-error-container' },
+        approved: { icon: 'check_circle', label: 'Aprobado', cls: 'bg-primary/10 text-primary' },
+        rejected: { icon: 'cancel', label: 'Rechazado', cls: 'bg-error-container text-on-error-container' },
+        refunded: { icon: 'undo', label: 'Reembolsado', cls: 'bg-surface-container-high text-on-surface-variant' },
+      };
+      const c = config[status] || { icon: 'help', label: status, cls: 'bg-gray-100 text-gray-800' };
+      return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide ${c.cls}">
+        <span class="material-symbols-outlined text-xs" aria-hidden="true">${c.icon}</span>
+        ${c.label}
+      </span>`;
+    }
+
+    // ─── Render plans ───────────────────────────────────────────
+    function renderPlans(plans: SubscriptionPlan[]) {
+      if (plans.length === 0) {
+        noPlans.classList.remove('hidden');
+        return;
+      }
+
+      plansGrid.innerHTML = plans.map((plan) => {
+        const price = formatCurrency(plan.amount, plan.currency);
+        const freq = frequencyLabel(plan.frequency, plan.frequencyType);
+        const trialHtml = plan.trialDays > 0
+          ? `<div class="flex items-center gap-1.5 mt-3 px-3 py-2 bg-green-50 dark:bg-green-900/20 rounded-xl">
+              <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-sm" aria-hidden="true">redeem</span>
+              <span class="text-xs font-bold text-green-700 dark:text-green-300">${plan.trialDays} dias de prueba gratis</span>
+            </div>`
+          : '';
+
+        return `<div class="bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant/10 hover:border-primary/30 hover:shadow-lg transition-all flex flex-col">
+          <div class="flex-1">
+            <h3 class="text-lg font-extrabold text-on-surface tracking-tight">${plan.name}</h3>
+            ${plan.description ? `<p class="text-sm text-on-surface-variant mt-2 leading-relaxed">${plan.description}</p>` : ''}
+            ${trialHtml}
+            <div class="mt-6">
+              <span class="text-3xl font-black text-on-surface">${price}</span>
+              <span class="text-sm text-on-surface-variant font-medium">${freq}</span>
+            </div>
+          </div>
+          <button type="button" data-subscribe-plan="${plan.id}"
+            class="mt-8 w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold text-sm bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all">
+            <span class="material-symbols-outlined text-sm" aria-hidden="true">credit_card</span>
+            Suscribirme
+          </button>
+        </div>`;
+      }).join('');
+
+      // Bind subscribe buttons
+      plansGrid.querySelectorAll<HTMLElement>('[data-subscribe-plan]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const planId = btn.dataset.subscribePlan!;
+          await handleSubscribe(planId, btn);
+        });
+      });
+    }
+
+    // ─── Subscribe handler ──────────────────────────────────────
+    async function handleSubscribe(planId: string, btn: HTMLElement) {
+      btn.setAttribute('disabled', '');
+      btn.innerHTML = '<div class="w-4 h-4 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin"></div> Procesando...';
+
+      try {
+        const baseUrl = import.meta.env.PUBLIC_BASE_URL || window.location.origin;
+        const backUrl = `${baseUrl}/dashboard/pagos/resultado`;
+        const result = await api.post<CreateSubscriptionResponse>('/subscriptions', {
+          planId,
+          payerEmail: userEmail,
+          backUrl,
+        });
+
+        if (result.initPoint) {
+          window.location.href = result.initPoint;
+        } else {
+          showToast('No se recibió el enlace de pago', 'error');
+        }
+      } catch (err: unknown) {
+        const error = err as Error & { status?: number };
+        if (error?.status === 401) { logout(); return; }
+        showToast(error?.message || 'Error al crear la suscripcion', 'error');
+      } finally {
+        btn.removeAttribute('disabled');
+        btn.innerHTML = '<span class="material-symbols-outlined text-sm" aria-hidden="true">credit_card</span> Suscribirme';
+      }
+    }
+
+    // ─── Render active subscription ─────────────────────────────
+    function renderActiveSubscription(sub: Subscription) {
+      subPlanName.textContent = sub.plan?.name || 'Plan';
+      subStatusBadge.innerHTML = statusBadge(sub.status);
+      subStartDate.textContent = formatDate(sub.createdAt);
+      if (sub.plan) {
+        subAmount.textContent = `${formatCurrency(sub.plan.amount, sub.plan.currency)}${frequencyLabel(sub.plan.frequency, sub.plan.frequencyType)}`;
+      }
+
+      // Show pending payment action if status is pending and we have an initPoint
+      const isPending = sub.status === 'pending';
+      const pendingAction = document.getElementById('pending-payment-action')!;
+      const btnResume = document.getElementById('btn-resume-payment')!;
+
+      if (isPending && sub.initPoint) {
+        pendingAction.classList.remove('hidden');
+        btnResume.addEventListener('click', () => {
+          window.location.href = sub.initPoint!;
+        });
+      }
+    }
+
+    // ─── Render payments ────────────────────────────────────────
+    function renderPayments(data: PaginatedPayments) {
+      paymentsLoading.classList.add('hidden');
+
+      if (!data.data || data.data.length === 0) {
+        paymentsEmpty.classList.remove('hidden');
+        return;
+      }
+
+      paymentsTableWrapper.classList.remove('hidden');
+
+      paymentsTbody.innerHTML = data.data.map((p) => {
+        const date = p.paidAt ? formatDate(p.paidAt) : formatDate(p.createdAt);
+        const amount = formatCurrency(p.amount, p.currency);
+        const mpId = p.mpPaymentId || '—';
+
+        return `<tr class="border-b border-outline-variant/10 hover:bg-surface-container/50 transition-colors">
+          <td class="py-3 px-4 text-sm font-medium text-on-surface">${date}</td>
+          <td class="py-3 px-4 text-sm font-bold text-on-surface">${amount}</td>
+          <td class="py-3 px-4">${statusBadge(p.status)}</td>
+          <td class="py-3 px-4 text-xs text-on-surface-variant font-mono">${mpId}</td>
+        </tr>`;
+      }).join('');
+
+      // Pagination
+      const totalPages = Math.ceil(data.total / data.sizePage);
+      if (totalPages > 1) {
+        paymentsPagination.classList.remove('hidden');
+        paymentsInfo.textContent = `Pagina ${data.page} de ${totalPages} (${data.total} cobros)`;
+        paymentsPrev.disabled = data.page <= 1;
+        paymentsNext.disabled = data.page >= totalPages;
+      }
+    }
+
+    async function loadPayments(page: number) {
+      paymentsLoading.classList.remove('hidden');
+      paymentsTableWrapper.classList.add('hidden');
+      paymentsEmpty.classList.add('hidden');
+      paymentsPagination.classList.add('hidden');
+
+      try {
+        const data = await api.get<PaginatedPayments>('/subscriptions/me/payments', {
+          page, sizePage: PAYMENTS_PER_PAGE,
+        });
+        currentPaymentPage = page;
+        renderPayments(data);
+      } catch (err: unknown) {
+        const error = err as Error & { status?: number };
+        if (error?.status === 401) { logout(); return; }
+        paymentsLoading.classList.add('hidden');
+        paymentsEmpty.classList.remove('hidden');
+      }
+    }
+
+    paymentsPrev.addEventListener('click', () => {
+      if (currentPaymentPage > 1) loadPayments(currentPaymentPage - 1);
+    });
+    paymentsNext.addEventListener('click', () => {
+      loadPayments(currentPaymentPage + 1);
+    });
+
+    // ─── Check for toast from redirect ──────────────────────────
+    function checkToastParam() {
+      const params = new URLSearchParams(window.location.search);
+      const msg = params.get('toast');
+      const type = params.get('toast_type') as 'success' | 'error' | null;
+      if (msg) {
+        showToast(decodeURIComponent(msg), type || 'success');
+        // Clean URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('toast');
+        url.searchParams.delete('toast_type');
+        window.history.replaceState({}, '', url.toString());
+      }
+    }
+
+    // ─── Load data ──────────────────────────────────────────────
+    async function loadData() {
+      const userId = getUserIdFromToken();
+      const token = getToken();
+
+      if (!userId || !token) { logout(); return; }
+
+      api.setHeader('Authorization', `Bearer ${token}`);
+
+      try {
+        // Get profile for email
+        const profile = await api.get<ProfessionalProfile>(`/professionals/by-user/${userId}`);
+        userEmail = getEmailFromToken() || profile.emailContact || '';
+
+        // Try to get active subscription
+        let subscription: Subscription | null = null;
+        try {
+          subscription = await api.get<Subscription>('/subscriptions/me');
+        } catch (err: unknown) {
+          const error = err as Error & { status?: number };
+          // 404 = no subscription, that's fine
+          if (error?.status !== 404) throw err;
+        }
+
+        loadingEl.classList.add('hidden');
+        contentEl.classList.remove('hidden');
+
+        checkToastParam();
+
+        if (subscription && subscription.status !== 'cancelled') {
+          // State B: Active or pending subscription
+          stateActiveSub.classList.remove('hidden');
+          renderActiveSubscription(subscription);
+
+          // Only load payment history if not pending (no payments yet)
+          if (subscription.status !== 'pending') {
+            loadPayments(1);
+          } else {
+            // Hide payment history section for pending subscriptions
+            paymentsLoading.classList.add('hidden');
+            paymentsEmpty.classList.add('hidden');
+          }
+        } else {
+          // State A/C: No subscription or cancelled
+          stateNoSub.classList.remove('hidden');
+
+          // Show cancelled banner if previously had a subscription
+          if (subscription && subscription.status === 'cancelled') {
+            cancelledBanner.classList.remove('hidden');
+            cancelledDate.textContent = subscription.cancelledAt
+              ? `Cancelada el ${formatDate(subscription.cancelledAt)}`
+              : 'Cancelada anteriormente';
+          }
+
+          // Load plans
+          const plans = await api.get<SubscriptionPlan[]>('/subscription-plans');
+          renderPlans(plans);
+        }
+      } catch (err: unknown) {
+        const error = err as Error & { status?: number };
+        if (error?.status === 401) { logout(); return; }
+        loadingEl.classList.add('hidden');
+        errorEl.classList.remove('hidden');
+        errorMsg.textContent = error?.message || 'No se pudo obtener la informacion.';
+      }
+    }
+
+    // ─── Init ───────────────────────────────────────────────────
+    loadData();
+  </script>
+</DashboardLayout>

@@ -111,50 +111,41 @@
         </div>
       </div>
 
-      <!-- Rubro Profesional -->
+      <!-- Confirmar Contraseña -->
       <div>
-        <label class="block text-xs font-bold text-on-surface uppercase tracking-wider mb-2" for="rubro">Rubro Profesional</label>
+        <label class="block text-xs font-bold text-on-surface uppercase tracking-wider mb-2" for="confirm-password">Confirmar Contraseña</label>
         <div class="relative">
           <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-outline pointer-events-none">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-            </svg>
-          </span>
-          <select
-            class="w-full pl-12 pr-10 py-3.5 sm:py-4 border border-outline-variant/30 rounded-xl bg-surface-container-lowest text-on-surface appearance-none cursor-pointer focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-            id="rubro"
-            name="rubroId"
-            required
-          >
-            <option disabled selected value="">Cargando rubros...</option>
-          </select>
-          <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-outline pointer-events-none">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-            </svg>
-          </span>
-        </div>
-      </div>
-
-      <!-- Ciudad -->
-      <div>
-        <label class="block text-xs font-bold text-on-surface uppercase tracking-wider mb-2" for="city">Ciudad</label>
-        <div class="relative">
-          <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-outline pointer-events-none">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-              <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+              <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
             </svg>
           </span>
           <input
-            class="w-full pl-12 pr-4 py-3.5 sm:py-4 border border-outline-variant/30 rounded-xl bg-surface-container-lowest text-on-surface placeholder:text-outline/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-            id="city"
-            name="city"
-            placeholder="Ej. Buenos Aires"
+            class="w-full pl-12 pr-12 py-3.5 sm:py-4 border border-outline-variant/30 rounded-xl bg-surface-container-lowest text-on-surface placeholder:text-outline/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+            id="confirm-password"
+            name="confirmPassword"
+            placeholder="Repetí tu contraseña"
             required
-            type="text"
+            type="password"
+            minlength="8"
+            autocomplete="new-password"
           />
+          <button
+            id="btn-toggle-confirm-password"
+            type="button"
+            class="absolute inset-y-0 right-0 flex items-center pr-4 text-outline hover:text-primary transition-colors"
+            aria-label="Mostrar contraseña"
+          >
+            <svg class="h-5 w-5" id="icon-confirm-eye-open" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+              <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+            </svg>
+            <svg class="h-5 w-5 hidden" id="icon-confirm-eye-closed" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+            </svg>
+          </button>
         </div>
+        <p id="confirm-password-error" class="hidden text-xs text-error font-medium mt-1.5">Las contraseñas no coinciden.</p>
       </div>
 
       <!-- Términos y Privacidad -->
@@ -193,57 +184,54 @@
 </section>
 
 <script>
-  import { fetchRubros } from '../services/professionCategoriesService';
   import { professionalRegister } from '../services/authService';
 
-  // ─── Toggle password visibility ───────────────────────────────
-  const passwordInput = document.getElementById('password') as HTMLInputElement;
-  const toggleBtn = document.getElementById('btn-toggle-password')!;
-  const iconOpen = document.getElementById('icon-eye-open')!;
-  const iconClosed = document.getElementById('icon-eye-closed')!;
-
-  toggleBtn.addEventListener('click', () => {
-    const isPassword = passwordInput.type === 'password';
-    passwordInput.type = isPassword ? 'text' : 'password';
-    iconOpen.classList.toggle('hidden', !isPassword);
-    iconClosed.classList.toggle('hidden', isPassword);
-    toggleBtn.setAttribute('aria-label', isPassword ? 'Ocultar contraseña' : 'Mostrar contraseña');
-  });
-
-  // ─── Cargar rubros ────────────────────────────────────────────
-  const rubroSelect = document.getElementById('rubro') as HTMLSelectElement;
-
-  async function loadRubros() {
-    try {
-      const rubros = await fetchRubros();
-      rubroSelect.innerHTML = '<option disabled selected value="">Seleccioná tu rubro</option>'
-        + rubros.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-    } catch (err) {
-      console.error('Error cargando rubros:', err);
-      rubroSelect.innerHTML = '<option disabled selected>Error al cargar rubros</option>';
-    }
-  }
-
-  loadRubros();
-
-  // ─── Referencias del form ────────────────────────────────────
+  // ─── Referencias ──────────────────────────────────────────────
   const form = document.getElementById('registration-form') as HTMLFormElement;
   const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
-
-  // ─── Validación en tiempo real ────────────────────────────────
   const nameInput = document.getElementById('name') as HTMLInputElement;
   const emailInput = document.getElementById('email') as HTMLInputElement;
-  const cityInput = document.getElementById('city') as HTMLInputElement;
+  const passwordInput = document.getElementById('password') as HTMLInputElement;
+  const confirmPasswordInput = document.getElementById('confirm-password') as HTMLInputElement;
+  const confirmPasswordError = document.getElementById('confirm-password-error')!;
   const termsCheck = document.getElementById('terms') as HTMLInputElement;
 
+  // ─── Toggle password visibility ───────────────────────────────
+  function setupToggle(btnId: string, inputEl: HTMLInputElement, openId: string, closedId: string) {
+    const btn = document.getElementById(btnId)!;
+    const iconOpen = document.getElementById(openId)!;
+    const iconClosed = document.getElementById(closedId)!;
+    btn.addEventListener('click', () => {
+      const isPassword = inputEl.type === 'password';
+      inputEl.type = isPassword ? 'text' : 'password';
+      iconOpen.classList.toggle('hidden', !isPassword);
+      iconClosed.classList.toggle('hidden', isPassword);
+      btn.setAttribute('aria-label', isPassword ? 'Ocultar contraseña' : 'Mostrar contraseña');
+    });
+  }
+
+  setupToggle('btn-toggle-password', passwordInput, 'icon-eye-open', 'icon-eye-closed');
+  setupToggle('btn-toggle-confirm-password', confirmPasswordInput, 'icon-confirm-eye-open', 'icon-confirm-eye-closed');
+
+  // ─── Validación en tiempo real ────────────────────────────────
   function validateForm() {
+    const passwordsMatch = passwordInput.value === confirmPasswordInput.value;
+    const confirmTouched = confirmPasswordInput.value.length > 0;
+
+    // Mostrar error de contraseñas solo si el campo fue tocado
+    if (confirmTouched && !passwordsMatch) {
+      confirmPasswordError.classList.remove('hidden');
+    } else {
+      confirmPasswordError.classList.add('hidden');
+    }
+
     const valid =
       nameInput.value.trim() !== '' &&
       emailInput.value.trim() !== '' &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim()) &&
       passwordInput.value.length >= 8 &&
-      rubroSelect.value !== '' &&
-      cityInput.value.trim() !== '' &&
+      passwordsMatch &&
+      confirmTouched &&
       termsCheck.checked;
 
     submitBtn.disabled = !valid;
@@ -252,8 +240,7 @@
   nameInput.addEventListener('input', validateForm);
   emailInput.addEventListener('input', validateForm);
   passwordInput.addEventListener('input', validateForm);
-  cityInput.addEventListener('input', validateForm);
-  rubroSelect.addEventListener('change', validateForm);
+  confirmPasswordInput.addEventListener('input', validateForm);
   termsCheck.addEventListener('change', validateForm);
 
   // ─── Submit ───────────────────────────────────────────────────
@@ -265,11 +252,8 @@
     e.preventDefault();
     errorDiv.classList.add('hidden');
 
-    const formData = new FormData(form);
-    const rubroId = Number(formData.get('rubroId'));
-
-    if (!rubroId) {
-      errorDiv.textContent = 'Seleccioná un rubro profesional.';
+    if (passwordInput.value !== confirmPasswordInput.value) {
+      errorDiv.textContent = 'Las contraseñas no coinciden.';
       errorDiv.classList.remove('hidden');
       return;
     }
@@ -279,11 +263,9 @@
 
     try {
       await professionalRegister({
-        name: formData.get('name') as string,
-        email: formData.get('email') as string,
-        password: formData.get('password') as string,
-        city: formData.get('city') as string,
-        rubroId,
+        name: nameInput.value.trim(),
+        email: emailInput.value.trim(),
+        password: passwordInput.value,
       });
       window.location.href = '/dashboard';
     } catch (err: any) {

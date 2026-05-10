@@ -47,6 +47,13 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
   return data;
 }
 
+export async function adminLogin(credentials: LoginRequest): Promise<LoginResponse> {
+  const data = await api.post<LoginResponse>('/auth/admin/login', credentials);
+  localStorage.setItem(TOKEN_KEY, data.access_token);
+  api.setHeader('Authorization', `Bearer ${data.access_token}`);
+  return data;
+}
+
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }
@@ -61,9 +68,9 @@ export function isAuthenticated(): boolean {
   return true;
 }
 
-export function logout(): void {
+export function logout(redirectTo = '/login'): void {
   localStorage.removeItem(TOKEN_KEY);
-  window.location.href = '/login';
+  window.location.href = redirectTo;
 }
 
 export function getUserIdFromToken(): string | null {
@@ -72,6 +79,22 @@ export function getUserIdFromToken(): string | null {
   const payload = parseJwtPayload(token);
   if (!payload || typeof payload.sub !== 'string') return null;
   return payload.sub;
+}
+
+export function getEmailFromToken(): string | null {
+  const token = getToken();
+  if (!token) return null;
+  const payload = parseJwtPayload(token);
+  if (!payload || typeof payload.email !== 'string') return null;
+  return payload.email;
+}
+
+export function getRoleFromToken(): string | null {
+  const token = getToken();
+  if (!token) return null;
+  const payload = parseJwtPayload(token);
+  if (!payload || typeof payload.role !== 'string') return null;
+  return payload.role;
 }
 
 export function restoreSession(): void {
@@ -89,9 +112,11 @@ export interface ProfessionalRegisterRequest {
   email: string;
   password: string;
   name: string;
-  city: string;
-  rubroId: number;
+  city?: string;
+  rubroId?: number;
   whatsapp?: string;
+  countryId?: number;
+  provinceId?: number;
 }
 
 export interface RegisterResponse {
@@ -106,4 +131,18 @@ export async function professionalRegister(
   localStorage.setItem(TOKEN_KEY, res.access_token);
   api.setHeader('Authorization', `Bearer ${res.access_token}`);
   return res;
+}
+
+// ─── Password Recovery ─────────────────────────────────────────
+
+export async function forgotPassword(email: string): Promise<void> {
+  await api.post('/auth/forgot-password', { email });
+}
+
+export async function resetPassword(
+  userId: string,
+  token: string,
+  newPassword: string,
+): Promise<void> {
+  await api.post('/auth/reset-password', { userId, token, newPassword });
 }

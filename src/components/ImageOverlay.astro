@@ -1,0 +1,134 @@
+---
+/**
+ * ImageOverlay
+ * ------------
+ * Generic fullscreen overlay for images and PDFs with download.
+ * 
+ * Usage from JS:
+ *   window.openImageOverlay(blobUrl, 'DNI Frente');
+ *   window.openImageOverlay(blobUrl, 'DNI Dorso', 'dni-dorso.jpg');
+ *   window.openImageOverlay(blobUrl, 'Titulo.pdf', 'titulo.pdf', 'application/pdf');
+ */
+---
+
+<!-- Overlay backdrop -->
+<div
+  id="image-overlay"
+  class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Vista de documento"
+>
+  <!-- Top bar -->
+  <div class="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-4 bg-gradient-to-b from-black/60 to-transparent z-10">
+    <p id="image-overlay-title" class="text-white text-sm font-bold tracking-wide truncate"></p>
+    <div class="flex items-center gap-2">
+      <button
+        id="image-overlay-download"
+        type="button"
+        class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+        title="Descargar"
+      >
+        <span class="material-symbols-outlined text-white text-xl">download</span>
+      </button>
+      <button
+        id="image-overlay-close"
+        type="button"
+        class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+        title="Cerrar"
+      >
+        <span class="material-symbols-outlined text-white text-xl">close</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Content container (image or PDF) -->
+  <div id="image-overlay-content" class="flex items-center justify-center mt-14">
+    <img
+      id="image-overlay-img"
+      src=""
+      alt=""
+      class="max-w-[90vw] max-h-[85vh] object-contain rounded-lg shadow-2xl select-none"
+      draggable="false"
+    />
+  </div>
+</div>
+
+<script>
+  const overlay = document.getElementById('image-overlay')!;
+  const overlayContent = document.getElementById('image-overlay-content')!;
+  const overlayImg = document.getElementById('image-overlay-img') as HTMLImageElement;
+  const overlayTitle = document.getElementById('image-overlay-title')!;
+  const overlayClose = document.getElementById('image-overlay-close')!;
+  const overlayDownload = document.getElementById('image-overlay-download')!;
+
+  let currentBlobUrl = '';
+  let currentFilename = 'imagen.jpg';
+  let currentMode: 'image' | 'pdf' = 'image';
+
+  function openOverlay(blobUrl: string, title: string, filename?: string, mimeType?: string) {
+    currentBlobUrl = blobUrl;
+    currentFilename = filename || 'imagen.jpg';
+
+    const isPdf = mimeType?.includes('pdf') || filename?.toLowerCase().endsWith('.pdf');
+    currentMode = isPdf ? 'pdf' : 'image';
+
+    overlayTitle.textContent = title;
+
+    if (isPdf) {
+      overlayImg.classList.add('hidden');
+      // Remove any previous iframe
+      overlayContent.querySelector('iframe')?.remove();
+      const iframe = document.createElement('iframe');
+      iframe.src = blobUrl;
+      iframe.className = 'w-[85vw] h-[85vh] rounded-lg shadow-2xl bg-white';
+      iframe.setAttribute('frameborder', '0');
+      overlayContent.appendChild(iframe);
+    } else {
+      // Remove any previous iframe
+      overlayContent.querySelector('iframe')?.remove();
+      overlayImg.classList.remove('hidden');
+      overlayImg.src = blobUrl;
+      overlayImg.alt = title;
+    }
+
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeOverlay() {
+    overlay.classList.add('hidden');
+    overlay.classList.remove('flex');
+    overlayImg.src = '';
+    overlayImg.classList.remove('hidden');
+    overlayContent.querySelector('iframe')?.remove();
+    document.body.style.overflow = '';
+  }
+
+  overlayClose.addEventListener('click', closeOverlay);
+
+  // Close on backdrop click (not on content)
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeOverlay();
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !overlay.classList.contains('hidden')) closeOverlay();
+  });
+
+  // Download
+  overlayDownload.addEventListener('click', () => {
+    if (!currentBlobUrl) return;
+    const a = document.createElement('a');
+    a.href = currentBlobUrl;
+    a.download = currentFilename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
+
+  // Expose globally
+  (window as any).openImageOverlay = openOverlay;
+</script>

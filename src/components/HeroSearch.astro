@@ -1,5 +1,4 @@
 ---
-import { priceRange } from '../data/mock';
 import heroImage from '../assets/images/hero-cowork.jpg';
 ---
 
@@ -35,154 +34,60 @@ import heroImage from '../assets/images/hero-cowork.jpg';
   <!-- Tarjeta de búsqueda superpuesta -->
   <div class="relative z-20 max-w-4xl mx-auto px-6 -mt-16">
     <div class="bg-surface-container-lowest p-6 md:p-8 rounded-2xl shadow-xl border border-outline-variant/30">
-      <form class="flex flex-col gap-6" role="search" aria-label="Buscar profesionales">
-        <!-- Barra de búsqueda principal -->
-        <div class="bg-surface-container-low rounded-full flex flex-col md:flex-row items-center gap-2 p-1.5 border border-outline-variant/10">
-          <div class="flex-1 flex items-center px-6 py-3 md:py-4 gap-3 w-full">
-            <span class="material-symbols-outlined text-outline text-2xl" aria-hidden="true">search</span>
-            <label for="hero-search" class="sr-only">Buscar servicio</label>
-            <input
-              id="hero-search"
-              class="w-full bg-transparent border-none focus:ring-0 text-on-surface text-lg font-medium placeholder:text-outline/50"
-              placeholder="¿Qué servicio estás buscando hoy?"
-              type="search"
-            />
-          </div>
-          <button
-            id="btn-buscar"
-            type="button"
-            class="w-full md:w-auto px-12 py-4 bg-primary text-on-primary rounded-full font-bold text-lg flex items-center justify-center gap-2 hover:brightness-110 transition-all shadow-lg active:scale-95"
+      <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3">
+        <!-- Select de rubro -->
+        <div class="flex-1 flex items-center gap-3 bg-surface-container-low px-5 py-3 rounded-xl border border-outline-variant/10">
+          <span class="material-symbols-outlined text-primary text-xl" aria-hidden="true">category</span>
+          <label for="hero-rubro" class="sr-only">Área profesional</label>
+          <select
+            id="hero-rubro"
+            class="w-full bg-transparent border-none focus:ring-0 text-on-surface text-base font-medium cursor-pointer"
           >
-            Buscar
-          </button>
+            <option value="">Todas las áreas</option>
+          </select>
         </div>
 
-        <!-- Fila de filtros -->
-        <div class="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12 pt-2">
-          <!-- Dropdown de áreas -->
-          <fieldset class="relative w-full md:w-auto border-none p-0 m-0">
-            <legend class="sr-only">Áreas</legend>
-            <button
-              id="categories-toggle"
-              type="button"
-              class="flex items-center justify-between gap-4 w-full md:w-56 px-6 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm font-bold text-on-surface hover:border-primary transition-colors"
-              aria-expanded="false"
-              aria-haspopup="listbox"
-            >
-              <span class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary text-lg" aria-hidden="true">category</span>
-                Todas las áreas
-              </span>
-              <span class="material-symbols-outlined text-sm transition-transform duration-200" aria-hidden="true">keyboard_arrow_down</span>
-            </button>
-            <div id="categories-dropdown" class="absolute top-full left-0 mt-1 w-64 max-h-64 overflow-y-auto bg-surface-container-lowest shadow-2xl rounded-xl border border-outline-variant/20 p-4 hidden z-50 text-left">
-              <span class="text-sm text-outline">Cargando áreas...</span>
-            </div>
-          </fieldset>
-
-          <!-- Selector de rango de precio -->
-          <div class="flex flex-col gap-2 w-full md:w-auto">
-            <label for="price-range" class="text-xs font-black uppercase tracking-widest text-outline text-center">
-              Rango de precio por hora
-            </label>
-            <div class="flex items-center gap-6 bg-surface-container-low px-6 py-3 rounded-xl border border-outline-variant/30">
-              <input
-                id="price-range"
-                class="w-48 accent-primary cursor-pointer"
-                max={priceRange.max}
-                min={priceRange.min}
-                type="range"
-                value="250"
-              />
-              <span class="text-sm font-black text-primary min-w-20" aria-live="polite">
-                ${priceRange.min} - ${priceRange.max}
-              </span>
-            </div>
-          </div>
-        </div>
-      </form>
+        <!-- Botón buscar -->
+        <button
+          id="btn-buscar"
+          type="button"
+          class="w-full md:w-auto px-12 py-4 bg-primary text-on-primary rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:brightness-110 transition-all shadow-lg active:scale-95"
+        >
+          Buscar
+        </button>
+      </div>
     </div>
   </div>
 </section>
 
 <script>
-  import { fetchCategorias } from '../services/homeService';
+  import { fetchRubros } from '../services/professionCategoriesService';
 
-  const searchForm = document.querySelector<HTMLFormElement>('[role="search"]');
-  const searchInput = document.querySelector<HTMLInputElement>('#hero-search');
-  const priceRange = document.querySelector<HTMLInputElement>('#price-range');
-  const priceDisplay = priceRange?.closest('div')?.querySelector<HTMLSpanElement>('[aria-live="polite"]');
-  const categoriesDropdown = document.getElementById('categories-dropdown');
-  const categoriesToggle = document.getElementById('categories-toggle');
+  const rubroSelect = document.getElementById('hero-rubro') as HTMLSelectElement;
+  const btnBuscar = document.getElementById('btn-buscar');
 
-  // Toggle dropdown por click
-  categoriesToggle?.addEventListener('click', () => {
-    const isOpen = !categoriesDropdown?.classList.contains('hidden');
-    categoriesDropdown?.classList.toggle('hidden');
-    categoriesToggle.setAttribute('aria-expanded', String(!isOpen));
-    const arrow = categoriesToggle.querySelector('.material-symbols-outlined:last-child');
-    if (arrow) arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
-  });
-
-  // Cerrar al hacer click fuera
-  document.addEventListener('click', (e) => {
-    if (!categoriesToggle?.contains(e.target as Node) && !categoriesDropdown?.contains(e.target as Node)) {
-      categoriesDropdown?.classList.add('hidden');
-      categoriesToggle?.setAttribute('aria-expanded', 'false');
-      const arrow = categoriesToggle?.querySelector('.material-symbols-outlined:last-child') as HTMLElement | null;
-      if (arrow) arrow.style.transform = '';
-    }
-  });
-
-  // Cargar categorias desde la API
-  async function loadCategorias() {
-    if (!categoriesDropdown) return;
+  // Cargar rubros
+  async function loadRubros() {
     try {
-      const categorias = await fetchCategorias();
-      categoriesDropdown.innerHTML = categorias
-        .map(
-          (cat) => `
-        <label class="flex items-center gap-3 p-3 hover:bg-surface-container-low rounded-lg cursor-pointer transition-colors">
-          <input
-            class="rounded-md border-outline-variant text-primary focus:ring-primary w-5 h-5"
-            type="checkbox"
-            name="category"
-            value="${cat.id}"
-          />
-          <span class="text-sm font-semibold">${cat.name}</span>
-        </label>
-      `
-        )
-        .join('');
+      const rubros = await fetchRubros();
+      rubros.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.slug;
+        opt.textContent = r.name;
+        rubroSelect.appendChild(opt);
+      });
     } catch (err) {
-      console.error('Error cargando categorias:', err);
-      categoriesDropdown.innerHTML = '<span class="text-sm text-error">Error al cargar categorias</span>';
+      console.error('Error cargando rubros:', err);
     }
   }
 
-  loadCategorias();
+  loadRubros();
 
-  // Actualizar display del rango de precio en tiempo real
-  priceRange?.addEventListener('input', () => {
-    if (priceDisplay) {
-      priceDisplay.textContent = `$0 - $${priceRange.value}`;
-    }
-  });
-
-  // Manejar click en buscar
-  const btnBuscar = document.getElementById('btn-buscar');
+  // Buscar
   btnBuscar?.addEventListener('click', () => {
-    const query = searchInput?.value.trim() ?? '';
-    const selectedCategories = Array.from(
-      document.querySelectorAll<HTMLInputElement>('#categories-dropdown input[name="category"]:checked')
-    ).map((el) => el.value);
-    const maxPrice = priceRange?.value ?? '500';
-
+    const rubro = rubroSelect.value;
     const params = new URLSearchParams();
-    if (query) params.set('q', query);
-    if (selectedCategories.length > 0) params.set('categories', selectedCategories.join(','));
-    if (maxPrice !== '500') params.set('maxPrice', maxPrice);
-
+    if (rubro) params.set('rubro', rubro);
     const url = `/profesionales${params.toString() ? '?' + params.toString() : ''}`;
     window.location.href = url;
   });

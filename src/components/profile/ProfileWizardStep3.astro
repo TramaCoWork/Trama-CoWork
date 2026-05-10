@@ -1,0 +1,27 @@
+<!-- Step 3: Profesión y especialidades -->
+<div id="wizard-step-3" class="wizard-step hidden">
+  <div class="bg-surface-container-low rounded-3xl p-8 space-y-6">
+    <div class="flex items-center gap-3 mb-2">
+      <span class="material-symbols-outlined text-primary" aria-hidden="true">work</span>
+      <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Profesión y especialidades</h2>
+    </div>
+
+    <div>
+      <label for="w-rubro" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2 block">Profesión *</label>
+      <select id="w-rubro"
+        class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-3 text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+        <option disabled selected value="">Seleccioná tu profesión</option>
+      </select>
+    </div>
+
+    <div id="w-profession-selector" class="space-y-4">
+      <div class="flex items-center justify-between">
+        <label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Especialidades (max 5) *</label>
+        <span id="w-profession-count" class="text-xs font-bold text-primary">0/5 seleccionadas</span>
+      </div>
+      <div id="w-profession-groups" class="space-y-6">
+        <p class="text-sm text-on-surface-variant">Seleccioná un rubro para ver las profesiones disponibles.</p>
+      </div>
+    </div>
+  </div>
+</div>

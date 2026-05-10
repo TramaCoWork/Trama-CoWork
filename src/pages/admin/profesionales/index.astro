@@ -1,0 +1,348 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="TRAMA Admin - Profesionales">
+
+  <!-- Header -->
+  <header class="mb-8">
+    <h1 class="text-3xl font-black text-on-surface tracking-tighter">Profesionales</h1>
+    <p class="text-on-surface-variant font-medium mt-1 text-sm">Gestión y revisión de perfiles profesionales.</p>
+  </header>
+
+  <!-- Filters -->
+  <div class="bg-surface-container-low rounded-2xl p-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <!-- Search -->
+      <div class="lg:col-span-2">
+        <label for="f-search" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Buscar</label>
+        <div class="relative">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg" aria-hidden="true">search</span>
+          <input id="f-search" type="text" placeholder="Nombre o email..."
+            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl pl-10 pr-4 py-2.5 text-sm text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label for="f-status" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Estado</label>
+        <select id="f-status"
+          class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+          <option value="">Todos</option>
+          <option value="incomplete">Incompleto</option>
+          <option value="onboarding">Onboarding</option>
+          <option value="pending_review">Pendiente revisión</option>
+          <option value="active">Activo</option>
+          <option value="rejected">Rechazado</option>
+          <option value="suspended">Suspendido</option>
+        </select>
+      </div>
+
+      <!-- Country -->
+      <div>
+        <label for="f-country" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">País</label>
+        <select id="f-country"
+          class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+          <option value="">Todos</option>
+        </select>
+      </div>
+
+      <!-- Province -->
+      <div>
+        <label for="f-province" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Provincia</label>
+        <select id="f-province"
+          class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer disabled:opacity-50" disabled>
+          <option value="">Todas</option>
+        </select>
+      </div>
+
+      <!-- Rubro -->
+      <div>
+        <label for="f-rubro" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Rubro</label>
+        <select id="f-rubro"
+          class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+          <option value="">Todos</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 mt-4">
+      <button id="btn-clear" type="button"
+        class="px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-widest text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors">
+        Limpiar
+      </button>
+      <button id="btn-search" type="button"
+        class="px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all">
+        <span class="material-symbols-outlined text-sm align-middle mr-1" aria-hidden="true">search</span>
+        Buscar
+      </button>
+    </div>
+  </div>
+
+  <!-- Results count + pagination info -->
+  <div class="flex items-center justify-between mb-4">
+    <p id="results-info" class="text-sm text-on-surface-variant font-medium">Cargando...</p>
+    <div id="pagination-top" class="flex items-center gap-2"></div>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-surface-container-low rounded-2xl overflow-hidden border border-outline-variant/10">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-outline-variant/15 bg-surface-container">
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Nombre</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Email</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Rubro</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Ciudad</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Registrado</th>
+            <th class="text-center px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr>
+            <td colspan="7" class="text-center py-12 text-on-surface-variant">
+              <div class="flex flex-col items-center gap-3">
+                <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                <span class="text-sm font-medium">Cargando profesionales...</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination bottom -->
+  <div class="flex items-center justify-between mt-4">
+    <div></div>
+    <div id="pagination-bottom" class="flex items-center gap-2"></div>
+  </div>
+
+  <script>
+    import { restoreSession, getToken } from '../../../services/authService';
+    import { api } from '../../../services/apiClient';
+    import { fetchAllProfessionals } from '../../../services/adminService';
+    import type { AdminProfessional, ProfessionalFilters } from '../../../services/adminService';
+    import { fetchRubros } from '../../../services/professionCategoriesService';
+    import { fetchCountries, fetchProvinces } from '../../../services/locationService';
+
+    restoreSession();
+    const token = getToken();
+    if (token) api.setHeader('Authorization', `Bearer ${token}`);
+
+    // ─── State ───────────────────────────────────────────────────
+    let currentPage = 1;
+    const PAGE_SIZE = 15;
+
+    // ─── Status badge helper ─────────────────────────────────────
+    const STATUS_MAP: Record<string, { label: string; cls: string }> = {
+      incomplete:      { label: 'Incompleto',    cls: 'bg-outline/10 text-outline' },
+      onboarding:      { label: 'Onboarding',    cls: 'bg-tertiary-container text-on-tertiary-container' },
+      pending_review:  { label: 'Pendiente',     cls: 'bg-secondary-container text-on-secondary-container' },
+      active:          { label: 'Activo',         cls: 'bg-primary-container text-on-primary-container' },
+      rejected:        { label: 'Rechazado',      cls: 'bg-error-container text-on-error-container' },
+      suspended:       { label: 'Suspendido',     cls: 'bg-error/10 text-error' },
+    };
+
+    function statusBadge(status: string): string {
+      const s = STATUS_MAP[status] || { label: status, cls: 'bg-outline/10 text-outline' };
+      return `<span class="inline-block px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider ${s.cls}">${s.label}</span>`;
+    }
+
+    function formatDate(iso: string): string {
+      try {
+        return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      } catch { return '—'; }
+    }
+
+    // ─── Populate filter dropdowns ──────────────────────────────
+    async function populateFilters() {
+      try {
+        const [countries, rubros] = await Promise.all([fetchCountries(), fetchRubros()]);
+
+        const countrySelect = document.getElementById('f-country') as HTMLSelectElement;
+        countries.forEach((c: any) => {
+          const opt = document.createElement('option');
+          opt.value = String(c.id);
+          opt.textContent = c.name;
+          countrySelect.appendChild(opt);
+        });
+
+        const rubroSelect = document.getElementById('f-rubro') as HTMLSelectElement;
+        rubros.forEach((r: any) => {
+          const opt = document.createElement('option');
+          opt.value = String(r.id);
+          opt.textContent = r.name;
+          rubroSelect.appendChild(opt);
+        });
+
+        // Country → Province cascade
+        countrySelect.addEventListener('change', async () => {
+          const provinceSelect = document.getElementById('f-province') as HTMLSelectElement;
+          provinceSelect.innerHTML = '<option value="">Todas</option>';
+          const countryId = countrySelect.value;
+          if (!countryId) { provinceSelect.disabled = true; return; }
+
+          try {
+            const provinces = await fetchProvinces(Number(countryId));
+            provinces.forEach((p: any) => {
+              const opt = document.createElement('option');
+              opt.value = String(p.id);
+              opt.textContent = p.name;
+              provinceSelect.appendChild(opt);
+            });
+            provinceSelect.disabled = false;
+          } catch { provinceSelect.disabled = true; }
+        });
+      } catch (err) {
+        console.error('Error loading filters:', err);
+      }
+    }
+
+    // ─── Get current filters ─────────────────────────────────────
+    function getFilters(): ProfessionalFilters {
+      const filters: ProfessionalFilters = { sizePage: PAGE_SIZE, page: currentPage };
+      const search = (document.getElementById('f-search') as HTMLInputElement).value.trim();
+      const status = (document.getElementById('f-status') as HTMLSelectElement).value;
+      const country = (document.getElementById('f-country') as HTMLSelectElement).value;
+      const province = (document.getElementById('f-province') as HTMLSelectElement).value;
+      const rubro = (document.getElementById('f-rubro') as HTMLSelectElement).value;
+
+      if (search) filters.search = search;
+      if (status) filters.profileStatus = status;
+      if (country) filters.countryId = Number(country);
+      if (province) filters.provinceId = Number(province);
+      if (rubro) filters.rubroId = Number(rubro);
+      return filters;
+    }
+
+    // ─── Render table ────────────────────────────────────────────
+    function renderTable(data: AdminProfessional[], total: number, page: number, sizePage: number) {
+      const tbody = document.getElementById('table-body')!;
+      const totalPages = Math.ceil(total / sizePage);
+
+      // Results info
+      const start = (page - 1) * sizePage + 1;
+      const end = Math.min(page * sizePage, total);
+      document.getElementById('results-info')!.textContent =
+        total > 0 ? `Mostrando ${start}–${end} de ${total} profesionales` : 'No se encontraron resultados';
+
+      // Table body
+      if (data.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center py-16 text-on-surface-variant">
+              <span class="material-symbols-outlined text-4xl mb-3 block text-outline" aria-hidden="true">search_off</span>
+              <p class="text-sm font-medium">No se encontraron profesionales con los filtros aplicados.</p>
+            </td>
+          </tr>`;
+      } else {
+        tbody.innerHTML = data.map(p => `
+          <tr class="border-b border-outline-variant/10 hover:bg-surface-container/50 transition-colors">
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-primary text-sm" aria-hidden="true">person</span>
+                </div>
+                <span class="font-bold text-on-surface text-sm">${p.name || '—'}</span>
+              </div>
+            </td>
+            <td class="px-5 py-3.5 text-on-surface-variant text-xs">${p.user?.email || p.emailContact || '—'}</td>
+            <td class="px-5 py-3.5">${statusBadge(p.profileStatus)}</td>
+            <td class="px-5 py-3.5 text-on-surface-variant text-xs">${p.rubro?.name || '—'}</td>
+            <td class="px-5 py-3.5 text-on-surface-variant text-xs">${p.city || '—'}</td>
+            <td class="px-5 py-3.5 text-on-surface-variant text-xs">${formatDate(p.createdAt)}</td>
+            <td class="px-5 py-3.5 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                ${p.profileStatus === 'pending_review' ? `
+                  <a href="/admin/profesionales/detalle?id=${p.id}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-secondary text-on-secondary hover:opacity-90 transition-all" title="Validar perfil">
+                    <span class="material-symbols-outlined text-sm">verified_user</span>
+                    Validar
+                  </a>
+                ` : ''}
+                <a href="/admin/profesionales/detalle?id=${p.id}" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors" title="Ver detalle">
+                  <span class="material-symbols-outlined text-sm">visibility</span>
+                  Ver
+                </a>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Pagination
+      renderPagination('pagination-top', page, totalPages);
+      renderPagination('pagination-bottom', page, totalPages);
+    }
+
+    function renderPagination(containerId: string, page: number, totalPages: number) {
+      const container = document.getElementById(containerId)!;
+      if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+      container.innerHTML = `
+        <button class="pg-prev px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed" ${page <= 1 ? 'disabled' : ''}>
+          <span class="material-symbols-outlined text-sm align-middle">chevron_left</span> Anterior
+        </button>
+        <span class="text-xs font-bold text-on-surface-variant px-2">${page} / ${totalPages}</span>
+        <button class="pg-next px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed" ${page >= totalPages ? 'disabled' : ''}>
+          Siguiente <span class="material-symbols-outlined text-sm align-middle">chevron_right</span>
+        </button>
+      `;
+
+      container.querySelector('.pg-prev')?.addEventListener('click', () => { if (currentPage > 1) { currentPage--; loadData(); } });
+      container.querySelector('.pg-next')?.addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; loadData(); } });
+    }
+
+    // ─── Load data ───────────────────────────────────────────────
+    async function loadData() {
+      const tbody = document.getElementById('table-body')!;
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center py-12 text-on-surface-variant">
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+              <span class="text-sm font-medium">Cargando...</span>
+            </div>
+          </td>
+        </tr>`;
+
+      try {
+        const res = await fetchAllProfessionals(getFilters());
+        renderTable(res.data, res.total, res.page, res.sizePage);
+      } catch (err: any) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center py-12 text-error">
+              <span class="material-symbols-outlined text-3xl mb-2 block" aria-hidden="true">error</span>
+              <p class="text-sm font-bold">Error al cargar profesionales</p>
+              <p class="text-xs mt-1">${err?.message || 'Error desconocido'}</p>
+            </td>
+          </tr>`;
+      }
+    }
+
+    // ─── Wire events ─────────────────────────────────────────────
+    document.getElementById('btn-search')?.addEventListener('click', () => { currentPage = 1; loadData(); });
+    document.getElementById('btn-clear')?.addEventListener('click', () => {
+      (document.getElementById('f-search') as HTMLInputElement).value = '';
+      (document.getElementById('f-status') as HTMLSelectElement).value = '';
+      (document.getElementById('f-country') as HTMLSelectElement).value = '';
+      (document.getElementById('f-province') as HTMLSelectElement).value = '';
+      (document.getElementById('f-province') as HTMLSelectElement).disabled = true;
+      (document.getElementById('f-rubro') as HTMLSelectElement).value = '';
+      currentPage = 1;
+      loadData();
+    });
+
+    // Enter key on search input
+    document.getElementById('f-search')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { currentPage = 1; loadData(); }
+    });
+
+    // ─── Init ────────────────────────────────────────────────────
+    populateFilters();
+    loadData();
+  </script>
+</AdminLayout>
