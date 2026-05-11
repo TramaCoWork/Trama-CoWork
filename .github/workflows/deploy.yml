@@ -22,8 +22,8 @@ jobs:
       - name: Create production .env
         run: |
           echo "PORT=4321" >> .env
-          echo "PUBLIC_API_BASE_URL=${{ secrets.PUBLIC_API_BASE_URL }}" >> .env
-          echo "PUBLIC_BASE_URL=${{ secrets.PUBLIC_BASE_URL }}" >> .env
+          echo "PUBLIC_API_BASE_URL=${{ vars.PUBLIC_API_BASE_URL }}" >> .env
+          echo "PUBLIC_BASE_URL=${{ vars.PUBLIC_BASE_URL }}" >> .env
 
       - run: npm run build
 
