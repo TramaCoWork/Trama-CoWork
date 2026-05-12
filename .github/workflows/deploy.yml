@@ -40,12 +40,16 @@ jobs:
           git tag -a "${{ inputs.version }}" -m "$MSG"
           git push origin "${{ inputs.version }}"
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
       - name: Create production .env
         run: |
@@ -54,7 +58,7 @@ jobs:
           echo "PUBLIC_BASE_URL=${{ vars.PUBLIC_BASE_URL }}" >> .env
           echo "PUBLIC_TURNSTILE_SITE_KEY=${{ vars.PUBLIC_TURNSTILE_SITE_KEY }}" >> .env
 
-      - run: npm run build
+      - run: pnpm build
 
       - name: Upload maintenance page
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
