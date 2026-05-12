@@ -839,8 +839,8 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
       const checks: { label: string; ok: boolean }[] = [
         { label: 'Nombre completo', ok: Boolean((document.getElementById('w-name') as HTMLInputElement)?.value.trim()) },
         { label: 'Biografía', ok: Boolean((document.getElementById('w-bio') as HTMLTextAreaElement)?.value.trim()) },
-        { label: 'Foto de perfil', ok: Boolean(profileData?.photo) },
-        { label: 'Servicios', ok: currentServices.length > 0 },
+        { label: 'Foto de perfil', ok: hasPhoto },
+        { label: 'Herramientas / Servicios', ok: true },
         { label: 'Precio', ok: Boolean((document.getElementById('w-price-ars') as HTMLInputElement)?.value) || Boolean((document.getElementById('w-price-hour') as HTMLInputElement)?.value) },
         { label: 'Ciudad', ok: Boolean((document.getElementById('w-city') as HTMLInputElement)?.value.trim()) },
         { label: 'Profesión', ok: Boolean(currentRubroId) },
