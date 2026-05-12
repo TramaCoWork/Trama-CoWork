@@ -22,7 +22,9 @@ import Layout from "../layouts/Layout.astro";
       <p
         class="text-xl text-on-surface-variant font-light max-w-2xl mx-auto leading-relaxed"
       >
-        Ten&eacute;s alguna consulta, sugerencia o simplemente quer&eacute;s saber m&aacute;s sobre TRAMA? Escrib&iacute;nos y te responderemos a la brevedad.
+        Ten&eacute;s alguna consulta, sugerencia o simplemente quer&eacute;s
+        saber m&aacute;s sobre TRAMA? Escrib&iacute;nos y te responderemos a la
+        brevedad.
       </p>
     </div>
   </section>
@@ -36,15 +38,20 @@ import Layout from "../layouts/Layout.astro";
         <div
           id="msg-success"
           class="hidden mb-6 p-4 rounded-xl bg-primary-container text-on-primary-container text-sm font-semibold"
-        ></div>
+        >
+        </div>
         <div
           id="msg-error"
           class="hidden mb-6 p-4 rounded-xl bg-error-container text-on-error-container text-sm font-semibold"
-        ></div>
+        >
+        </div>
 
         <form id="contact-form" class="space-y-5" novalidate>
           <div>
-            <label for="contact-name" class="block text-sm font-semibold text-on-surface mb-1.5">
+            <label
+              for="contact-name"
+              class="block text-sm font-semibold text-on-surface mb-1.5"
+            >
               Nombre completo *
             </label>
             <input
@@ -58,7 +65,10 @@ import Layout from "../layouts/Layout.astro";
           </div>
 
           <div>
-            <label for="contact-email" class="block text-sm font-semibold text-on-surface mb-1.5">
+            <label
+              for="contact-email"
+              class="block text-sm font-semibold text-on-surface mb-1.5"
+            >
               Email *
             </label>
             <input
@@ -72,7 +82,10 @@ import Layout from "../layouts/Layout.astro";
           </div>
 
           <div>
-            <label for="contact-subject" class="block text-sm font-semibold text-on-surface mb-1.5">
+            <label
+              for="contact-subject"
+              class="block text-sm font-semibold text-on-surface mb-1.5"
+            >
               Asunto *
             </label>
             <input
@@ -86,9 +99,16 @@ import Layout from "../layouts/Layout.astro";
           </div>
 
           <div>
-            <label for="contact-message" class="block text-sm font-semibold text-on-surface mb-1.5">
+            <label
+              for="contact-message"
+              class="block text-sm font-semibold text-on-surface mb-1.5"
+            >
               Mensaje *
-              <span id="msg-count" class="text-outline font-medium normal-case tracking-normal ml-2">(0/1000)</span>
+              <span
+                id="msg-count"
+                class="text-outline font-medium normal-case tracking-normal ml-2"
+                >(0/1000)</span
+              >
             </label>
             <textarea
               id="contact-message"
@@ -98,7 +118,7 @@ import Layout from "../layouts/Layout.astro";
               maxlength="1000"
               rows="5"
               class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-sm resize-none"
-              placeholder="Cont&aacute;nos en qu&eacute; podemos ayudarte (m&iacute;nimo 10 caracteres)..."
+              placeholder="Contános en qué podemos ayudarte (mínimo 10 caracteres)..."
             ></textarea>
           </div>
 
@@ -107,7 +127,8 @@ import Layout from "../layouts/Layout.astro";
             class="cf-turnstile"
             data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY}
             data-theme="light"
-          ></div>
+          >
+          </div>
 
           <button
             type="submit"
@@ -122,43 +143,72 @@ import Layout from "../layouts/Layout.astro";
       <!-- Info lateral -->
       <div class="md:col-span-2 space-y-8">
         <div class="bg-surface-container-low rounded-3xl p-8 space-y-6">
-          <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Otras formas de contacto</h2>
+          <h2 class="text-xl font-extrabold text-on-surface tracking-tight">
+            Otras formas de contacto
+          </h2>
 
           <div class="flex items-start gap-4">
-            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-primary text-xl" aria-hidden="true">mail</span>
+            <div
+              class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0"
+            >
+              <span
+                class="material-symbols-outlined text-primary text-xl"
+                aria-hidden="true">mail</span
+              >
             </div>
             <div>
               <p class="text-sm font-bold text-on-surface">Email</p>
-              <a href="mailto:info@tramacowork.com" class="text-sm text-primary hover:underline">info@tramacowork.com</a>
+              <a
+                href="mailto:info@tramacowork.com"
+                class="text-sm text-primary hover:underline"
+                >info@tramacowork.com</a
+              >
             </div>
           </div>
 
           <div class="flex items-start gap-4">
-            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-primary text-xl" aria-hidden="true">schedule</span>
+            <div
+              class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0"
+            >
+              <span
+                class="material-symbols-outlined text-primary text-xl"
+                aria-hidden="true">schedule</span
+              >
             </div>
             <div>
-              <p class="text-sm font-bold text-on-surface">Horario de atenci&oacute;n</p>
-              <p class="text-sm text-on-surface-variant">Lunes a Viernes, 9:00 a 18:00 (ART)</p>
+              <p class="text-sm font-bold text-on-surface">
+                Horario de atenci&oacute;n
+              </p>
+              <p class="text-sm text-on-surface-variant">
+                Lunes a Viernes, 9:00 a 18:00 (ART)
+              </p>
             </div>
           </div>
 
           <div class="flex items-start gap-4">
-            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-primary text-xl" aria-hidden="true">location_on</span>
+            <div
+              class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0"
+            >
+              <span
+                class="material-symbols-outlined text-primary text-xl"
+                aria-hidden="true">location_on</span
+              >
             </div>
             <div>
               <p class="text-sm font-bold text-on-surface">Ubicaci&oacute;n</p>
-              <p class="text-sm text-on-surface-variant">Buenos Aires, Argentina</p>
+              <p class="text-sm text-on-surface-variant">Salta, Argentina</p>
             </div>
           </div>
         </div>
 
         <div class="bg-surface-container-low rounded-3xl p-8">
-          <h3 class="text-sm font-bold text-on-surface mb-3">Tiempo de respuesta</h3>
+          <h3 class="text-sm font-bold text-on-surface mb-3">
+            Tiempo de respuesta
+          </h3>
           <p class="text-sm text-on-surface-variant leading-relaxed">
-            Respondemos todas las consultas en un plazo m&aacute;ximo de 48 horas h&aacute;biles. Para consultas urgentes, escrib&iacute; directamente a nuestro email.
+            Respondemos todas las consultas en un plazo m&aacute;ximo de 48
+            horas h&aacute;biles. Para consultas urgentes, escrib&iacute;
+            directamente a nuestro email.
           </p>
         </div>
       </div>
@@ -167,104 +217,124 @@ import Layout from "../layouts/Layout.astro";
 </Layout>
 
 <!-- Cloudflare Turnstile script -->
-<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script
+  is:inline
+  src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+  async
+  defer></script>
 
 <script>
   const BASE = import.meta.env.PUBLIC_API_BASE_URL;
-  const form = document.getElementById('contact-form') as HTMLFormElement;
-  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
-  const msgSuccess = document.getElementById('msg-success') as HTMLDivElement;
-  const msgError = document.getElementById('msg-error') as HTMLDivElement;
-  const messageInput = document.getElementById('contact-message') as HTMLTextAreaElement;
-  const msgCount = document.getElementById('msg-count')!;
+  const form = document.getElementById("contact-form") as HTMLFormElement;
+  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
+  const msgSuccess = document.getElementById("msg-success") as HTMLDivElement;
+  const msgError = document.getElementById("msg-error") as HTMLDivElement;
+  const messageInput = document.getElementById(
+    "contact-message",
+  ) as HTMLTextAreaElement;
+  const msgCount = document.getElementById("msg-count")!;
 
   // Character counter
-  messageInput.addEventListener('input', () => {
+  messageInput.addEventListener("input", () => {
     msgCount.textContent = `(${messageInput.value.length}/1000)`;
   });
 
   function showError(msg: string) {
-    msgSuccess.classList.add('hidden');
+    msgSuccess.classList.add("hidden");
     msgError.textContent = msg;
-    msgError.classList.remove('hidden');
-    msgError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    msgError.classList.remove("hidden");
+    msgError.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
   function showSuccess(msg: string) {
-    msgError.classList.add('hidden');
+    msgError.classList.add("hidden");
     msgSuccess.textContent = msg;
-    msgSuccess.classList.remove('hidden');
-    msgSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    msgSuccess.classList.remove("hidden");
+    msgSuccess.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
   function hideMessages() {
-    msgSuccess.classList.add('hidden');
-    msgError.classList.add('hidden');
+    msgSuccess.classList.add("hidden");
+    msgError.classList.add("hidden");
   }
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     hideMessages();
 
-    const name = (document.getElementById('contact-name') as HTMLInputElement).value.trim();
-    const email = (document.getElementById('contact-email') as HTMLInputElement).value.trim();
-    const subject = (document.getElementById('contact-subject') as HTMLInputElement).value.trim();
+    const name = (
+      document.getElementById("contact-name") as HTMLInputElement
+    ).value.trim();
+    const email = (
+      document.getElementById("contact-email") as HTMLInputElement
+    ).value.trim();
+    const subject = (
+      document.getElementById("contact-subject") as HTMLInputElement
+    ).value.trim();
     const message = messageInput.value.trim();
 
     // Validaciones
     if (!name || !email || !subject || !message) {
-      showError('Todos los campos son obligatorios.');
+      showError("Todos los campos son obligatorios.");
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      showError('Ingresá un email válido.');
+      showError("Ingresá un email válido.");
       return;
     }
 
     if (message.length < 10) {
-      showError('El mensaje debe tener al menos 10 caracteres.');
+      showError("El mensaje debe tener al menos 10 caracteres.");
       return;
     }
 
     // Obtener token de Turnstile
     const turnstileToken = (window as any).turnstile?.getResponse();
     if (!turnstileToken) {
-      showError('Por favor, completá la verificación de seguridad.');
+      showError("Por favor, completá la verificación de seguridad.");
       return;
     }
 
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Enviando...';
+    submitBtn.textContent = "Enviando...";
 
     try {
       const res = await fetch(`${BASE}/contact`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, subject, message, turnstileToken }),
       });
 
       if (res.ok || res.status === 201) {
-        showSuccess('¡Mensaje enviado exitosamente! Te responderemos a la brevedad.');
+        showSuccess(
+          "¡Mensaje enviado exitosamente! Te responderemos a la brevedad.",
+        );
         form.reset();
-        msgCount.textContent = '(0/1000)';
+        msgCount.textContent = "(0/1000)";
         // Reset Turnstile widget
         (window as any).turnstile?.reset();
       } else if (res.status === 400) {
-        showError('Error en la verificación de seguridad. Intentá nuevamente.');
+        showError("Error en la verificación de seguridad. Intentá nuevamente.");
         (window as any).turnstile?.reset();
       } else if (res.status === 429) {
-        showError('Demasiados intentos. Por favor, esperá unos minutos antes de volver a intentar.');
+        showError(
+          "Demasiados intentos. Por favor, esperá unos minutos antes de volver a intentar.",
+        );
       } else {
         const data = await res.json().catch(() => null);
-        showError(data?.message || 'Error al enviar el mensaje. Intentá nuevamente.');
+        showError(
+          data?.message || "Error al enviar el mensaje. Intentá nuevamente.",
+        );
       }
     } catch {
-      showError('Error de conexión. Verificá tu conexión a internet e intentá nuevamente.');
+      showError(
+        "Error de conexión. Verificá tu conexión a internet e intentá nuevamente.",
+      );
     } finally {
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Enviar mensaje';
+      submitBtn.textContent = "Enviar mensaje";
     }
   });
 </script>
