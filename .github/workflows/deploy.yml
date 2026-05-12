@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      description:
+        description: 'Nota o motivo del deploy (opcional)'
+        required: false
+        default: ''
 
 jobs:
   deploy:
