@@ -9,6 +9,7 @@
  *   - POST   /community/posts            -> Crear post
  *   - DELETE /community/posts/:id        -> Eliminar post
  *   - PATCH  /community/posts/:id/status -> Cambiar estado (published/paused)
+ *   - GET    /community/posts/:id/comments -> Comentarios paginados de un post
  *   - POST   /community/comments         -> Comentar en un post
  *   - DELETE /community/comments/:id     -> Eliminar comentario
  */
@@ -26,6 +27,7 @@ export interface Channel {
 export interface PostUser {
   id: string;
   email: string;
+  profile?: { name: string };
 }
 
 export interface Comment {
@@ -47,8 +49,7 @@ export interface Post {
   createdAt: string;
   updatedAt: string;
   user: PostUser;
-  _count?: { comments: number };
-  comments?: Comment[];
+  commentCount?: number;
 }
 
 export interface PaginatedPosts {
@@ -56,6 +57,16 @@ export interface PaginatedPosts {
   total: number;
   page: number;
   limit: number;
+}
+
+export interface PaginatedComments {
+  data: Comment[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 // ─── Fetch ─────────────────────────────────────────────────────
@@ -98,4 +109,9 @@ export async function createComment(postId: string, content: string): Promise<Co
 /** Eliminar un comentario */
 export async function deleteComment(commentId: string): Promise<void> {
   return api.del<void>(`/community/comments/${commentId}`);
+}
+
+/** Comentarios paginados de un post */
+export async function fetchPostComments(postId: string, page = 1, limit = 10): Promise<PaginatedComments> {
+  return api.get<PaginatedComments>(`/community/posts/${postId}/comments`, { page, limit });
 }

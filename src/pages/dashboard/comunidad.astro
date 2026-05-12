@@ -114,6 +114,59 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       </div>
     </div>
   </div>
+
+  <!-- Comments Modal -->
+  <div id="comments-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modal-post-author">
+    <!-- Backdrop -->
+    <div id="modal-backdrop" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+    <!-- Card -->
+    <div class="relative w-full max-w-lg max-h-[85vh] bg-surface-container rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-outline-variant/15">
+      <!-- Header -->
+      <div class="shrink-0 px-5 py-4 border-b border-outline-variant/15">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-primary text-base" aria-hidden="true">person</span>
+            </div>
+            <div class="min-w-0">
+              <p id="modal-post-author" class="text-sm font-bold text-on-surface truncate"></p>
+              <p id="modal-post-date" class="text-[10px] text-on-surface-variant"></p>
+            </div>
+          </div>
+          <button id="modal-close-btn" class="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" aria-label="Cerrar">
+            <span class="material-symbols-outlined text-xl" aria-hidden="true">close</span>
+          </button>
+        </div>
+        <p id="modal-post-content" class="text-sm text-on-surface leading-relaxed mt-3"></p>
+      </div>
+      <!-- Comments list (scrollable) -->
+      <div id="modal-comments-wrapper" class="flex-1 overflow-y-auto px-5 py-3 space-y-2 min-h-0">
+        <div id="modal-comments-list" class="space-y-2"></div>
+        <div id="modal-load-more-wrapper" class="hidden text-center py-2">
+          <button id="modal-load-more-btn" class="text-xs text-primary hover:text-primary/80 font-semibold transition-colors">
+            Cargar más comentarios...
+          </button>
+        </div>
+      </div>
+      <!-- Comment form (footer) -->
+      <div class="shrink-0 px-5 py-3 border-t border-outline-variant/15 bg-surface-container">
+        <form id="modal-comment-form" class="flex gap-2">
+          <label for="modal-comment-input" class="sr-only">Escribir un comentario</label>
+          <input
+            id="modal-comment-input"
+            class="flex-1 bg-surface-container-low border-none rounded-lg px-3 py-2.5 text-sm font-medium text-on-surface placeholder:text-outline/50 focus:ring-2 focus:ring-primary/20 transition-all"
+            placeholder="Escribe un comentario..."
+            type="text"
+            maxlength="500"
+            required
+          />
+          <button type="submit" class="px-4 py-2.5 bg-primary text-on-primary rounded-lg text-sm font-bold hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed">
+            <span class="material-symbols-outlined text-sm" aria-hidden="true">send</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
 </DashboardLayout>
 
 <script>
@@ -121,6 +174,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
     fetchChannels,
     fetchPosts,
     fetchMyPosts,
+    fetchPostComments,
     createPost,
     deletePost,
     updatePostStatus,
@@ -212,7 +266,8 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
   // ─── Render feed post ─────────────────────────────────────────
   function renderFeedPost(post: Post): string {
     const isOwner = post.userId === userId;
-    const commentCount = post._count?.comments || 0;
+    const commentCount = post.commentCount ?? 0;
+    const authorName = post.user?.profile?.name || post.user?.email || 'Usuario';
 
     return `
       <article class="bg-surface-container-lowest rounded-xl border border-outline-variant/10 p-4 hover:border-outline-variant/25 transition-all" data-post-id="${post.id}">
@@ -222,7 +277,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
               <span class="material-symbols-outlined text-primary text-sm" aria-hidden="true">person</span>
             </div>
             <div>
-              <span class="text-sm font-bold text-on-surface">${escapeHtml(post.user?.email || 'Usuario')}</span>
+              <span class="text-sm font-bold text-on-surface">${escapeHtml(authorName)}</span>
               <span class="text-xs text-on-surface-variant ml-2">${timeAgo(post.createdAt)}</span>
             </div>
           </div>
@@ -233,36 +288,20 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
         </div>
         <p class="text-sm text-on-surface leading-relaxed pl-11">${escapeHtml(post.content)}</p>
         <div class="pl-11 mt-3 flex items-center gap-4">
-          <button class="btn-toggle-comments text-xs text-on-surface-variant hover:text-primary font-semibold flex items-center gap-1 transition-colors" data-post-id="${post.id}">
+          <button class="btn-open-comments text-xs text-on-surface-variant hover:text-primary font-semibold flex items-center gap-1 transition-colors" data-post-id="${post.id}">
             <span class="material-symbols-outlined text-sm" aria-hidden="true">comment</span>
-            ${commentCount} ${commentCount === 1 ? 'comentario' : 'comentarios'}
+            <span class="comment-count-label">${commentCount} ${commentCount === 1 ? 'comentario' : 'comentarios'}</span>
           </button>
-        </div>
-        <div class="comments-section hidden pl-11 mt-3 space-y-2" data-post-id="${post.id}">
-          <div class="comments-list space-y-2"></div>
-          <form class="comment-form flex gap-2 mt-2">
-            <input
-              class="flex-1 bg-surface-container-low border-none rounded-lg px-3 py-2 text-xs font-medium text-on-surface placeholder:text-outline/50 focus:ring-2 focus:ring-primary/20"
-              placeholder="Escribe un comentario..."
-              type="text"
-              maxlength="500"
-              required
-            />
-            <button type="submit" class="px-3 py-2 bg-primary text-on-primary rounded-lg text-xs font-bold hover:brightness-110 active:scale-95 transition-all">
-              <span class="material-symbols-outlined text-sm" aria-hidden="true">send</span>
-            </button>
-          </form>
         </div>
       </article>`;
   }
 
-  // ─── Render my post (with comments visible + status toggle) ───
+  // ─── Render my post (with count, click opens modal) ────────────
   function renderMyPost(post: Post): string {
-    const comments = post.comments || [];
+    const commentCount = post.commentCount ?? 0;
     const isPaused = post.status === 'paused';
     const statusLabel = isPaused ? 'Pausado' : 'Publicado';
     const statusIcon = isPaused ? 'pause_circle' : 'check_circle';
-    const statusColor = isPaused ? 'text-outline' : 'text-primary';
     const badgeClass = isPaused
       ? 'bg-outline/10 text-outline'
       : 'bg-primary/10 text-primary';
@@ -297,29 +336,213 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
             </button>
           </div>
         </div>
-        ${comments.length > 0 ? `
-          <div class="border-t border-outline-variant/10 pt-3 mt-3 space-y-2">
-            <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em]">Comentarios recibidos (${comments.length})</p>
-            ${comments.map(c => `
-              <div class="flex items-start gap-2 bg-surface-container-low rounded-lg p-3">
-                <div class="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
-                  <span class="material-symbols-outlined text-secondary text-xs" aria-hidden="true">person</span>
-                </div>
-                <div class="flex-1">
-                  <div class="flex items-center gap-2">
-                    <span class="text-xs font-bold text-on-surface">${escapeHtml(c.user?.email || 'Usuario')}</span>
-                    <span class="text-[10px] text-on-surface-variant">${timeAgo(c.createdAt)}</span>
-                  </div>
-                  <p class="text-xs text-on-surface-variant mt-0.5">${escapeHtml(c.content)}</p>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        ` : `
-          <p class="text-xs text-on-surface-variant italic mt-3 pt-3 border-t border-outline-variant/10">Sin comentarios aún.</p>
-        `}
+        <div class="border-t border-outline-variant/10 pt-3 mt-3">
+          <button class="btn-open-comments text-xs text-on-surface-variant hover:text-primary font-semibold flex items-center gap-1 transition-colors" data-post-id="${post.id}">
+            <span class="material-symbols-outlined text-sm" aria-hidden="true">comment</span>
+            <span class="comment-count-label">${commentCount} ${commentCount === 1 ? 'comentario recibido' : 'comentarios recibidos'}</span>
+          </button>
+        </div>
       </article>`;
   }
+
+  // ─── Render a single comment HTML ──────────────────────────────
+  function renderCommentHtml(c: Comment): string {
+    const commenterName = c.user?.profile?.name || c.user?.email || 'Usuario';
+    return `
+      <div class="flex items-start gap-2 bg-surface-container-low rounded-lg p-3" data-comment-id="${c.id}">
+        <div class="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-secondary text-xs" aria-hidden="true">person</span>
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-on-surface">${escapeHtml(commenterName)}</span>
+            <span class="text-[10px] text-on-surface-variant">${timeAgo(c.createdAt)}</span>
+          </div>
+          <p class="text-xs text-on-surface-variant mt-0.5">${escapeHtml(c.content)}</p>
+        </div>
+        ${c.userId === userId ? `
+          <button class="btn-delete-comment text-on-surface-variant hover:text-error transition-colors p-0.5" data-comment-id="${c.id}" title="Eliminar comentario">
+            <span class="material-symbols-outlined text-xs" aria-hidden="true">close</span>
+          </button>` : ''}
+      </div>`;
+  }
+
+  // ─── Comments Modal logic ─────────────────────────────────────
+  const commentsModal = document.getElementById('comments-modal')!;
+  const modalBackdrop = document.getElementById('modal-backdrop')!;
+  const modalCloseBtn = document.getElementById('modal-close-btn')!;
+  const modalPostAuthor = document.getElementById('modal-post-author')!;
+  const modalPostDate = document.getElementById('modal-post-date')!;
+  const modalPostContent = document.getElementById('modal-post-content')!;
+  const modalCommentsList = document.getElementById('modal-comments-list')!;
+  const modalLoadMoreWrapper = document.getElementById('modal-load-more-wrapper')!;
+  const modalLoadMoreBtn = document.getElementById('modal-load-more-btn')!;
+  const modalCommentForm = document.getElementById('modal-comment-form') as HTMLFormElement;
+  const modalCommentInput = document.getElementById('modal-comment-input') as HTMLInputElement;
+  const modalCommentsWrapper = document.getElementById('modal-comments-wrapper')!;
+
+  let modalPostId: string | null = null;
+  let modalCurrentPage = 1;
+  let modalTotalPages = 1;
+  let feedPosts: Post[] = [];
+
+  function findPostData(postId: string): Post | undefined {
+    return feedPosts.find(p => p.id === postId) || allMyPosts.find(p => p.id === postId);
+  }
+
+  async function openCommentsModal(postId: string) {
+    modalPostId = postId;
+    modalCurrentPage = 1;
+    modalTotalPages = 1;
+
+    const post = findPostData(postId);
+    const authorName = post?.user?.profile?.name || post?.user?.email || 'Usuario';
+    modalPostAuthor.textContent = authorName;
+    modalPostDate.textContent = post ? timeAgo(post.createdAt) : '';
+    modalPostContent.textContent = post?.content || '';
+
+    modalCommentsList.innerHTML = `
+      <div class="flex items-center justify-center py-6">
+        <span class="material-symbols-outlined text-2xl text-primary animate-spin" aria-hidden="true">schedule</span>
+      </div>`;
+    modalLoadMoreWrapper.classList.add('hidden');
+
+    commentsModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    modalCommentInput.focus();
+
+    await loadModalComments(1);
+  }
+
+  function closeCommentsModal() {
+    commentsModal.classList.add('hidden');
+    document.body.style.overflow = '';
+    modalPostId = null;
+    modalCommentsList.innerHTML = '';
+    modalCommentInput.value = '';
+  }
+
+  async function loadModalComments(page: number) {
+    if (!modalPostId) return;
+
+    try {
+      const result = await fetchPostComments(modalPostId, page, 10);
+      const comments = result.data || [];
+      const meta = result.meta;
+      modalCurrentPage = meta.page;
+      modalTotalPages = meta.totalPages;
+
+      if (page === 1) {
+        modalCommentsList.innerHTML = '';
+      }
+
+      if (page === 1 && comments.length === 0) {
+        modalCommentsList.innerHTML = '<p class="text-xs text-on-surface-variant italic text-center py-4">Sin comentarios aún. Sé el primero en comentar.</p>';
+      } else {
+        comments.forEach(c => {
+          modalCommentsList.insertAdjacentHTML('beforeend', renderCommentHtml(c));
+        });
+        bindModalDeleteButtons();
+      }
+
+      // Show/hide load more
+      if (meta.page < meta.totalPages) {
+        modalLoadMoreWrapper.classList.remove('hidden');
+      } else {
+        modalLoadMoreWrapper.classList.add('hidden');
+      }
+    } catch (err) {
+      console.error('Error cargando comentarios:', err);
+      if (page === 1) {
+        modalCommentsList.innerHTML = '<p class="text-xs text-error text-center py-4">Error al cargar comentarios.</p>';
+      }
+    }
+  }
+
+  function bindModalDeleteButtons() {
+    modalCommentsList.querySelectorAll('.btn-delete-comment').forEach(btn => {
+      if ((btn as HTMLElement).dataset.bound) return;
+      (btn as HTMLElement).dataset.bound = 'true';
+      btn.addEventListener('click', async () => {
+        const commentId = (btn as HTMLElement).dataset.commentId!;
+        if (!confirm('¿Eliminar este comentario?')) return;
+        try {
+          await deleteComment(commentId);
+          const el = modalCommentsList.querySelector(`[data-comment-id="${commentId}"]`);
+          if (el) el.remove();
+          if (modalPostId) updateCommentCountLabel(modalPostId, -1);
+
+          // Check if list is now empty
+          if (modalCommentsList.children.length === 0) {
+            modalCommentsList.innerHTML = '<p class="text-xs text-on-surface-variant italic text-center py-4">Sin comentarios aún. Sé el primero en comentar.</p>';
+          }
+        } catch (err) {
+          console.error('Error eliminando comentario:', err);
+        }
+      });
+    });
+  }
+
+  function updateCommentCountLabel(postId: string, delta: number) {
+    // Update in both feed and myposts containers
+    document.querySelectorAll(`article[data-post-id="${postId}"] .comment-count-label`).forEach(label => {
+      const text = label.textContent || '0';
+      const current = parseInt(text) || 0;
+      const newCount = Math.max(0, current + delta);
+      // Detect if it's a "recibido" label
+      const isMyPost = text.includes('recibido');
+      if (isMyPost) {
+        label.textContent = `${newCount} ${newCount === 1 ? 'comentario recibido' : 'comentarios recibidos'}`;
+      } else {
+        label.textContent = `${newCount} ${newCount === 1 ? 'comentario' : 'comentarios'}`;
+      }
+    });
+  }
+
+  // Modal event listeners
+  modalCloseBtn.addEventListener('click', closeCommentsModal);
+  modalBackdrop.addEventListener('click', closeCommentsModal);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalPostId) closeCommentsModal();
+  });
+
+  modalLoadMoreBtn.addEventListener('click', async () => {
+    if (modalCurrentPage < modalTotalPages) {
+      await loadModalComments(modalCurrentPage + 1);
+    }
+  });
+
+  modalCommentForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const content = modalCommentInput.value.trim();
+    if (!content || !modalPostId) return;
+
+    const submitBtn = modalCommentForm.querySelector('button[type="submit"]') as HTMLButtonElement;
+    submitBtn.disabled = true;
+
+    try {
+      const newComment = await createComment(modalPostId, content);
+      modalCommentInput.value = '';
+
+      // Remove empty message if present
+      const emptyMsg = modalCommentsList.querySelector('p.italic');
+      if (emptyMsg) emptyMsg.remove();
+
+      // Prepend new comment (newest first)
+      modalCommentsList.insertAdjacentHTML('afterbegin', renderCommentHtml(newComment));
+      bindModalDeleteButtons();
+
+      // Update count in background post
+      updateCommentCountLabel(modalPostId, 1);
+
+      // Scroll to top to see new comment
+      modalCommentsWrapper.scrollTop = 0;
+    } catch (err) {
+      console.error('Error creando comentario:', err);
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
 
   // ─── Load & render posts ──────────────────────────────────────
   async function loadPosts() {
@@ -334,6 +557,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
     try {
       const result = await fetchPosts(currentChannel);
       const posts = Array.isArray(result) ? result : (result as any).data || [];
+      feedPosts = posts;
 
       if (posts.length === 0) {
         postsContainer.innerHTML = `
@@ -422,39 +646,11 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       });
     });
 
-    // Toggle comments section
-    postsContainer.querySelectorAll('.btn-toggle-comments').forEach(btn => {
+    // Open comments modal
+    postsContainer.querySelectorAll('.btn-open-comments').forEach(btn => {
       btn.addEventListener('click', () => {
         const postId = (btn as HTMLElement).dataset.postId!;
-        const section = postsContainer.querySelector(`.comments-section[data-post-id="${postId}"]`) as HTMLElement;
-        if (section) section.classList.toggle('hidden');
-      });
-    });
-
-    // Submit comment
-    postsContainer.querySelectorAll('.comment-form').forEach(form => {
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const input = form.querySelector('input') as HTMLInputElement;
-        const content = input.value.trim();
-        if (!content) return;
-
-        const section = form.closest('.comments-section') as HTMLElement;
-        const postId = section?.dataset.postId;
-        if (!postId) return;
-
-        const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
-        submitBtn.disabled = true;
-
-        try {
-          await createComment(postId, content);
-          input.value = '';
-          loadPosts(); // Reload to show new comment count
-        } catch (err) {
-          console.error('Error creando comentario:', err);
-        } finally {
-          submitBtn.disabled = false;
-        }
+        openCommentsModal(postId);
       });
     });
   }
@@ -471,7 +667,6 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
         (btn as HTMLButtonElement).disabled = true;
         try {
           await updatePostStatus(postId, newStatus);
-          // Update local data
           const post = allMyPosts.find(p => p.id === postId);
           if (post) post.status = newStatus;
           renderFilteredMyPosts();
@@ -493,6 +688,14 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
         } catch (err) {
           console.error('Error eliminando post:', err);
         }
+      });
+    });
+
+    // Open comments modal
+    mypostsContainer.querySelectorAll('.btn-open-comments').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const postId = (btn as HTMLElement).dataset.postId!;
+        openCommentsModal(postId);
       });
     });
   }
