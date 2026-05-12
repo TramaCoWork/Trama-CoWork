@@ -33,6 +33,17 @@ jobs:
 
       - run: npm run build
 
+      - name: Upload maintenance page
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./.github/maintenance/
+          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
+          protocol: ftps
+          dangerous-clean-slate: true
+
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
