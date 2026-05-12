@@ -224,7 +224,8 @@ import Layout from "../layouts/Layout.astro";
   defer></script>
 
 <script>
-  const BASE = import.meta.env.PUBLIC_API_BASE_URL;
+  import { api } from '../services/apiClient';
+
   const form = document.getElementById("contact-form") as HTMLFormElement;
   const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
   const msgSuccess = document.getElementById("msg-success") as HTMLDivElement;
@@ -301,37 +302,26 @@ import Layout from "../layouts/Layout.astro";
     submitBtn.textContent = "Enviando...";
 
     try {
-      const res = await fetch(`${BASE}/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, subject, message, turnstileToken }),
-      });
-
-      if (res.ok || res.status === 201) {
-        showSuccess(
-          "¡Mensaje enviado exitosamente! Te responderemos a la brevedad.",
-        );
-        form.reset();
-        msgCount.textContent = "(0/1000)";
-        // Reset Turnstile widget
-        (window as any).turnstile?.reset();
-      } else if (res.status === 400) {
+      await api.post('/contact', { name, email, subject, message, turnstileToken });
+      showSuccess(
+        "¡Mensaje enviado exitosamente! Te responderemos a la brevedad.",
+      );
+      form.reset();
+      msgCount.textContent = "(0/1000)";
+      (window as any).turnstile?.reset();
+    } catch (err: any) {
+      if (err?.status === 400) {
         showError("Error en la verificación de seguridad. Intentá nuevamente.");
         (window as any).turnstile?.reset();
-      } else if (res.status === 429) {
+      } else if (err?.status === 429) {
         showError(
           "Demasiados intentos. Por favor, esperá unos minutos antes de volver a intentar.",
         );
       } else {
-        const data = await res.json().catch(() => null);
         showError(
-          data?.message || "Error al enviar el mensaje. Intentá nuevamente.",
+          err?.body?.message || "Error al enviar el mensaje. Intentá nuevamente.",
         );
       }
-    } catch {
-      showError(
-        "Error de conexión. Verificá tu conexión a internet e intentá nuevamente.",
-      );
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Enviar mensaje";
