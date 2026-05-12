@@ -1,0 +1,270 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Contacto | TRAMA"
+  description="Ponete en contacto con el equipo de TRAMA. Respondemos todas las consultas."
+>
+  <!-- Hero -->
+  <section class="bg-surface-container-low py-24 px-6">
+    <div class="max-w-5xl mx-auto text-center">
+      <span
+        class="inline-block px-4 py-1.5 mb-6 text-xs font-bold tracking-widest uppercase text-secondary bg-secondary-fixed rounded-full"
+      >
+        Contacto
+      </span>
+      <h1
+        class="text-5xl md:text-7xl font-extrabold tracking-tighter text-on-surface leading-tight mb-6"
+      >
+        Habl&aacute; con <span class="text-primary">nosotros.</span>
+      </h1>
+      <p
+        class="text-xl text-on-surface-variant font-light max-w-2xl mx-auto leading-relaxed"
+      >
+        Ten&eacute;s alguna consulta, sugerencia o simplemente quer&eacute;s saber m&aacute;s sobre TRAMA? Escrib&iacute;nos y te responderemos a la brevedad.
+      </p>
+    </div>
+  </section>
+
+  <!-- Formulario + Info -->
+  <section class="max-w-5xl mx-auto px-6 py-24">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-16">
+      <!-- Formulario -->
+      <div class="md:col-span-3">
+        <!-- Mensajes -->
+        <div
+          id="msg-success"
+          class="hidden mb-6 p-4 rounded-xl bg-primary-container text-on-primary-container text-sm font-semibold"
+        ></div>
+        <div
+          id="msg-error"
+          class="hidden mb-6 p-4 rounded-xl bg-error-container text-on-error-container text-sm font-semibold"
+        ></div>
+
+        <form id="contact-form" class="space-y-5" novalidate>
+          <div>
+            <label for="contact-name" class="block text-sm font-semibold text-on-surface mb-1.5">
+              Nombre completo *
+            </label>
+            <input
+              type="text"
+              id="contact-name"
+              name="name"
+              required
+              class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-sm"
+              placeholder="Tu nombre"
+            />
+          </div>
+
+          <div>
+            <label for="contact-email" class="block text-sm font-semibold text-on-surface mb-1.5">
+              Email *
+            </label>
+            <input
+              type="email"
+              id="contact-email"
+              name="email"
+              required
+              class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-sm"
+              placeholder="tu@email.com"
+            />
+          </div>
+
+          <div>
+            <label for="contact-subject" class="block text-sm font-semibold text-on-surface mb-1.5">
+              Asunto *
+            </label>
+            <input
+              type="text"
+              id="contact-subject"
+              name="subject"
+              required
+              class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-sm"
+              placeholder="Motivo de tu consulta"
+            />
+          </div>
+
+          <div>
+            <label for="contact-message" class="block text-sm font-semibold text-on-surface mb-1.5">
+              Mensaje *
+              <span id="msg-count" class="text-outline font-medium normal-case tracking-normal ml-2">(0/1000)</span>
+            </label>
+            <textarea
+              id="contact-message"
+              name="message"
+              required
+              minlength="10"
+              maxlength="1000"
+              rows="5"
+              class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-sm resize-none"
+              placeholder="Cont&aacute;nos en qu&eacute; podemos ayudarte (m&iacute;nimo 10 caracteres)..."
+            ></textarea>
+          </div>
+
+          <!-- Cloudflare Turnstile -->
+          <div
+            class="cf-turnstile"
+            data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY}
+            data-theme="light"
+          ></div>
+
+          <button
+            type="submit"
+            id="submit-btn"
+            class="w-full py-3 rounded-xl bg-primary text-on-primary font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Enviar mensaje
+          </button>
+        </form>
+      </div>
+
+      <!-- Info lateral -->
+      <div class="md:col-span-2 space-y-8">
+        <div class="bg-surface-container-low rounded-3xl p-8 space-y-6">
+          <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Otras formas de contacto</h2>
+
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-primary text-xl" aria-hidden="true">mail</span>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-on-surface">Email</p>
+              <a href="mailto:info@tramacowork.com" class="text-sm text-primary hover:underline">info@tramacowork.com</a>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-primary text-xl" aria-hidden="true">schedule</span>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-on-surface">Horario de atenci&oacute;n</p>
+              <p class="text-sm text-on-surface-variant">Lunes a Viernes, 9:00 a 18:00 (ART)</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-primary text-xl" aria-hidden="true">location_on</span>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-on-surface">Ubicaci&oacute;n</p>
+              <p class="text-sm text-on-surface-variant">Buenos Aires, Argentina</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-surface-container-low rounded-3xl p-8">
+          <h3 class="text-sm font-bold text-on-surface mb-3">Tiempo de respuesta</h3>
+          <p class="text-sm text-on-surface-variant leading-relaxed">
+            Respondemos todas las consultas en un plazo m&aacute;ximo de 48 horas h&aacute;biles. Para consultas urgentes, escrib&iacute; directamente a nuestro email.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<!-- Cloudflare Turnstile script -->
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<script>
+  const BASE = import.meta.env.PUBLIC_API_BASE_URL;
+  const form = document.getElementById('contact-form') as HTMLFormElement;
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+  const msgSuccess = document.getElementById('msg-success') as HTMLDivElement;
+  const msgError = document.getElementById('msg-error') as HTMLDivElement;
+  const messageInput = document.getElementById('contact-message') as HTMLTextAreaElement;
+  const msgCount = document.getElementById('msg-count')!;
+
+  // Character counter
+  messageInput.addEventListener('input', () => {
+    msgCount.textContent = `(${messageInput.value.length}/1000)`;
+  });
+
+  function showError(msg: string) {
+    msgSuccess.classList.add('hidden');
+    msgError.textContent = msg;
+    msgError.classList.remove('hidden');
+    msgError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function showSuccess(msg: string) {
+    msgError.classList.add('hidden');
+    msgSuccess.textContent = msg;
+    msgSuccess.classList.remove('hidden');
+    msgSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function hideMessages() {
+    msgSuccess.classList.add('hidden');
+    msgError.classList.add('hidden');
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideMessages();
+
+    const name = (document.getElementById('contact-name') as HTMLInputElement).value.trim();
+    const email = (document.getElementById('contact-email') as HTMLInputElement).value.trim();
+    const subject = (document.getElementById('contact-subject') as HTMLInputElement).value.trim();
+    const message = messageInput.value.trim();
+
+    // Validaciones
+    if (!name || !email || !subject || !message) {
+      showError('Todos los campos son obligatorios.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showError('Ingresá un email válido.');
+      return;
+    }
+
+    if (message.length < 10) {
+      showError('El mensaje debe tener al menos 10 caracteres.');
+      return;
+    }
+
+    // Obtener token de Turnstile
+    const turnstileToken = (window as any).turnstile?.getResponse();
+    if (!turnstileToken) {
+      showError('Por favor, completá la verificación de seguridad.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Enviando...';
+
+    try {
+      const res = await fetch(`${BASE}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, subject, message, turnstileToken }),
+      });
+
+      if (res.ok || res.status === 201) {
+        showSuccess('¡Mensaje enviado exitosamente! Te responderemos a la brevedad.');
+        form.reset();
+        msgCount.textContent = '(0/1000)';
+        // Reset Turnstile widget
+        (window as any).turnstile?.reset();
+      } else if (res.status === 400) {
+        showError('Error en la verificación de seguridad. Intentá nuevamente.');
+        (window as any).turnstile?.reset();
+      } else if (res.status === 429) {
+        showError('Demasiados intentos. Por favor, esperá unos minutos antes de volver a intentar.');
+      } else {
+        const data = await res.json().catch(() => null);
+        showError(data?.message || 'Error al enviar el mensaje. Intentá nuevamente.');
+      }
+    } catch {
+      showError('Error de conexión. Verificá tu conexión a internet e intentá nuevamente.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enviar mensaje';
+    }
+  });
+</script>
