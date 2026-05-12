@@ -23,6 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configure git
         if: github.event_name == 'workflow_dispatch'
@@ -33,7 +35,9 @@ jobs:
       - name: Create git tag
         if: github.event_name == 'workflow_dispatch'
         run: |
-          git tag -a "${{ inputs.version }}" -m "${{ inputs.description || inputs.version }}"
+          MSG="${{ inputs.description }}"
+          if [ -z "$MSG" ]; then MSG="${{ inputs.version }}"; fi
+          git tag -a "${{ inputs.version }}" -m "$MSG"
           git push origin "${{ inputs.version }}"
 
       - uses: actions/setup-node@v4
