@@ -6,10 +6,16 @@ on:
       - 'v*'
   workflow_dispatch:
     inputs:
+      version:
+        description: 'Tag de versión (ej: v1.3.0)'
+        required: true
       description:
         description: 'Nota o motivo del deploy (opcional)'
         required: false
         default: ''
+
+permissions:
+  contents: write
 
 jobs:
   deploy:
@@ -17,6 +23,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Create git tag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git tag -a "${{ inputs.version }}" -m "${{ inputs.description || inputs.version }}"
+          git push origin "${{ inputs.version }}"
 
       - uses: actions/setup-node@v4
         with:
