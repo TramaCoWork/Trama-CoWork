@@ -7,8 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Tag de versión (ej: v1.3.0)'
-        required: true
+        description: 'Tag de versión (ej: v1.3.0) — dejar vacío para deploy sin tag'
+        required: false
+        default: ''
       description:
         description: 'Nota o motivo del deploy (opcional)'
         required: false
@@ -27,13 +28,13 @@ jobs:
           fetch-depth: 0
 
       - name: Configure git
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && inputs.version != ''
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Create git tag
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && inputs.version != ''
         run: |
           MSG="${{ inputs.description }}"
           if [ -z "$MSG" ]; then MSG="${{ inputs.version }}"; fi
