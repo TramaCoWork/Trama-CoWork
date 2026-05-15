@@ -27,8 +27,11 @@ pnpm-debug.log*
 
 demo/
 
+vault/
 .agents/
 .openspec/
 .opencode/
 sdd/
 openspec/
+
+AGENTS.md

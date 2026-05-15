@@ -1,0 +1,224 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Ayuda | TRAMA"
+  description="Guía pública sobre cómo registrarte en TRAMA, completar tu perfil profesional y dar tus primeros pasos dentro de la plataforma."
+>
+  <section class="bg-surface-container-low py-24 px-6">
+    <div class="max-w-5xl mx-auto text-center">
+      <span class="inline-block px-4 py-1.5 mb-6 text-xs font-bold tracking-widest uppercase text-secondary bg-secondary-fixed rounded-full">
+        Centro de ayuda
+      </span>
+      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tighter text-on-surface leading-tight mb-6">
+        Todo lo que necesitás para <span class="text-primary">empezar en TRAMA</span>
+      </h1>
+      <p class="text-xl text-on-surface-variant font-light max-w-3xl mx-auto leading-relaxed">
+        Esta guía pública explica cómo crear tu cuenta profesional, qué pasos siguen después del registro y qué datos o documentos conviene tener listos para completar tu perfil.
+      </p>
+      <div class="flex flex-col sm:flex-row justify-center gap-4 mt-10">
+        <a
+          href="/registro"
+          class="px-8 py-4 bg-primary text-on-primary font-bold rounded-full hover:opacity-90 transition-all shadow-lg"
+        >
+          Crear cuenta profesional
+        </a>
+        <a
+          href="/login"
+          class="px-8 py-4 border-2 border-outline-variant text-on-surface font-bold rounded-full hover:bg-surface-container-lowest transition-colors"
+        >
+          Iniciar sesión
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="max-w-6xl mx-auto px-6 py-24">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-1">
+        <div class="bg-surface-container-low rounded-3xl p-6 sticky top-28">
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-4">En esta guía</p>
+          <nav class="space-y-3 text-sm font-semibold">
+            <a href="#registro" class="block text-primary hover:opacity-80 transition-opacity">Cómo registrarte</a>
+            <a href="#despues" class="block text-on-surface-variant hover:text-primary transition-colors">Qué pasa después</a>
+            <a href="#primeros-pasos" class="block text-on-surface-variant hover:text-primary transition-colors">Primeros pasos</a>
+            <a href="#datos" class="block text-on-surface-variant hover:text-primary transition-colors">Datos y documentos necesarios</a>
+            <a href="#funciones" class="block text-on-surface-variant hover:text-primary transition-colors">Qué podés hacer como profesional</a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="lg:col-span-2 space-y-8">
+        <section id="registro" class="bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant/10">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="material-symbols-outlined text-primary text-3xl" aria-hidden="true">person_add</span>
+            <h2 class="text-3xl font-extrabold tracking-tight text-on-surface">Cómo registrarte</h2>
+          </div>
+          <p class="text-on-surface-variant leading-relaxed mb-6">
+            El registro profesional actual se hace desde <strong>/registro</strong>. Hoy, el formulario pide solamente los datos básicos para crear tu cuenta y entrar al panel.
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-surface-container-low rounded-2xl p-5">
+              <p class="text-xs font-bold uppercase tracking-widest text-primary mb-2">Datos solicitados</p>
+              <ul class="space-y-2 text-sm text-on-surface-variant">
+                <li>• Nombre completo</li>
+                <li>• Correo electrónico</li>
+                <li>• Contraseña</li>
+                <li>• Confirmación de contraseña</li>
+                <li>• Aceptación de términos</li>
+              </ul>
+            </div>
+            <div class="bg-surface-container-low rounded-2xl p-5">
+              <p class="text-xs font-bold uppercase tracking-widest text-primary mb-2">Validaciones actuales</p>
+              <ul class="space-y-2 text-sm text-on-surface-variant">
+                <li>• Email con formato válido</li>
+                <li>• Contraseña de mínimo 8 caracteres</li>
+                <li>• Coincidencia entre contraseña y confirmación</li>
+                <li>• Aceptación obligatoria de términos</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section id="despues" class="bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant/10">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="material-symbols-outlined text-primary text-3xl" aria-hidden="true">login</span>
+            <h2 class="text-3xl font-extrabold tracking-tight text-on-surface">Qué pasa después del registro</h2>
+          </div>
+          <p class="text-on-surface-variant leading-relaxed mb-5">
+            Después de crear la cuenta, TRAMA inicia la sesión del profesional y lo lleva al dashboard. Desde ahí comienza el proceso de completar el perfil profesional.
+          </p>
+          <div class="bg-primary-container rounded-2xl p-6">
+            <p class="text-sm font-bold text-on-primary-container mb-2">Resumen del flujo</p>
+            <ol class="space-y-2 text-sm text-on-primary-container/90">
+              <li>1. Creás tu cuenta profesional.</li>
+              <li>2. Ingresás automáticamente al panel.</li>
+              <li>3. Completás el wizard de onboarding.</li>
+              <li>4. Enviás tu perfil a revisión.</li>
+            </ol>
+          </div>
+        </section>
+
+        <section id="primeros-pasos" class="bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant/10">
+          <div class="flex items-center gap-3 mb-6">
+            <span class="material-symbols-outlined text-primary text-3xl" aria-hidden="true">checklist</span>
+            <h2 class="text-3xl font-extrabold tracking-tight text-on-surface">Primeros pasos para completar tu perfil</h2>
+          </div>
+          <div class="space-y-4">
+            <div class="p-5 rounded-2xl bg-surface-container-low">
+              <h3 class="text-lg font-bold text-on-surface mb-2">1. Datos personales</h3>
+              <p class="text-sm text-on-surface-variant">Completá nombre, país, provincia, ciudad y, si querés, tu WhatsApp.</p>
+            </div>
+            <div class="p-5 rounded-2xl bg-surface-container-low">
+              <h3 class="text-lg font-bold text-on-surface mb-2">2. Identidad</h3>
+              <p class="text-sm text-on-surface-variant">Cargá tu DNI o documento y subí frente y dorso para validación.</p>
+            </div>
+            <div class="p-5 rounded-2xl bg-surface-container-low">
+              <h3 class="text-lg font-bold text-on-surface mb-2">3. Profesión y especialidades</h3>
+              <p class="text-sm text-on-surface-variant">Elegí tu rubro principal y hasta 5 especialidades asociadas.</p>
+            </div>
+            <div class="p-5 rounded-2xl bg-surface-container-low">
+              <h3 class="text-lg font-bold text-on-surface mb-2">4. Perfil profesional</h3>
+              <p class="text-sm text-on-surface-variant">Sumá foto, bio, servicios o herramientas, precios, modalidad y LinkedIn.</p>
+            </div>
+            <div class="p-5 rounded-2xl bg-surface-container-low">
+              <h3 class="text-lg font-bold text-on-surface mb-2">5. Educación y CV</h3>
+              <p class="text-sm text-on-surface-variant">Cargá al menos un estudio y subí tu CV. También podés adjuntar certificados o títulos.</p>
+            </div>
+            <div class="p-5 rounded-2xl bg-surface-container-low">
+              <h3 class="text-lg font-bold text-on-surface mb-2">6. Envío a revisión</h3>
+              <p class="text-sm text-on-surface-variant">Revisá el nivel de completitud y enviá tu perfil para revisión dentro de la plataforma.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="datos" class="bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant/10">
+          <div class="flex items-center gap-3 mb-6">
+            <span class="material-symbols-outlined text-primary text-3xl" aria-hidden="true">folder_shared</span>
+            <h2 class="text-3xl font-extrabold tracking-tight text-on-surface">Qué datos y documentos conviene tener preparados</h2>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-surface-container-low rounded-2xl p-6">
+              <p class="text-xs font-bold uppercase tracking-widest text-primary mb-3">Datos</p>
+              <ul class="space-y-2 text-sm text-on-surface-variant">
+                <li>• Nombre completo</li>
+                <li>• País, provincia y ciudad</li>
+                <li>• WhatsApp</li>
+                <li>• Rubro principal</li>
+                <li>• Especialidades</li>
+                <li>• Bio profesional</li>
+                <li>• Servicios o herramientas</li>
+                <li>• Precio por hora</li>
+                <li>• Modalidad de trabajo</li>
+                <li>• Enlace de LinkedIn</li>
+              </ul>
+            </div>
+            <div class="bg-surface-container-low rounded-2xl p-6">
+              <p class="text-xs font-bold uppercase tracking-widest text-primary mb-3">Archivos</p>
+              <ul class="space-y-2 text-sm text-on-surface-variant">
+                <li>• Frente y dorso del documento de identidad</li>
+                <li>• Foto de perfil</li>
+                <li>• CV</li>
+                <li>• Certificados o títulos (opcionales)</li>
+              </ul>
+              <p class="text-xs text-on-surface-variant mt-4 leading-relaxed">
+                Según la pantalla actual, algunos archivos aceptan JPG, PNG o PDF. En identidad y CV/documentación el máximo visible es 5MB por archivo; la foto de perfil usa un máximo visible de 2MB.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="funciones" class="bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant/10">
+          <div class="flex items-center gap-3 mb-6">
+            <span class="material-symbols-outlined text-primary text-3xl" aria-hidden="true">dashboard</span>
+            <h2 class="text-3xl font-extrabold tracking-tight text-on-surface">Qué podés hacer como profesional registrado</h2>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-5 rounded-2xl bg-surface-container-low">
+              <h3 class="font-bold text-on-surface mb-2">Gestionar tu perfil</h3>
+              <p class="text-sm text-on-surface-variant">Completar y editar datos personales, información profesional, foto, identidad y envío a revisión.</p>
+            </div>
+            <div class="p-5 rounded-2xl bg-surface-container-low">
+              <h3 class="font-bold text-on-surface mb-2">Cargar estudios y CV</h3>
+              <p class="text-sm text-on-surface-variant">Agregar formación, asociarla a profesiones y adjuntar documentación respaldatoria.</p>
+            </div>
+            <div class="p-5 rounded-2xl bg-surface-container-low">
+              <h3 class="font-bold text-on-surface mb-2">Participar en comunidad</h3>
+              <p class="text-sm text-on-surface-variant">Publicar posts, comentar, administrar publicaciones propias y participar en canales.</p>
+            </div>
+            <div class="p-5 rounded-2xl bg-surface-container-low">
+              <h3 class="font-bold text-on-surface mb-2">Gestionar pagos y suscripción</h3>
+              <p class="text-sm text-on-surface-variant">Ver planes, suscribirte, retomar pagos pendientes, revisar cobros y cancelar tu suscripción.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-24 bg-primary">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      <h2 class="text-4xl font-black tracking-tighter text-on-primary mb-6">
+        ¿Listo para empezar tu perfil profesional?
+      </h2>
+      <p class="text-on-primary/80 text-lg mb-10 max-w-2xl mx-auto">
+        Si ya tenés todo preparado, podés crear tu cuenta o volver a ingresar para continuar con tu onboarding.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a
+          href="/registro"
+          class="px-10 py-4 bg-surface-container-lowest text-primary font-bold rounded-full text-lg hover:brightness-95 transition-all shadow-lg"
+        >
+          Crear cuenta
+        </a>
+        <a
+          href="/login"
+          class="px-10 py-4 bg-transparent border-2 border-on-primary text-on-primary font-bold rounded-full text-lg hover:bg-on-primary/10 transition-all"
+        >
+          Ya tengo cuenta
+        </a>
+      </div>
+    </div>
+  </section>
+</Layout>

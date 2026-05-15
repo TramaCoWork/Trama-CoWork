@@ -327,7 +327,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
 
     function populateIdentity(profileId: string, frontUrl: string | null, backUrl: string | null) {
       const container = document.getElementById('d-identity')!;
-      const baseUrl = 'http://localhost:3003';
+      const baseUrl = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
       const sides: { key: string; label: string; hasUrl: boolean }[] = [
         { key: 'front', label: 'Frente', hasUrl: !!frontUrl },
@@ -514,7 +514,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       const btn = document.querySelector(`.doc-view-btn[data-doc-id="${docId}"]`) as HTMLButtonElement;
       if (btn) btn.disabled = true;
       try {
-        const { blobUrl, mimeType } = await fetchAuthBlob(`http://localhost:3003/uploads/document/${docId}`);
+        const { blobUrl, mimeType } = await fetchAuthBlob(`${baseUrl}/uploads/document/${docId}`);
         (window as any).openImageOverlay(blobUrl, docName, docName, mimeType);
       } catch {
         showToast('Error al cargar el documento', 'error');
@@ -527,7 +527,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       const btn = document.querySelector(`.doc-dl-btn[data-doc-id="${docId}"]`) as HTMLButtonElement;
       if (btn) btn.disabled = true;
       try {
-        const { blobUrl } = await fetchAuthBlob(`http://localhost:3003/uploads/document/${docId}`);
+        const { blobUrl } = await fetchAuthBlob(`${baseUrl}/uploads/document/${docId}`);
         const a = document.createElement('a');
         a.href = blobUrl;
         a.download = docName;
