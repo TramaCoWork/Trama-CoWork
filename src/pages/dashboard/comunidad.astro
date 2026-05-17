@@ -1,6 +1,7 @@
 ---
 import DashboardLayout from '../../layouts/DashboardLayout.astro';
 import EditorModal from '../../components/EditorModal.astro';
+import ConfirmModal from '../../components/ConfirmModal.astro';
 ---
 
 <DashboardLayout title="Comunidad | TRAMA">
@@ -27,6 +28,18 @@ import EditorModal from '../../components/EditorModal.astro';
         >
           <span class="material-symbols-outlined text-sm align-middle mr-1" aria-hidden="true">person</span>
           Mis Posts
+        </button>
+        <button
+          id="btn-view-messages"
+          type="button"
+          class="px-4 py-2 rounded-lg text-sm font-bold text-on-surface-variant bg-surface-container-low hover:bg-surface-container transition-all relative"
+        >
+          <span class="material-symbols-outlined text-sm align-middle mr-1" aria-hidden="true">chat</span>
+          Mensajes
+          <span
+            id="messages-unread-badge"
+            class="hidden absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-accent-magenta text-on-primary text-[10px] leading-5 font-black text-center"
+          ></span>
         </button>
       </div>
     </header>
@@ -104,8 +117,124 @@ import EditorModal from '../../components/EditorModal.astro';
             </div>
           </div>
         </div>
+
+        <!-- Messages view (hidden by default) -->
+        <div id="view-messages" class="hidden flex-1 flex min-h-0 overflow-hidden border border-outline-variant/15 rounded-xl bg-surface-container-lowest">
+          <aside class="w-80 shrink-0 border-r border-outline-variant/15 bg-surface-container-low flex flex-col min-h-0">
+            <div class="px-4 py-3 border-b border-outline-variant/15 flex items-center justify-between gap-2">
+              <h2 class="text-base font-bold text-on-surface">Conversaciones</h2>
+              <button
+                id="btn-new-message"
+                type="button"
+                class="w-8 h-8 rounded-lg bg-primary text-on-primary hover:brightness-110 transition-all flex items-center justify-center"
+                aria-label="Nuevo mensaje"
+              >
+                <span class="material-symbols-outlined text-lg" aria-hidden="true">add</span>
+              </button>
+            </div>
+            <div id="conversations-list" class="flex-1 overflow-y-auto p-2 space-y-1">
+              <div class="text-center py-10">
+                <p class="text-sm text-on-surface-variant">Seleccioná la pestaña para cargar tus mensajes.</p>
+              </div>
+            </div>
+          </aside>
+
+          <section class="flex-1 flex flex-col min-w-0 min-h-0 bg-surface-container-lowest">
+            <div id="message-thread-header" class="px-4 py-3 border-b border-outline-variant/15">
+              <h3 class="text-sm font-bold text-on-surface">Mensajes privados</h3>
+            </div>
+            <div id="message-thread" class="flex-1 overflow-y-auto overflow-x-visible p-4 space-y-3">
+              <div class="h-full min-h-[240px] flex items-center justify-center">
+                <p class="text-sm text-on-surface-variant">Elegí una conversación para ver los mensajes.</p>
+              </div>
+            </div>
+            <form id="message-compose-form" class="border-t border-outline-variant/15 p-3 bg-surface-container-lowest">
+              <div class="flex items-center gap-2 rounded-2xl border border-outline-variant/20 bg-surface-container-low p-2.5">
+                <textarea
+                  id="message-compose-input"
+                  rows="1"
+                  maxlength="2000"
+                  placeholder="Escribí un mensaje..."
+                  class="flex-1 h-11 resize-none rounded-xl bg-surface-container-lowest border border-outline-variant/20 px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/20"
+                ></textarea>
+                <button
+                  id="message-send-button"
+                  type="submit"
+                  class="inline-flex h-11 items-center gap-1.5 rounded-xl bg-[var(--color-primary)] px-4 text-on-primary text-sm font-bold hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled
+                >
+                  <span class="material-symbols-outlined text-base" aria-hidden="true">send</span>
+                  Enviar
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
       </div>
     </div>
+
+    <div id="new-message-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="new-message-modal-title">
+      <button id="new-message-modal-backdrop" type="button" class="absolute inset-0 bg-black/50 backdrop-blur-sm" aria-label="Cerrar"></button>
+      <div class="relative w-full max-w-lg bg-surface-container rounded-2xl shadow-2xl border border-outline-variant/15 overflow-hidden">
+        <div class="px-5 py-4 border-b border-outline-variant/15 flex items-center justify-between gap-3">
+          <h3 id="new-message-modal-title" class="text-base font-bold text-on-surface">Nuevo mensaje</h3>
+          <button id="new-message-modal-close" type="button" class="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" aria-label="Cerrar">
+            <span class="material-symbols-outlined text-xl" aria-hidden="true">close</span>
+          </button>
+        </div>
+        <div class="p-5 space-y-4">
+          <div id="new-message-search-step" class="space-y-4">
+            <input
+              id="search-professional-input"
+              type="text"
+              placeholder="Buscar profesional..."
+              class="w-full rounded-lg bg-surface-container-low border border-outline-variant/30 px-3 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            <div id="search-results" class="max-h-80 overflow-y-auto space-y-1.5">
+              <p class="text-sm text-on-surface-variant text-center py-6">Escribí un nombre para empezar la búsqueda.</p>
+            </div>
+          </div>
+
+          <div id="new-message-compose-step" class="hidden space-y-4">
+            <div class="flex items-center gap-3 rounded-lg bg-surface-container-low px-3 py-2.5">
+              <img id="selected-recipient-avatar" src="" alt="" class="w-10 h-10 rounded-full object-cover bg-surface-container" loading="lazy" />
+              <div class="min-w-0">
+                <p class="text-xs text-on-surface-variant">Mensaje para</p>
+                <p id="selected-recipient-name" class="text-sm font-bold text-on-surface truncate">Profesional</p>
+              </div>
+            </div>
+
+            <textarea
+              id="new-message-compose-input"
+              rows="4"
+              maxlength="2000"
+              placeholder="Escribí tu mensaje..."
+              class="w-full resize-none rounded-lg bg-surface-container-low border border-outline-variant/30 px-3 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/20"
+            ></textarea>
+
+            <p id="new-message-compose-error" class="hidden text-sm text-error"></p>
+
+            <div class="flex justify-end gap-2">
+              <button
+                id="new-message-cancel-button"
+                type="button"
+                class="px-4 py-2 rounded-lg text-sm font-bold text-on-surface-variant bg-surface-container-low hover:bg-surface-container transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                id="new-message-send-button"
+                type="button"
+                class="px-4 py-2 rounded-lg bg-primary text-on-primary text-sm font-bold hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Enviar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Comments Modal -->
@@ -145,6 +274,7 @@ import EditorModal from '../../components/EditorModal.astro';
   </div>
 
   <EditorModal />
+  <ConfirmModal />
 </DashboardLayout>
 
 <script>
@@ -162,9 +292,21 @@ import EditorModal from '../../components/EditorModal.astro';
     type Post,
     type Comment,
   } from '../../services/communityService';
+  import {
+    fetchConversations,
+    deleteMessage,
+    fetchMessages,
+    markAsRead,
+    sendMessage,
+    type Conversation,
+    type ConversationParticipant,
+    type Message,
+  } from '../../services/messagingService';
+  import { searchProfessionalsByName } from '../../services/professionalsService';
+  import { getProfilePhotoUrl } from '../../services/profileService';
   import { associateCommunityImages } from '../../services/uploadService';
   import { getUserIdFromToken, getToken } from '../../services/authService';
-  import { api } from '../../services/apiClient';
+  import { api, apiURL } from '../../services/apiClient';
   import { renderMarkdown } from '../../utils/markdown';
 
   // ─── Auth ─────────────────────────────────────────────────────
@@ -184,20 +326,96 @@ import EditorModal from '../../components/EditorModal.astro';
   const openNewPostModalButton = document.getElementById('open-new-post-modal') as HTMLButtonElement;
   const btnViewFeed = document.getElementById('btn-view-feed')!;
   const btnViewMyposts = document.getElementById('btn-view-myposts')!;
+  const btnViewMessages = document.getElementById('btn-view-messages')!;
+  const messagesUnreadBadge = document.getElementById('messages-unread-badge')!;
   const viewFeed = document.getElementById('view-feed')!;
   const viewMyposts = document.getElementById('view-myposts')!;
+  const viewMessages = document.getElementById('view-messages')!;
   const channelsSidebar = document.getElementById('channels-sidebar')!;
+  const conversationsList = document.getElementById('conversations-list')!;
+  const messageThreadHeader = document.getElementById('message-thread-header')!;
+  const messageThread = document.getElementById('message-thread')!;
+  const messageComposeForm = document.getElementById('message-compose-form') as HTMLFormElement;
+  const messageComposeInput = document.getElementById('message-compose-input') as HTMLTextAreaElement;
+  const messageSendButton = document.getElementById('message-send-button') as HTMLButtonElement;
+  const btnNewMessage = document.getElementById('btn-new-message') as HTMLButtonElement;
+  const newMessageModal = document.getElementById('new-message-modal')!;
+  const newMessageModalBackdrop = document.getElementById('new-message-modal-backdrop')!;
+  const newMessageModalClose = document.getElementById('new-message-modal-close')!;
+  const searchProfessionalInput = document.getElementById('search-professional-input') as HTMLInputElement;
+  const searchResults = document.getElementById('search-results')!;
+  const newMessageSearchStep = document.getElementById('new-message-search-step')!;
+  const newMessageComposeStep = document.getElementById('new-message-compose-step')!;
+  const selectedRecipientAvatar = document.getElementById('selected-recipient-avatar') as HTMLImageElement;
+  const selectedRecipientName = document.getElementById('selected-recipient-name')!;
+  const newMessageComposeInput = document.getElementById('new-message-compose-input') as HTMLTextAreaElement;
+  const newMessageComposeError = document.getElementById('new-message-compose-error')!;
+  const newMessageCancelButton = document.getElementById('new-message-cancel-button') as HTMLButtonElement;
+  const newMessageSendButton = document.getElementById('new-message-send-button') as HTMLButtonElement;
 
   // ─── State ────────────────────────────────────────────────────
   let currentChannel = 'general';
   let channels: Channel[] = [];
   let allMyPosts: Post[] = [];
   let myPostsChannelFilter = '';
+  let currentView: 'feed' | 'myposts' | 'messages' = 'feed';
+  let conversations: Conversation[] = [];
+  let activeConversationUserId: string | null = null;
+  let activeThreadMessages: Message[] = [];
+  let hasLoadedMessagesView = false;
+  let isSendingMessage = false;
+  let isSendingNewMessage = false;
+  let messageThreadPollingIntervalId: number | null = null;
+  let conversationRequestVersion = 0;
+  let searchDebounceTimer: number | null = null;
+  let searchRequestVersion = 0;
+  let modalStep: 'search' | 'compose' = 'search';
+  let selectedRecipient: Awaited<ReturnType<typeof searchProfessionalsByName>>[number] | null = null;
+  let modalSearchResults: Awaited<ReturnType<typeof searchProfessionalsByName>> = [];
+  let messageBody = '';
+  let pendingDeleteMessageId: string | null = null;
   const mypostsChannelSelect = document.getElementById('myposts-channel-filter') as HTMLSelectElement;
 
+  const ACTIVE_BUTTON_CLASS = 'px-4 py-2 rounded-lg text-sm font-bold bg-primary text-on-primary transition-all relative';
+  const INACTIVE_BUTTON_CLASS = 'px-4 py-2 rounded-lg text-sm font-bold text-on-surface-variant bg-surface-container-low hover:bg-surface-container transition-all relative';
+
   // ─── Helpers ──────────────────────────────────────────────────
-  function timeAgo(dateStr: string): string {
-    const diff = Date.now() - new Date(dateStr).getTime();
+  function parseDateTimestamp(dateStr?: string | null): number | null {
+    const rawDate = dateStr?.trim();
+    if (!rawDate) {
+      return null;
+    }
+
+    const primaryTimestamp = new Date(rawDate).getTime();
+    if (!Number.isNaN(primaryTimestamp)) {
+      return primaryTimestamp;
+    }
+
+    const normalizedDate = rawDate.replace(/\s+/, ' ').replace(' ', 'T');
+    const slashNormalizedDate = normalizedDate.replace(/\//g, '-');
+    const candidates = [normalizedDate, slashNormalizedDate, `${normalizedDate}Z`, `${slashNormalizedDate}Z`];
+
+    for (const candidate of candidates) {
+      const candidateTimestamp = new Date(candidate).getTime();
+      if (!Number.isNaN(candidateTimestamp)) {
+        return candidateTimestamp;
+      }
+    }
+
+    return null;
+  }
+
+  function timeAgo(dateStr?: string | null): string {
+    const timestamp = parseDateTimestamp(dateStr);
+    if (timestamp === null) {
+      return 'ahora';
+    }
+
+    const diff = Date.now() - timestamp;
+    if (!Number.isFinite(diff) || diff < 0) {
+      return 'ahora';
+    }
+
     const mins = Math.floor(diff / 60000);
     if (mins < 1) return 'ahora';
     if (mins < 60) return `hace ${mins}m`;
@@ -211,6 +429,737 @@ import EditorModal from '../../components/EditorModal.astro';
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+  }
+
+  function truncateText(text: string, max = 72): string {
+    if (text.length <= max) return text;
+    return `${text.slice(0, max - 1)}…`;
+  }
+
+  function isNotFoundError(err: unknown): boolean {
+    return typeof err === 'object' && err !== null && 'status' in err && (err as { status?: number }).status === 404;
+  }
+
+  function getOtherParticipant(conversation: Conversation): ConversationParticipant | null {
+    const participants = conversation.participants || [];
+
+    if (participants.length === 0) {
+      return null;
+    }
+
+    if (!userId) {
+      return participants[0] || null;
+    }
+
+    const participant = participants.find((p) => p.userId && p.userId !== userId);
+    if (participant) {
+      return participant;
+    }
+
+    return participants.find((p) => Boolean(p.userId)) || participants[0] || null;
+  }
+
+  function getConversationUserId(conversation: Conversation): string | null {
+    if (conversation.otherUserId) {
+      return conversation.otherUserId;
+    }
+
+    const participant = getOtherParticipant(conversation);
+    return participant?.userId || null;
+  }
+
+  function getConversationDisplayName(conversation: Conversation): string {
+    const participant = getOtherParticipant(conversation);
+
+    if (conversation.otherUserName?.trim()) {
+      return conversation.otherUserName.trim();
+    }
+
+    if (conversation.otherUserEmail?.trim()) {
+      return conversation.otherUserEmail.trim();
+    }
+
+    if (participant?.name?.trim()) {
+      return participant.name.trim();
+    }
+
+    if (participant?.email?.trim()) {
+      return participant.email.trim();
+    }
+
+    return 'Usuario';
+  }
+
+  function getParticipantName(participant: ConversationParticipant | null): string {
+    if (!participant) return 'Usuario';
+    return participant.name?.trim() || participant.email?.trim() || 'Usuario';
+  }
+
+  function getParticipantAvatar(participant: ConversationParticipant | null): string {
+    if (!participant?.profileId) {
+      return '<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-primary text-base" aria-hidden="true">person</span></div>';
+    }
+
+    const avatarUrl = getProfilePhotoUrl(participant.profileId);
+    return `<img src="${escapeHtml(avatarUrl)}" alt="" class="w-10 h-10 rounded-full object-cover shrink-0 bg-surface-container" loading="lazy" />`;
+  }
+
+  function setMessagesUnreadBadge(totalUnread: number) {
+    if (totalUnread > 0) {
+      messagesUnreadBadge.textContent = totalUnread > 99 ? '99+' : String(totalUnread);
+      messagesUnreadBadge.classList.remove('hidden');
+      return;
+    }
+
+    messagesUnreadBadge.textContent = '';
+    messagesUnreadBadge.classList.add('hidden');
+  }
+
+  function updateUnreadBadgeFromConversations() {
+    const unreadTotal = conversations.reduce((acc, conversation) => acc + (conversation.unreadCount || 0), 0);
+    setMessagesUnreadBadge(unreadTotal);
+  }
+
+  function renderConversationsLoading() {
+    conversationsList.innerHTML = `
+      <div class="flex items-center justify-center py-12">
+        <span class="material-symbols-outlined text-2xl text-primary animate-spin" aria-hidden="true">schedule</span>
+      </div>`;
+  }
+
+  function renderConversationsEmpty() {
+    conversationsList.innerHTML = `
+      <div class="text-center py-12 px-4">
+        <span class="material-symbols-outlined text-3xl text-outline mb-2 block" aria-hidden="true">chat</span>
+        <p class="text-sm font-medium text-on-surface-variant">No tenés conversaciones aun.</p>
+      </div>`;
+  }
+
+  function renderConversationsError() {
+    conversationsList.innerHTML = `
+      <div class="text-center py-12 px-4">
+        <span class="material-symbols-outlined text-3xl text-error mb-2 block" aria-hidden="true">error</span>
+        <p class="text-sm font-medium text-on-surface-variant">No pudimos cargar tus conversaciones.</p>
+      </div>`;
+  }
+
+  function renderConversations() {
+    if (conversations.length === 0) {
+      renderConversationsEmpty();
+      return;
+    }
+
+    conversationsList.innerHTML = conversations.map(conversation => {
+      const participant = getOtherParticipant(conversation);
+      const participantName = getConversationDisplayName(conversation);
+      const previewSource = typeof conversation.lastMessage === 'string'
+        ? conversation.lastMessage
+        : conversation.lastMessage?.content;
+      const preview = previewSource ? truncateText(previewSource) : 'Sin mensajes todavía';
+      const dateRef = conversation.lastMessageDate || (typeof conversation.lastMessage === 'object' ? conversation.lastMessage?.createdAt : null) || conversation.updatedAt;
+      const unreadCount = conversation.unreadCount || 0;
+      const conversationUserId = getConversationUserId(conversation);
+      const isActive = conversationUserId === activeConversationUserId;
+
+      return `
+        <button
+          type="button"
+          data-conversation-user-id="${conversationUserId || ''}"
+          class="conversation-item w-full text-left rounded-lg border px-3 py-2.5 transition-all ${isActive ? 'bg-primary/10 border-primary/30' : unreadCount > 0 ? 'bg-primary/5 border-transparent hover:bg-primary/10' : 'bg-surface-container-lowest border-transparent hover:bg-surface-container'}"
+        >
+          <div class="flex items-start gap-3">
+            ${getParticipantAvatar(participant)}
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 min-w-0">
+                  <p class="text-sm ${unreadCount > 0 ? 'font-semibold' : 'font-medium'} text-on-surface truncate">${escapeHtml(participantName)}</p>
+                  ${unreadCount > 0 ? `<span class="min-w-5 h-5 px-1 rounded-full bg-primary text-on-primary text-[10px] leading-5 font-bold text-center shrink-0">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
+                </div>
+                <span class="text-[10px] text-on-surface-variant shrink-0">${timeAgo(dateRef)}</span>
+              </div>
+              <div class="flex items-center gap-1.5 mt-1">
+                <p class="text-xs text-on-surface-variant truncate">${escapeHtml(preview)}</p>
+              </div>
+            </div>
+          </div>
+        </button>`;
+    }).join('');
+
+    conversationsList.querySelectorAll('.conversation-item').forEach(button => {
+      button.addEventListener('click', () => {
+        const conversationUserId = (button as HTMLElement).dataset.conversationUserId;
+        if (!conversationUserId) return;
+        loadConversationMessages(conversationUserId);
+      });
+    });
+  }
+
+  function renderThreadPlaceholder(message: string) {
+    messageThread.innerHTML = `
+      <div class="h-full min-h-[240px] flex items-center justify-center text-center px-4">
+        <p class="text-sm text-on-surface-variant">${escapeHtml(message)}</p>
+      </div>`;
+  }
+
+  function renderThreadLoading() {
+    messageThread.innerHTML = `
+      <div class="flex items-center justify-center py-12">
+        <span class="material-symbols-outlined text-2xl text-primary animate-spin" aria-hidden="true">schedule</span>
+      </div>`;
+  }
+
+  function isOwnThreadMessage(message: Message): boolean {
+    const currentUserId = userId ? String(userId) : '';
+    if (!currentUserId) {
+      return false;
+    }
+
+    const senderId = 'senderId' in message && message.senderId ? String(message.senderId) : '';
+    if (senderId && senderId === currentUserId) {
+      return true;
+    }
+
+    const senderUserId = message.senderUserId ? String(message.senderUserId) : '';
+    if (senderUserId && senderUserId === currentUserId) {
+      return true;
+    }
+
+    const senderProfileUserId = message.sender?.userId ? String(message.sender.userId) : '';
+    return senderProfileUserId === currentUserId;
+  }
+
+  function renderMessageThread() {
+    if (activeThreadMessages.length === 0) {
+      renderThreadPlaceholder('Todavía no hay mensajes en esta conversación.');
+      return;
+    }
+
+    messageThread.innerHTML = activeThreadMessages.map(message => {
+      const isOwnMessage = isOwnThreadMessage(message);
+      const alignClass = isOwnMessage ? 'justify-end' : 'justify-start';
+      const bubbleClass = isOwnMessage
+        ? 'bg-primary/10 text-neutral-900 border-l-4 border-primary'
+        : 'bg-white text-neutral-900 border-l-4 border-neutral-300';
+      const senderName = isOwnMessage ? 'Vos' : getParticipantName(message.sender || null);
+      const deleteControls = isOwnMessage
+        ? `
+            <button
+              type="button"
+              data-message-menu-toggle="true"
+              data-message-id="${escapeHtml(message.id)}"
+              class="absolute top-3 right-3 w-7 h-7 rounded-full text-neutral-400 hover:text-red-500 focus:text-red-500 flex items-center justify-center transition-colors"
+              aria-label="Opciones para eliminar mensaje"
+            >
+              <span class="material-symbols-outlined text-sm" aria-hidden="true">delete</span>
+            </button>`
+        : '';
+
+      return `
+        <div class="flex w-full ${alignClass}">
+          <article data-message-item="true" class="relative w-full overflow-visible ${bubbleClass} rounded-lg p-4 shadow-sm ${isOwnMessage ? 'pr-11' : ''}">
+            ${deleteControls}
+
+            <p class="text-sm font-semibold text-neutral-600 mb-1">${escapeHtml(senderName)}</p>
+            <p class="text-sm whitespace-pre-wrap break-words">${escapeHtml(message.content)}</p>
+            <p class="text-xs text-neutral-400 mt-1 text-right">${timeAgo(message.createdAt)}</p>
+          </article>
+        </div>`;
+    }).join('');
+
+    messageThread.scrollTop = messageThread.scrollHeight;
+  }
+
+  function openMessageDeleteModal(messageId: string) {
+    pendingDeleteMessageId = messageId;
+    (window as any).openConfirmModal({
+      title: '¿Eliminar mensaje?',
+      message: 'Esta acción no se puede deshacer.',
+      iconBgClass: 'bg-red-50',
+      iconHtml: '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
+      buttons: [
+        { text: 'Borrar para todos', icon: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>', variant: 'danger', onClick: () => handleMessageDelete(true) },
+        { text: 'Borrar para mí', icon: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>', variant: 'outline', onClick: () => handleMessageDelete(false) },
+        { text: 'Cancelar', icon: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>', variant: 'ghost', onClick: closeMessageDeleteModal },
+      ],
+    });
+  }
+
+  function closeMessageDeleteModal() {
+    (window as any).closeConfirmModal();
+    pendingDeleteMessageId = null;
+  }
+
+  async function handleMessageDelete(forAll: boolean) {
+    if (!activeConversationUserId) {
+      return;
+    }
+
+    if (!pendingDeleteMessageId) {
+      return;
+    }
+
+    try {
+      await deleteMessage(pendingDeleteMessageId, forAll);
+      closeMessageDeleteModal();
+      await loadConversationMessages(activeConversationUserId);
+      await loadConversations();
+    } catch (err) {
+      console.error('Error eliminando mensaje:', err);
+      renderThreadPlaceholder('No se pudo eliminar el mensaje. Probá de nuevo.');
+    }
+  }
+
+  function setMessageInputEnabled(enabled: boolean) {
+    messageComposeInput.disabled = !enabled;
+    messageSendButton.disabled = !enabled || !messageComposeInput.value.trim() || isSendingMessage;
+  }
+
+  function renderThreadHeader() {
+    if (!activeConversationUserId) {
+      messageThreadHeader.innerHTML = '<h3 class="text-sm font-bold text-on-surface">Mensajes privados</h3>';
+      return;
+    }
+
+    const activeConversation = conversations.find(conversation => getConversationUserId(conversation) === activeConversationUserId);
+    messageThreadHeader.innerHTML = `
+      <h3 class="text-sm font-bold text-on-surface truncate">${escapeHtml(activeConversation ? getConversationDisplayName(activeConversation) : 'Usuario')}</h3>`;
+  }
+
+  function stopMessageThreadPolling() {
+    if (messageThreadPollingIntervalId === null) {
+      return;
+    }
+
+    window.clearInterval(messageThreadPollingIntervalId);
+    messageThreadPollingIntervalId = null;
+  }
+
+  async function refreshActiveConversationMessages() {
+    if (!activeConversationUserId || currentView !== 'messages') {
+      return;
+    }
+
+    try {
+      const result = await fetchMessages(activeConversationUserId);
+      activeThreadMessages = Array.isArray(result) ? result : [];
+      renderMessageThread();
+    } catch (err) {
+      if (!isNotFoundError(err)) {
+        console.error('Error actualizando mensajes:', err);
+      }
+    }
+  }
+
+  function startMessageThreadPolling() {
+    stopMessageThreadPolling();
+    if (!activeConversationUserId || currentView !== 'messages') {
+      return;
+    }
+
+    messageThreadPollingIntervalId = window.setInterval(() => {
+      refreshActiveConversationMessages();
+    }, 7000);
+  }
+
+  function isNewMessageModalOpen(): boolean {
+    return !newMessageModal.classList.contains('hidden');
+  }
+
+  function getProfessionalAvatarUrl(profileId: string): string {
+    return escapeHtml(apiURL(`/uploads/photo/${profileId}`));
+  }
+
+  function renderNewMessageComposeError(message: string) {
+    if (!message) {
+      newMessageComposeError.classList.add('hidden');
+      newMessageComposeError.textContent = '';
+      return;
+    }
+
+    newMessageComposeError.textContent = message;
+    newMessageComposeError.classList.remove('hidden');
+  }
+
+  function setNewMessageSendButtonState() {
+    const canSend = Boolean(selectedRecipient?.userId) && messageBody.trim().length > 0 && !isSendingNewMessage;
+    newMessageSendButton.disabled = !canSend;
+    newMessageSendButton.textContent = isSendingNewMessage ? 'Enviando...' : 'Enviar';
+  }
+
+  function renderNewMessageModalStep() {
+    const isSearchStep = modalStep === 'search';
+    newMessageSearchStep.classList.toggle('hidden', !isSearchStep);
+    newMessageComposeStep.classList.toggle('hidden', isSearchStep);
+
+    if (isSearchStep) {
+      searchProfessionalInput.focus();
+      return;
+    }
+
+    selectedRecipientName.textContent = selectedRecipient?.name || 'Profesional';
+    selectedRecipientAvatar.src = selectedRecipient ? getProfessionalAvatarUrl(selectedRecipient.id) : '';
+    newMessageComposeInput.value = messageBody;
+    newMessageComposeInput.focus();
+    setNewMessageSendButtonState();
+  }
+
+  function resetNewMessageModalState() {
+    modalStep = 'search';
+    selectedRecipient = null;
+    modalSearchResults = [];
+    messageBody = '';
+    isSendingNewMessage = false;
+    searchProfessionalInput.value = '';
+    newMessageComposeInput.value = '';
+    renderNewMessageComposeError('');
+    searchResults.innerHTML = '<p class="text-sm text-on-surface-variant text-center py-6">Escribí un nombre para empezar la búsqueda.</p>';
+    setNewMessageSendButtonState();
+    renderNewMessageModalStep();
+  }
+
+  function openNewMessageModal() {
+    newMessageModal.classList.remove('hidden');
+    resetNewMessageModalState();
+  }
+
+  function closeNewMessageModal() {
+    newMessageModal.classList.add('hidden');
+    resetNewMessageModalState();
+  }
+
+  function renderSearchResultsLoading() {
+    searchResults.innerHTML = `
+      <div class="flex items-center justify-center py-8">
+        <span class="material-symbols-outlined text-2xl text-primary animate-spin" aria-hidden="true">schedule</span>
+      </div>`;
+  }
+
+  function renderSearchResultsEmpty() {
+    modalSearchResults = [];
+    searchResults.innerHTML = '<p class="text-sm text-on-surface-variant text-center py-6">No encontramos profesionales con ese nombre.</p>';
+  }
+
+  function renderSearchResultsError() {
+    modalSearchResults = [];
+    searchResults.innerHTML = '<p class="text-sm text-on-surface-variant text-center py-6">No pudimos buscar profesionales en este momento.</p>';
+  }
+
+  function renderSearchResultsList(results: Awaited<ReturnType<typeof searchProfessionalsByName>>) {
+    modalSearchResults = results;
+    if (results.length === 0) {
+      renderSearchResultsEmpty();
+      return;
+    }
+
+    searchResults.innerHTML = results
+      .map((professional) => {
+        const rubroName = professional.rubro?.name || 'Profesional';
+        return `
+        <button
+          type="button"
+          data-user-id="${escapeHtml(professional.userId || '')}"
+          data-name="${escapeHtml(professional.name)}"
+          class="search-result-item w-full text-left px-3 py-2.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container border border-transparent hover:border-outline-variant/20 transition-all"
+        >
+          <div class="flex items-center gap-3">
+            <img src="${getProfessionalAvatarUrl(professional.id)}" alt="" class="w-10 h-10 rounded-full object-cover bg-surface-container shrink-0" loading="lazy" />
+            <div class="min-w-0">
+              <p class="text-sm font-bold text-on-surface truncate">${escapeHtml(professional.name)}</p>
+              <p class="text-xs text-on-surface-variant truncate">${escapeHtml(rubroName)}</p>
+            </div>
+          </div>
+        </button>`;
+      })
+      .join('');
+  }
+
+  async function searchProfessionals(query: string) {
+    const normalizedQuery = query.trim();
+    if (normalizedQuery.length < 2) {
+      modalSearchResults = [];
+      searchResults.innerHTML = '<p class="text-sm text-on-surface-variant text-center py-6">Ingresá al menos 2 letras para buscar.</p>';
+      return;
+    }
+
+    renderSearchResultsLoading();
+    const requestVersion = ++searchRequestVersion;
+
+    try {
+      const results = await searchProfessionalsByName(normalizedQuery);
+      if (requestVersion !== searchRequestVersion) return;
+      renderSearchResultsList(results);
+    } catch (err) {
+      if (requestVersion !== searchRequestVersion) return;
+      console.error('Error buscando profesionales:', err);
+      renderSearchResultsError();
+    }
+  }
+
+  function handleProfessionalSelection(professional: Awaited<ReturnType<typeof searchProfessionalsByName>>[number]) {
+    selectedRecipient = professional;
+    messageBody = '';
+    modalStep = 'compose';
+    renderNewMessageComposeError('');
+    renderNewMessageModalStep();
+  }
+
+  async function handleNewMessageSend() {
+    if (!selectedRecipient?.userId || isSendingNewMessage) {
+      return;
+    }
+
+    const content = messageBody.trim();
+    if (!content) {
+      renderNewMessageComposeError('Escribí un mensaje para continuar.');
+      setNewMessageSendButtonState();
+      return;
+    }
+
+    isSendingNewMessage = true;
+    renderNewMessageComposeError('');
+    setNewMessageSendButtonState();
+
+    try {
+      await sendMessage(selectedRecipient.userId, content);
+      closeNewMessageModal();
+      await loadConversations();
+    } catch (err) {
+      console.error('Error enviando nuevo mensaje:', err);
+      renderNewMessageComposeError('No se pudo enviar el mensaje. Probá de nuevo.');
+    } finally {
+      isSendingNewMessage = false;
+      setNewMessageSendButtonState();
+    }
+  }
+
+  function handleNewMessageCancel() {
+    if (modalStep === 'compose') {
+      selectedRecipient = null;
+      messageBody = '';
+      modalStep = 'search';
+      renderNewMessageComposeError('');
+      setNewMessageSendButtonState();
+      renderNewMessageModalStep();
+      return;
+    }
+
+    closeNewMessageModal();
+  }
+
+  btnNewMessage.addEventListener('click', openNewMessageModal);
+  newMessageModalClose.addEventListener('click', closeNewMessageModal);
+  newMessageModalBackdrop.addEventListener('click', closeNewMessageModal);
+  newMessageCancelButton.addEventListener('click', handleNewMessageCancel);
+  newMessageSendButton.addEventListener('click', handleNewMessageSend);
+  newMessageComposeInput.addEventListener('input', () => {
+    messageBody = newMessageComposeInput.value;
+    renderNewMessageComposeError('');
+    setNewMessageSendButtonState();
+  });
+
+  searchProfessionalInput.addEventListener('input', () => {
+    if (searchDebounceTimer) {
+      window.clearTimeout(searchDebounceTimer);
+    }
+
+    searchDebounceTimer = window.setTimeout(() => {
+      searchProfessionals(searchProfessionalInput.value);
+    }, 300);
+  });
+
+  searchResults.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement;
+    const item = target.closest('.search-result-item') as HTMLElement | null;
+    const participantUserId = item?.dataset.userId;
+    if (!participantUserId) return;
+
+    const selectedProfessional = modalSearchResults.find((professional) => professional.userId === participantUserId);
+    if (!selectedProfessional) return;
+
+    handleProfessionalSelection(selectedProfessional);
+  });
+
+  async function loadConversations() {
+    renderConversationsLoading();
+    const requestVersion = ++conversationRequestVersion;
+
+    try {
+      const result = await fetchConversations();
+      if (requestVersion !== conversationRequestVersion) return;
+      conversations = Array.isArray(result) ? result : [];
+      updateUnreadBadgeFromConversations();
+
+      if (activeConversationUserId && !conversations.some(conversation => getConversationUserId(conversation) === activeConversationUserId)) {
+        activeConversationUserId = null;
+        stopMessageThreadPolling();
+      }
+
+      renderConversations();
+
+      if (!activeConversationUserId) {
+        renderThreadHeader();
+        renderThreadPlaceholder('Elegí una conversación para ver los mensajes.');
+        setMessageInputEnabled(false);
+      }
+    } catch (err) {
+      if (requestVersion !== conversationRequestVersion) return;
+
+      if (isNotFoundError(err)) {
+        conversations = [];
+        updateUnreadBadgeFromConversations();
+        renderConversationsEmpty();
+        renderThreadHeader();
+        renderThreadPlaceholder('No tenés conversaciones aun.');
+        setMessageInputEnabled(false);
+        return;
+      }
+
+      console.error('Error cargando conversaciones:', err);
+      conversations = [];
+      setMessagesUnreadBadge(0);
+      renderConversationsError();
+      renderThreadHeader();
+      renderThreadPlaceholder('No pudimos cargar los mensajes en este momento.');
+      setMessageInputEnabled(false);
+    }
+  }
+
+  async function loadConversationMessages(conversationUserId: string) {
+    activeConversationUserId = conversationUserId;
+    activeThreadMessages = [];
+    renderConversations();
+    renderThreadHeader();
+    renderThreadLoading();
+    setMessageInputEnabled(true);
+
+    try {
+      const result = await fetchMessages(conversationUserId);
+      activeThreadMessages = Array.isArray(result) ? result : [];
+      renderMessageThread();
+
+      const selectedConversation = conversations.find(conversation => getConversationUserId(conversation) === conversationUserId);
+      if (selectedConversation && selectedConversation.unreadCount > 0) {
+        selectedConversation.unreadCount = 0;
+        updateUnreadBadgeFromConversations();
+        renderConversations();
+      }
+
+      try {
+        const unreadIncomingMessages = activeThreadMessages.filter((message) => {
+          const isIncoming = message.senderUserId === conversationUserId;
+          const alreadyRead = Boolean(message.readAt) || message.isRead === true;
+          return isIncoming && !alreadyRead;
+        });
+
+        await Promise.allSettled(unreadIncomingMessages.map((message) => markAsRead(message.id)));
+      } catch (markError) {
+        if (!isNotFoundError(markError)) {
+          console.error('Error marcando mensajes como leídos:', markError);
+        }
+      }
+
+      startMessageThreadPolling();
+    } catch (err) {
+      if (isNotFoundError(err)) {
+        activeThreadMessages = [];
+        renderThreadPlaceholder('Todavía no hay mensajes en esta conversación.');
+        startMessageThreadPolling();
+        return;
+      }
+
+      console.error('Error cargando mensajes:', err);
+      renderThreadPlaceholder('No pudimos cargar esta conversación.');
+    }
+  }
+
+  messageComposeInput.addEventListener('input', () => {
+    setMessageInputEnabled(Boolean(activeConversationUserId));
+  });
+
+  messageThread.addEventListener('click', async (event) => {
+    const target = event.target as HTMLElement;
+
+    const menuToggleButton = target.closest<HTMLButtonElement>('[data-message-menu-toggle="true"]');
+    if (menuToggleButton?.dataset.messageId) {
+      openMessageDeleteModal(menuToggleButton.dataset.messageId);
+      return;
+    }
+  });
+
+  window.addEventListener('beforeunload', () => {
+    stopMessageThreadPolling();
+  });
+
+  messageComposeForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (!activeConversationUserId || isSendingMessage) return;
+
+    const recipientId = activeConversationUserId;
+    const content = messageComposeInput.value.trim();
+    if (!content) return;
+
+    isSendingMessage = true;
+    setMessageInputEnabled(true);
+
+    try {
+      await sendMessage(recipientId, content);
+      messageComposeInput.value = '';
+      await loadConversationMessages(recipientId);
+      await loadConversations();
+    } catch (err) {
+      console.error('Error enviando mensaje:', err);
+      renderThreadPlaceholder('No se pudo enviar el mensaje. Probá de nuevo.');
+    } finally {
+      isSendingMessage = false;
+      setMessageInputEnabled(true);
+    }
+  });
+
+  async function refreshUnreadMessagesBadge() {
+    try {
+      const result = await fetchConversations();
+      const badgeConversations = Array.isArray(result) ? result : [];
+      const unreadTotal = badgeConversations.reduce((acc, conversation) => acc + (conversation.unreadCount || 0), 0);
+      setMessagesUnreadBadge(unreadTotal);
+    } catch (err) {
+      if (isNotFoundError(err)) {
+        setMessagesUnreadBadge(0);
+        return;
+      }
+
+      console.error('Error cargando contador de mensajes no leídos:', err);
+      setMessagesUnreadBadge(0);
+    }
+  }
+
+  function setActiveView(view: 'feed' | 'myposts' | 'messages') {
+    currentView = view;
+
+    const isFeedView = view === 'feed';
+    const isMyPostsView = view === 'myposts';
+    const isMessagesView = view === 'messages';
+
+    viewFeed.classList.toggle('hidden', !isFeedView);
+    viewMyposts.classList.toggle('hidden', !isMyPostsView);
+    viewMessages.classList.toggle('hidden', !isMessagesView);
+    channelsSidebar.classList.toggle('hidden', isMyPostsView || isMessagesView);
+
+    btnViewFeed.className = isFeedView ? ACTIVE_BUTTON_CLASS : INACTIVE_BUTTON_CLASS;
+    btnViewMyposts.className = isMyPostsView ? ACTIVE_BUTTON_CLASS : INACTIVE_BUTTON_CLASS;
+    btnViewMessages.className = isMessagesView ? ACTIVE_BUTTON_CLASS : INACTIVE_BUTTON_CLASS;
+
+    if (!isMessagesView) {
+      stopMessageThreadPolling();
+      activeConversationUserId = null;
+      activeThreadMessages = [];
+      renderConversations();
+      renderThreadHeader();
+      renderThreadPlaceholder('Elegí una conversación para ver los mensajes.');
+      setMessageInputEnabled(false);
+      return;
+    }
+
+    startMessageThreadPolling();
   }
 
   // ─── Render channels ─────────────────────────────────────────
@@ -529,20 +1478,33 @@ import EditorModal from '../../components/EditorModal.astro';
       (btn as HTMLElement).dataset.bound = 'true';
       btn.addEventListener('click', async () => {
         const commentId = (btn as HTMLElement).dataset.commentId!;
-        if (!confirm('¿Eliminar este comentario?')) return;
-        try {
-          await deleteComment(commentId);
-          const el = modalCommentsList.querySelector(`[data-comment-id="${commentId}"]`);
-          if (el) el.remove();
-          if (modalPostId) updateCommentCountLabel(modalPostId, -1);
-
-          // Check if list is now empty
-          if (modalCommentsList.children.length === 0) {
-            modalCommentsList.innerHTML = '<p class="text-xs text-on-surface-variant italic text-center py-4">Sin comentarios aún. Sé el primero en comentar.</p>';
-          }
-        } catch (err) {
-          console.error('Error eliminando comentario:', err);
-        }
+        (window as any).openConfirmModal({
+          title: '¿Eliminar comentario?',
+          message: 'Esta acción no se puede deshacer.',
+          iconBgClass: 'bg-red-50',
+          iconHtml: '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
+          buttons: [
+            {
+              text: 'Eliminar',
+              icon: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
+              variant: 'danger',
+              onClick: async () => {
+                try {
+                  await deleteComment(commentId);
+                  const el = modalCommentsList.querySelector(`[data-comment-id="${commentId}"]`);
+                  if (el) el.remove();
+                  if (modalPostId) updateCommentCountLabel(modalPostId, -1);
+                  if (modalCommentsList.children.length === 0) {
+                    modalCommentsList.innerHTML = '<p class="text-xs text-on-surface-variant italic text-center py-4">Sin comentarios aún. Sé el primero en comentar.</p>';
+                  }
+                } catch (err) {
+                  console.error('Error eliminando comentario:', err);
+                }
+              },
+            },
+            { text: 'Cancelar', variant: 'ghost' },
+          ],
+        });
       });
     });
   }
@@ -567,7 +1529,14 @@ import EditorModal from '../../components/EditorModal.astro';
   modalCloseBtn.addEventListener('click', closeCommentsModal);
   modalBackdrop.addEventListener('click', closeCommentsModal);
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modalPostId) closeCommentsModal();
+    if (e.key !== 'Escape') return;
+    if (modalPostId) {
+      closeCommentsModal();
+      return;
+    }
+    if (isNewMessageModalOpen()) {
+      closeNewMessageModal();
+    }
   });
 
   modalLoadMoreBtn.addEventListener('click', async () => {
@@ -668,13 +1637,28 @@ import EditorModal from '../../components/EditorModal.astro';
     postsContainer.querySelectorAll('.btn-delete-post').forEach(btn => {
       btn.addEventListener('click', async () => {
         const postId = (btn as HTMLElement).dataset.postId!;
-        if (!confirm('¿Eliminar este post?')) return;
-        try {
-          await deletePost(postId);
-          loadPosts();
-        } catch (err) {
-          console.error('Error eliminando post:', err);
-        }
+        (window as any).openConfirmModal({
+          title: '¿Eliminar este post?',
+          message: 'Esta acción no se puede deshacer.',
+          iconBgClass: 'bg-red-50',
+          iconHtml: '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
+          buttons: [
+            {
+              text: 'Eliminar',
+              icon: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
+              variant: 'danger',
+              onClick: async () => {
+                try {
+                  await deletePost(postId);
+                  loadPosts();
+                } catch (err) {
+                  console.error('Error eliminando post:', err);
+                }
+              },
+            },
+            { text: 'Cancelar', variant: 'ghost' },
+          ],
+        });
       });
     });
 
@@ -724,14 +1708,29 @@ import EditorModal from '../../components/EditorModal.astro';
     mypostsContainer.querySelectorAll('.btn-delete-mypost').forEach(btn => {
       btn.addEventListener('click', async () => {
         const postId = (btn as HTMLElement).dataset.postId!;
-        if (!confirm('¿Eliminar este post?')) return;
-        try {
-          await deletePost(postId);
-          allMyPosts = allMyPosts.filter(p => p.id !== postId);
-          renderFilteredMyPosts();
-        } catch (err) {
-          console.error('Error eliminando post:', err);
-        }
+        (window as any).openConfirmModal({
+          title: '¿Eliminar este post?',
+          message: 'Esta acción no se puede deshacer.',
+          iconBgClass: 'bg-red-50',
+          iconHtml: '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
+          buttons: [
+            {
+              text: 'Eliminar',
+              icon: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
+              variant: 'danger',
+              onClick: async () => {
+                try {
+                  await deletePost(postId);
+                  allMyPosts = allMyPosts.filter(p => p.id !== postId);
+                  renderFilteredMyPosts();
+                } catch (err) {
+                  console.error('Error eliminando post:', err);
+                }
+              },
+            },
+            { text: 'Cancelar', variant: 'ghost' },
+          ],
+        });
       });
     });
 
@@ -758,20 +1757,24 @@ import EditorModal from '../../components/EditorModal.astro';
 
   // ─── View toggle ──────────────────────────────────────────────
   btnViewFeed.addEventListener('click', () => {
-    viewFeed.classList.remove('hidden');
-    viewMyposts.classList.add('hidden');
-    channelsSidebar.classList.remove('hidden');
-    btnViewFeed.className = 'px-4 py-2 rounded-lg text-sm font-bold bg-primary text-on-primary transition-all';
-    btnViewMyposts.className = 'px-4 py-2 rounded-lg text-sm font-bold text-on-surface-variant bg-surface-container-low hover:bg-surface-container transition-all';
+    setActiveView('feed');
   });
 
   btnViewMyposts.addEventListener('click', () => {
-    viewFeed.classList.add('hidden');
-    viewMyposts.classList.remove('hidden');
-    channelsSidebar.classList.add('hidden');
-    btnViewMyposts.className = 'px-4 py-2 rounded-lg text-sm font-bold bg-primary text-on-primary transition-all';
-    btnViewFeed.className = 'px-4 py-2 rounded-lg text-sm font-bold text-on-surface-variant bg-surface-container-low hover:bg-surface-container transition-all';
+    setActiveView('myposts');
     loadMyPosts();
+  });
+
+  btnViewMessages.addEventListener('click', async () => {
+    setActiveView('messages');
+
+    if (!hasLoadedMessagesView) {
+      hasLoadedMessagesView = true;
+      await loadConversations();
+      return;
+    }
+
+    await loadConversations();
   });
 
   // ─── Init ─────────────────────────────────────────────────────
@@ -792,6 +1795,10 @@ import EditorModal from '../../components/EditorModal.astro';
       const ch = channels.find(c => c.slug === currentChannel);
       if (ch) channelNameEl.textContent = ch.name;
 
+      setActiveView('feed');
+      setMessageInputEnabled(false);
+      renderThreadHeader();
+      refreshUnreadMessagesBadge();
       loadPosts();
     } catch (err) {
       console.error('Error inicializando comunidad:', err);
@@ -808,4 +1815,4 @@ import EditorModal from '../../components/EditorModal.astro';
   init();
 </script>
 
-<!-- Trazabilidad: editado por Programmer en 2026-05-16 20:06:00 -->
+<!-- Trazabilidad: editado por Programmer en 2026-05-17 12:26:00 -->

@@ -15,6 +15,7 @@ const API_BASE = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000'
 
 export interface ProfessionalItem {
   id: string;
+  userId?: string;
   name: string;
   bio: string | null;
   photo: string | null;
@@ -55,6 +56,81 @@ export async function fetchProfessionals(page = 1, sizePage = 10): Promise<Pagin
   return api.get<PaginatedProfessionals>('/professionals', { page, sizePage });
 }
 
+type ProfessionalDetailResponse = {
+  userId?: string | null;
+  user?: {
+    id?: string | null;
+  } | null;
+};
+
+type DataWrapper<T> = {
+  data: T;
+};
+
+function unwrapData<T>(value: T | DataWrapper<T>): T {
+  if (typeof value === 'object' && value !== null && 'data' in value) {
+    return value.data;
+  }
+
+  return value;
+}
+
+function filterProfessionalsByName(list: ProfessionalItem[], query: string): ProfessionalItem[] {
+  const normalizedQuery = query.trim().toLowerCase();
+  return list.filter((professional) => professional.name.toLowerCase().includes(normalizedQuery));
+}
+
+function pickUserId(detail: ProfessionalDetailResponse): string | null {
+  if (typeof detail.userId === 'string' && detail.userId.length > 0) {
+    return detail.userId;
+  }
+
+  if (typeof detail.user?.id === 'string' && detail.user.id.length > 0) {
+    return detail.user.id;
+  }
+
+  return null;
+}
+
+async function fetchProfessionalUserId(professionalId: string): Promise<string | null> {
+  try {
+    const response = await api.get<ProfessionalDetailResponse | DataWrapper<ProfessionalDetailResponse>>(
+      `/professionals/${professionalId}`,
+    );
+    return pickUserId(unwrapData(response));
+  } catch {
+    return null;
+  }
+}
+
+export async function searchProfessionalsByName(query: string): Promise<ProfessionalItem[]> {
+  const normalizedQuery = query.trim();
+  if (!normalizedQuery) {
+    return [];
+  }
+
+  const response = await api.get<PaginatedProfessionals | DataWrapper<ProfessionalItem[]>>('/professionals', {
+    page: 1,
+    sizePage: 50,
+    search: normalizedQuery,
+  });
+
+  const professionals = Array.isArray(response.data) ? response.data : [];
+  const matches = filterProfessionalsByName(professionals, normalizedQuery).slice(0, 20);
+  const enrichedMatches = await Promise.all(
+    matches.map(async (professional) => {
+      if (professional.userId) {
+        return professional;
+      }
+
+      const userId = await fetchProfessionalUserId(professional.id);
+      return userId ? { ...professional, userId } : professional;
+    }),
+  );
+
+  return enrichedMatches.filter((professional) => typeof professional.userId === 'string' && professional.userId.length > 0);
+}
+
 /** Buscar profesionales con filtros avanzados (GET /search) */
 export async function searchProfessionals(filters: SearchFilters): Promise<ProfessionalItem[]> {
   const params: Record<string, string | number> = {};
@@ -62,7 +138,8 @@ export async function searchProfessionals(filters: SearchFilters): Promise<Profe
   if (filters.sub_rubro) params.sub_rubro = filters.sub_rubro;
   if (filters.countryId) params.countryId = filters.countryId;
   if (filters.provinceId) params.provinceId = filters.provinceId;
-  return api.get<ProfessionalItem[]>('/search', params);
+  const response = await api.get<ProfessionalItem[] | DataWrapper<ProfessionalItem[]>>('/search', params);
+  return unwrapData(response);
 }
 
 // ─── Render helpers (vanilla JS) ───────────────────────────────

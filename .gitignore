@@ -35,3 +35,6 @@ sdd/
 openspec/
 
 AGENTS.md
+
+# Phobos memory engine — local-only state
+vault/memory/.engine/.index-state.json
