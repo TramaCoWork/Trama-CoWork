@@ -11,4 +11,4 @@ COPY . .
 
 EXPOSE 4321
 
-CMD ["pnpm", "dev", "--host", "0.0.0.0"]
+CMD ["sh", "-c", "pnpm install && pnpm dev --host 0.0.0.0"]

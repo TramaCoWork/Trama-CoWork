@@ -1,0 +1,130 @@
+---
+import MdxEditorWrapper from './MdxEditorWrapper';
+---
+
+<div
+  id="editor-modal-overlay"
+  class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/50 p-4"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="editor-modal-title"
+>
+  <div class="w-full max-w-2xl rounded-2xl border border-outline-variant/15 bg-surface shadow-xl">
+    <div class="border-b border-outline-variant/15 px-5 py-4">
+      <h3 id="editor-modal-title" class="text-lg font-extrabold text-on-surface tracking-tight">Editor</h3>
+    </div>
+
+    <div class="p-5">
+      <MdxEditorWrapper client:load placeholder="Escribí acá..." maxlength={5000} />
+    </div>
+
+    <div class="flex justify-end gap-3 border-t border-outline-variant/15 px-5 py-4">
+      <button
+        id="editor-modal-cancel"
+        type="button"
+        class="rounded-xl bg-surface-container-low px-4 py-2.5 text-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container"
+      >
+        Cancelar
+      </button>
+      <button
+        id="editor-modal-accept"
+        type="button"
+        class="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-on-primary transition-all hover:brightness-110 active:scale-[0.98]"
+      >
+        Aceptar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  interface OpenEditorModalDetail {
+    title?: string;
+    placeholder?: string;
+    maxlength?: number;
+    context?: string;
+  }
+
+  const overlay = document.getElementById('editor-modal-overlay');
+  const titleEl = document.getElementById('editor-modal-title');
+  const cancelBtn = document.getElementById('editor-modal-cancel');
+  const acceptBtn = document.getElementById('editor-modal-accept');
+  let currentContext = 'post';
+  let currentMaxlength = 5000;
+
+  function resetEditor() {
+    document.dispatchEvent(new CustomEvent('mdx-editor-reset'));
+  }
+
+  function openModal(detail: OpenEditorModalDetail) {
+    if (!overlay || !titleEl) return;
+
+    const nextTitle = detail.title || 'Editor';
+    const nextMaxlength = detail.maxlength || 5000;
+
+    currentContext = detail.context || 'post';
+    currentMaxlength = nextMaxlength;
+    titleEl.textContent = nextTitle;
+    resetEditor();
+
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+
+  }
+
+  function closeModal() {
+    if (!overlay) return;
+
+    overlay.classList.add('hidden');
+    overlay.classList.remove('flex');
+    document.body.style.overflow = '';
+    resetEditor();
+  }
+
+  document.addEventListener('open-editor-modal', (event) => {
+    const customEvent = event as CustomEvent<OpenEditorModalDetail>;
+    openModal(customEvent.detail || {});
+  });
+
+  acceptBtn?.addEventListener('click', async () => {
+    const response = await new Promise<{ markdown?: string; imageIds?: string[] }>((resolve) => {
+      document.addEventListener('mdx-editor-content-response', event => {
+        resolve((event as CustomEvent<{ markdown?: string; imageIds?: string[] }>).detail || {});
+      }, { once: true });
+
+      document.dispatchEvent(new CustomEvent('mdx-editor-get-content'));
+    });
+
+    const content = response.markdown?.trim() || '';
+    if (!content || content.length > currentMaxlength) return;
+
+    document.dispatchEvent(
+      new CustomEvent('editor-modal-submit', {
+        detail: {
+          content,
+          imageIds: Array.isArray(response.imageIds) ? response.imageIds : [],
+          context: currentContext,
+        },
+      }),
+    );
+
+    closeModal();
+  });
+
+  cancelBtn?.addEventListener('click', closeModal);
+
+  overlay?.addEventListener('click', (event) => {
+    if (event.target === overlay) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && overlay && !overlay.classList.contains('hidden')) {
+      closeModal();
+    }
+  });
+</script>
+
+<!-- Trazabilidad: creado por Programmer en 2026-05-16 20:08:00 -->

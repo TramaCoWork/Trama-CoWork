@@ -13,11 +13,17 @@ export interface QueryParams {
   [key: string]: string | number | boolean | undefined;
 }
 
+const API_BASE_URL = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
+
+export function apiURL(path: string): string {
+  return new URL(path, `${API_BASE_URL}/`).toString();
+}
+
 export class ApiClient {
   private baseUrl: string;
   private defaultHeaders: Record<string, string>;
 
-  constructor(baseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000') {
+  constructor(baseUrl = API_BASE_URL) {
     this.baseUrl = baseUrl.replace(/\/+$/, '');
     this.defaultHeaders = {
       'Content-Type': 'application/json',

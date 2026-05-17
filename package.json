@@ -18,8 +18,13 @@
     "ci": "biome check . && vitest run && astro build"
   },
   "dependencies": {
+    "@astrojs/react": "^5.0.5",
+    "@mdxeditor/editor": "^4.0.0",
     "@tailwindcss/vite": "^4.2.4",
     "astro": "^6.1.8",
+    "marked": "^18.0.3",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
     "tailwindcss": "^4.2.4"
   },
   "devDependencies": {
