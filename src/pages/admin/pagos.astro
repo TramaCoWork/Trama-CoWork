@@ -1,0 +1,371 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="TRAMA Admin - Pagos">
+  <header class="mb-8">
+    <h1 class="text-3xl font-black text-on-surface tracking-tighter">Pagos</h1>
+    <p class="text-on-surface-variant font-medium mt-1 text-sm">Gestión de pagos de suscripciones.</p>
+  </header>
+
+  <div class="bg-surface-container-low rounded-2xl p-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label for="f-status" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Estado</label>
+        <select id="f-status" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+          <option value="">Todos</option>
+          <option value="sub_approved">Aprobado</option>
+          <option value="sub_pending">Pendiente</option>
+          <option value="sub_rejected">Rechazado</option>
+          <option value="sub_cancelled">Cancelado</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="f-search" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Buscar por email</label>
+        <input id="f-search" type="text" placeholder="usuario@correo.com" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 mt-4">
+      <button id="btn-clear-filters" type="button" class="px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-widest text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors">Limpiar</button>
+      <button id="btn-search" type="button" class="px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all">Buscar</button>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between mb-4">
+    <p id="results-info" class="text-sm text-on-surface-variant font-medium">Cargando...</p>
+    <div></div>
+  </div>
+
+  <div class="bg-surface-container-low rounded-2xl overflow-hidden border border-outline-variant/10">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-outline-variant/15 bg-surface-container">
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Email usuario</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Plan</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Monto</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Método pago</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Fecha pago</th>
+            <th class="text-center px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="payments-table-body">
+          <tr>
+            <td colspan="7" class="text-center py-12 text-on-surface-variant">
+              <div class="flex flex-col items-center gap-3">
+                <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                <span class="text-sm font-medium">Cargando pagos...</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between mt-4">
+    <div></div>
+    <div id="pagination-bottom" class="flex items-center gap-2"></div>
+  </div>
+
+  <div id="payment-detail-modal" class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/30 backdrop-blur-sm p-4" role="dialog" aria-modal="true" aria-labelledby="payment-detail-title">
+    <div class="w-full max-w-3xl rounded-2xl bg-surface-container-low border border-outline-variant/15 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-outline-variant/15 px-6 py-4">
+        <h2 id="payment-detail-title" class="text-lg font-extrabold text-on-surface tracking-tight">Detalle de pago</h2>
+        <button id="btn-close-detail-modal" type="button" class="text-on-surface-variant hover:text-on-surface" aria-label="Cerrar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div><p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">ID suscripción externa</p><p id="d-subscription-external-id" class="text-on-surface font-medium mt-1">—</p></div>
+        <div><p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Email</p><p id="d-email" class="text-on-surface font-medium mt-1">—</p></div>
+        <div><p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Plan</p><p id="d-plan" class="text-on-surface font-medium mt-1">—</p></div>
+        <div><p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Monto</p><p id="d-amount" class="text-on-surface font-medium mt-1">—</p></div>
+        <div><p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado</p><p id="d-status" class="text-on-surface font-medium mt-1">—</p></div>
+        <div><p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Intento</p><p id="d-attempt-number" class="text-on-surface font-medium mt-1">—</p></div>
+        <div><p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Método de pago</p><p id="d-payment-method" class="text-on-surface font-medium mt-1">—</p></div>
+        <div><p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Últimos 4 dígitos</p><p id="d-card-last-four" class="text-on-surface font-medium mt-1">—</p></div>
+        <div><p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Cuotas</p><p id="d-installments" class="text-on-surface font-medium mt-1">—</p></div>
+        <div><p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Detalle estado</p><p id="d-status-detail" class="text-on-surface font-medium mt-1">—</p></div>
+        <div><p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Pagado en</p><p id="d-paid-at" class="text-on-surface font-medium mt-1">—</p></div>
+        <div><p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Falló en</p><p id="d-failed-at" class="text-on-surface font-medium mt-1">—</p></div>
+        <div class="md:col-span-2"><p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Razón fallo</p><p id="d-failure-reason" class="text-on-surface font-medium mt-1">—</p></div>
+        <div class="md:col-span-2"><p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Metadata</p><pre id="d-metadata" class="mt-1 rounded-xl bg-surface-container-lowest border border-outline-variant/15 p-3 text-xs text-on-surface-variant overflow-x-auto">—</pre></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import { getToken, restoreSession } from '../../services/authService';
+    import { api } from '../../services/apiClient';
+    import {
+      getAdminPayments,
+      type SubscriptionPayment,
+      type SubscriptionPaymentFilters,
+    } from '../../services/subscriptionPaymentService';
+
+    restoreSession();
+    const token = getToken();
+    if (token) api.setHeader('Authorization', `Bearer ${token}`);
+
+    const PAGE_SIZE = 10;
+    let currentPage = 1;
+    let currentPayments: SubscriptionPayment[] = [];
+
+    const STATUS_LABELS: Record<string, string> = {
+      sub_approved: 'Aprobado',
+      sub_pending: 'Pendiente',
+      sub_rejected: 'Rechazado',
+      sub_cancelled: 'Cancelado',
+    };
+
+    const STATUS_BADGE: Record<string, string> = {
+      sub_approved: 'bg-primary-container text-on-primary-container',
+      sub_pending: 'bg-secondary-container text-on-secondary-container',
+      sub_rejected: 'bg-error-container text-on-error-container',
+      sub_cancelled: 'bg-outline/10 text-outline',
+    };
+
+    const tableBody = document.getElementById('payments-table-body') as HTMLTableSectionElement;
+    const resultsInfo = document.getElementById('results-info') as HTMLParagraphElement;
+    const paginationBottom = document.getElementById('pagination-bottom') as HTMLDivElement;
+    const statusFilter = document.getElementById('f-status') as HTMLSelectElement;
+    const searchInput = document.getElementById('f-search') as HTMLInputElement;
+    const detailModal = document.getElementById('payment-detail-modal') as HTMLDivElement;
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatDate(iso: string | null): string {
+      if (!iso) return '—';
+      return new Date(iso).toLocaleString('es-AR');
+    }
+
+    function setLoadingTable() {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center py-12 text-on-surface-variant">
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+              <span class="text-sm font-medium">Cargando pagos...</span>
+            </div>
+          </td>
+        </tr>`;
+    }
+
+    function statusBadge(status: string): string {
+      const label = STATUS_LABELS[status] || status;
+      const cls = STATUS_BADGE[status] || 'bg-outline/10 text-outline';
+      return `<span class="inline-block px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider ${cls}">${escapeHtml(label)}</span>`;
+    }
+
+    function renderTable(payments: SubscriptionPayment[]) {
+      if (payments.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center py-16 text-on-surface-variant">
+              <span class="material-symbols-outlined text-4xl mb-3 block text-outline" aria-hidden="true">payments</span>
+              <p class="text-sm font-medium">No se encontraron pagos con los filtros aplicados.</p>
+            </td>
+          </tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = payments
+        .map((payment) => {
+          const email = payment.subscription?.user?.email || '—';
+          const plan = payment.subscription?.plan?.name || '—';
+          const paymentMethod = payment.paymentMethod || payment.paymentMethodId || '—';
+
+          return `
+            <tr class="border-b border-outline-variant/10 hover:bg-surface-container/50 transition-colors">
+              <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(email)}</td>
+              <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(plan)}</td>
+              <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(payment.amount)}</td>
+              <td class="px-5 py-3.5">${statusBadge(payment.status)}</td>
+              <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(paymentMethod)}</td>
+              <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(formatDate(payment.paidAt))}</td>
+              <td class="px-5 py-3.5 text-center">
+                <button
+                  type="button"
+                  data-action="view"
+                  data-id="${payment.id}"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors"
+                  title="Ver detalle"
+                >
+                  <span class="material-symbols-outlined text-sm">visibility</span>
+                  Ver
+                </button>
+              </td>
+            </tr>`;
+        })
+        .join('');
+    }
+
+    function renderPagination(page: number, totalPages: number) {
+      if (totalPages <= 1) {
+        paginationBottom.innerHTML = '';
+        return;
+      }
+
+      paginationBottom.innerHTML = `
+        <button class="pg-prev px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed" ${page <= 1 ? 'disabled' : ''}>
+          <span class="material-symbols-outlined text-sm align-middle">chevron_left</span> Anterior
+        </button>
+        <span class="text-xs font-bold text-on-surface-variant px-2">${page} / ${totalPages}</span>
+        <button class="pg-next px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed" ${page >= totalPages ? 'disabled' : ''}>
+          Siguiente <span class="material-symbols-outlined text-sm align-middle">chevron_right</span>
+        </button>
+      `;
+
+      paginationBottom.querySelector('.pg-prev')?.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          loadPayments();
+        }
+      });
+
+      paginationBottom.querySelector('.pg-next')?.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          loadPayments();
+        }
+      });
+    }
+
+    function getFilters(): SubscriptionPaymentFilters {
+      const filters: SubscriptionPaymentFilters = {
+        page: currentPage,
+        sizePage: PAGE_SIZE,
+      };
+
+      const status = statusFilter.value.trim();
+      const search = searchInput.value.trim();
+
+      if (status) filters.status = status;
+      if (search) filters.search = search;
+
+      return filters;
+    }
+
+    async function loadPayments() {
+      setLoadingTable();
+
+      try {
+        const response = await getAdminPayments(getFilters());
+        currentPayments = response.data;
+        renderTable(currentPayments);
+
+        const totalPages = Math.max(1, Math.ceil(response.total / response.sizePage));
+        const start = response.total > 0 ? (response.page - 1) * response.sizePage + 1 : 0;
+        const end = Math.min(response.page * response.sizePage, response.total);
+
+        resultsInfo.textContent =
+          response.total > 0
+            ? `Mostrando ${start}–${end} de ${response.total} pagos`
+            : 'No se encontraron pagos';
+
+        renderPagination(response.page, totalPages);
+      } catch (error: any) {
+        resultsInfo.textContent = 'Error al cargar pagos';
+        paginationBottom.innerHTML = '';
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center py-12 text-error">
+              <span class="material-symbols-outlined text-3xl mb-2 block" aria-hidden="true">error</span>
+              <p class="text-sm font-bold">Error al cargar pagos</p>
+              <p class="text-xs mt-1">${escapeHtml(error?.message || 'Error desconocido')}</p>
+            </td>
+          </tr>`;
+      }
+    }
+
+    function setDetailField(id: string, value: string) {
+      const element = document.getElementById(id);
+      if (!element) return;
+      element.textContent = value || '—';
+    }
+
+    function openDetailModal(payment: SubscriptionPayment) {
+      setDetailField('d-subscription-external-id', payment.subscription?.externalId || '—');
+      setDetailField('d-email', payment.subscription?.user?.email || '—');
+      setDetailField('d-plan', payment.subscription?.plan?.name || '—');
+      setDetailField('d-amount', payment.amount || '—');
+      setDetailField('d-status', STATUS_LABELS[payment.status] || payment.status || '—');
+      setDetailField('d-attempt-number', String(payment.attemptNumber));
+      setDetailField('d-payment-method', payment.paymentMethod || payment.paymentMethodId || '—');
+      setDetailField('d-card-last-four', payment.cardLastFourDigits || '—');
+      setDetailField('d-installments', payment.installments ? String(payment.installments) : '—');
+      setDetailField('d-status-detail', payment.statusDetail || '—');
+      setDetailField('d-paid-at', formatDate(payment.paidAt));
+      setDetailField('d-failed-at', formatDate(payment.failedAt));
+      setDetailField('d-failure-reason', payment.failureReason || '—');
+
+      const metadataEl = document.getElementById('d-metadata');
+      if (metadataEl) {
+        metadataEl.textContent = payment.metadata ? JSON.stringify(payment.metadata, null, 2) : '—';
+      }
+
+      detailModal.classList.remove('hidden');
+      detailModal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeDetailModal() {
+      detailModal.classList.add('hidden');
+      detailModal.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+
+    tableBody.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const button = target.closest('button[data-action="view"]') as HTMLButtonElement | null;
+      if (!button) return;
+
+      const payment = currentPayments.find((item) => item.id === button.dataset.id);
+      if (!payment) return;
+
+      openDetailModal(payment);
+    });
+
+    statusFilter.addEventListener('change', () => {
+      currentPage = 1;
+      loadPayments();
+    });
+
+    searchInput.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      currentPage = 1;
+      loadPayments();
+    });
+
+    document.getElementById('btn-search')?.addEventListener('click', () => {
+      currentPage = 1;
+      loadPayments();
+    });
+
+    document.getElementById('btn-clear-filters')?.addEventListener('click', () => {
+      statusFilter.value = '';
+      searchInput.value = '';
+      currentPage = 1;
+      loadPayments();
+    });
+
+    document.getElementById('btn-close-detail-modal')?.addEventListener('click', closeDetailModal);
+    detailModal.addEventListener('click', (event) => {
+      if (event.target === detailModal) closeDetailModal();
+    });
+
+    loadPayments();
+  </script>
+</AdminLayout>
