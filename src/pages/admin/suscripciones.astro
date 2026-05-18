@@ -1,0 +1,302 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="TRAMA Admin - Suscripciones">
+  <header class="mb-8">
+    <h1 class="text-3xl font-black text-on-surface tracking-tighter">Suscripciones</h1>
+    <p class="text-on-surface-variant font-medium mt-1 text-sm">Gestión de suscripciones de usuarios.</p>
+  </header>
+
+  <div class="bg-surface-container-low rounded-2xl p-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div>
+        <label for="f-status" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Estado</label>
+        <select id="f-status" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+          <option value="">Todos</option>
+          <option value="sub_approved">Aprobado</option>
+          <option value="sub_pending">Pendiente</option>
+          <option value="sub_rejected">Rechazado</option>
+          <option value="sub_cancelled">Cancelado</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="f-search" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Buscar por email o nombre</label>
+        <input id="f-search" type="text" placeholder="Buscar por email o nombre" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+      </div>
+
+      <div>
+        <label for="f-date-from" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Desde</label>
+        <input id="f-date-from" type="date" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+      </div>
+
+      <div>
+        <label for="f-date-to" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Hasta</label>
+        <input id="f-date-to" type="date" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 mt-4">
+      <button id="btn-clear-filters" type="button" class="px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-widest text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors">Limpiar</button>
+      <button id="btn-search" type="button" class="px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all">Buscar</button>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between mb-4">
+    <p id="results-info" class="text-sm text-on-surface-variant font-medium">Cargando...</p>
+    <div></div>
+  </div>
+
+  <div class="bg-surface-container-low rounded-2xl overflow-hidden border border-outline-variant/10">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-outline-variant/15 bg-surface-container">
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Usuario</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Plan</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Fecha inicio</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Próximo pago</th>
+            <th class="text-center px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Pagos</th>
+          </tr>
+        </thead>
+        <tbody id="subs-table-body">
+          <tr>
+            <td colspan="6" class="text-center py-12 text-on-surface-variant">
+              <div class="flex flex-col items-center gap-3">
+                <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                <span class="text-sm font-medium">Cargando suscripciones...</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between mt-4">
+    <div></div>
+    <div id="pagination-bottom" class="flex items-center gap-2"></div>
+  </div>
+
+  <script>
+    import { getToken, restoreSession } from '../../services/authService';
+    import { api } from '../../services/apiClient';
+    import {
+      getAdminSubscriptions,
+      type AdminSubscription,
+      type AdminSubscriptionFilters,
+    } from '../../services/subscriptionAdminService';
+
+    restoreSession();
+    const token = getToken();
+    if (token) api.setHeader('Authorization', `Bearer ${token}`);
+
+    const PAGE_SIZE = 10;
+    let currentPage = 1;
+
+    const STATUS_LABELS: Record<string, string> = {
+      sub_approved: 'Aprobado',
+      sub_pending: 'Pendiente',
+      sub_rejected: 'Rechazado',
+      sub_cancelled: 'Cancelado',
+    };
+
+    const STATUS_BADGE: Record<string, string> = {
+      sub_approved: 'bg-primary-container text-on-primary-container',
+      sub_pending: 'bg-secondary-container text-on-secondary-container',
+      sub_rejected: 'bg-error-container text-on-error-container',
+      sub_cancelled: 'bg-outline/10 text-outline',
+    };
+
+    const tableBody = document.getElementById('subs-table-body') as HTMLTableSectionElement;
+    const resultsInfo = document.getElementById('results-info') as HTMLParagraphElement;
+    const paginationBottom = document.getElementById('pagination-bottom') as HTMLDivElement;
+    const statusFilter = document.getElementById('f-status') as HTMLSelectElement;
+    const searchInput = document.getElementById('f-search') as HTMLInputElement;
+    const dateFromInput = document.getElementById('f-date-from') as HTMLInputElement;
+    const dateToInput = document.getElementById('f-date-to') as HTMLInputElement;
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatDate(dateStr: string | null | undefined): string {
+      if (!dateStr) return '—';
+      return new Date(dateStr).toLocaleDateString('es-AR');
+    }
+
+    function setLoadingTable() {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center py-12 text-on-surface-variant">
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+              <span class="text-sm font-medium">Cargando suscripciones...</span>
+            </div>
+          </td>
+        </tr>`;
+    }
+
+    function statusBadge(status: string): string {
+      const label = STATUS_LABELS[status] || status;
+      const cls = STATUS_BADGE[status] || 'bg-outline/10 text-outline';
+      return `<span class="inline-block px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider ${cls}">${escapeHtml(label)}</span>`;
+    }
+
+    function renderTable(subs: AdminSubscription[]) {
+      if (subs.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center py-16 text-on-surface-variant">
+              <span class="material-symbols-outlined text-4xl mb-3 block text-outline" aria-hidden="true">repeat</span>
+              <p class="text-sm font-medium">No se encontraron suscripciones con los filtros aplicados.</p>
+            </td>
+          </tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = subs
+        .map((sub) => {
+          const email = sub.user?.email || '—';
+          const name = sub.user?.name ? ` · ${sub.user.name}` : '';
+          const plan = `${sub.plan.name} · $${sub.plan.amount}`;
+
+          return `
+            <tr class="border-b border-outline-variant/10 hover:bg-surface-container/50 transition-colors">
+              <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(email)}${escapeHtml(name)}</td>
+              <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(plan)}</td>
+              <td class="px-5 py-3.5">${statusBadge(sub.status)}</td>
+              <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(formatDate(sub.startDate))}</td>
+              <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(formatDate(sub.nextPaymentDate))}</td>
+              <td class="px-5 py-3.5 text-center text-on-surface-variant text-xs font-bold">${sub._count.payments}</td>
+            </tr>`;
+        })
+        .join('');
+    }
+
+    function renderPagination(page: number, totalPages: number) {
+      if (totalPages <= 1) {
+        paginationBottom.innerHTML = '';
+        return;
+      }
+
+      paginationBottom.innerHTML = `
+        <button class="pg-prev px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed" ${page <= 1 ? 'disabled' : ''}>
+          <span class="material-symbols-outlined text-sm align-middle">chevron_left</span> Anterior
+        </button>
+        <span class="text-xs font-bold text-on-surface-variant px-2">${page} / ${totalPages}</span>
+        <button class="pg-next px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed" ${page >= totalPages ? 'disabled' : ''}>
+          Siguiente <span class="material-symbols-outlined text-sm align-middle">chevron_right</span>
+        </button>
+      `;
+
+      paginationBottom.querySelector('.pg-prev')?.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          loadSubscriptions();
+        }
+      });
+
+      paginationBottom.querySelector('.pg-next')?.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          loadSubscriptions();
+        }
+      });
+    }
+
+    function getFilters(): AdminSubscriptionFilters {
+      const filters: AdminSubscriptionFilters = {
+        page: currentPage,
+        sizePage: PAGE_SIZE,
+      };
+
+      const status = statusFilter.value.trim();
+      const search = searchInput.value.trim();
+      const dateFrom = dateFromInput.value.trim();
+      const dateTo = dateToInput.value.trim();
+
+      if (status) filters.status = status;
+      if (search) filters.search = search;
+      if (dateFrom) filters.dateFrom = dateFrom;
+      if (dateTo) filters.dateTo = dateTo;
+
+      return filters;
+    }
+
+    async function loadSubscriptions() {
+      setLoadingTable();
+
+      try {
+        const response = await getAdminSubscriptions(getFilters());
+        renderTable(response.data);
+
+        const totalPages = Math.max(1, Math.ceil(response.total / response.sizePage));
+        const start = response.total > 0 ? (response.page - 1) * response.sizePage + 1 : 0;
+        const end = Math.min(response.page * response.sizePage, response.total);
+
+        resultsInfo.textContent =
+          response.total > 0
+            ? `Mostrando ${start}–${end} de ${response.total} suscripciones encontradas`
+            : 'No se encontraron suscripciones';
+
+        renderPagination(response.page, totalPages);
+      } catch (error: any) {
+        resultsInfo.textContent = 'Error al cargar suscripciones';
+        paginationBottom.innerHTML = '';
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center py-12 text-error">
+              <span class="material-symbols-outlined text-3xl mb-2 block" aria-hidden="true">error</span>
+              <p class="text-sm font-bold">Error al cargar suscripciones</p>
+              <p class="text-xs mt-1">${escapeHtml(error?.message || 'Error desconocido')}</p>
+            </td>
+          </tr>`;
+      }
+    }
+
+    statusFilter.addEventListener('change', () => {
+      currentPage = 1;
+      loadSubscriptions();
+    });
+
+    searchInput.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      currentPage = 1;
+      loadSubscriptions();
+    });
+
+    dateFromInput.addEventListener('change', () => {
+      currentPage = 1;
+      loadSubscriptions();
+    });
+
+    dateToInput.addEventListener('change', () => {
+      currentPage = 1;
+      loadSubscriptions();
+    });
+
+    document.getElementById('btn-search')?.addEventListener('click', () => {
+      currentPage = 1;
+      loadSubscriptions();
+    });
+
+    document.getElementById('btn-clear-filters')?.addEventListener('click', () => {
+      statusFilter.value = '';
+      searchInput.value = '';
+      dateFromInput.value = '';
+      dateToInput.value = '';
+      currentPage = 1;
+      loadSubscriptions();
+    });
+
+    loadSubscriptions();
+  </script>
+</AdminLayout>
