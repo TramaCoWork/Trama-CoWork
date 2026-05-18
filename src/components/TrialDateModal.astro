@@ -1,0 +1,269 @@
+<div
+  id="trial-date-modal-overlay"
+  class="fixed inset-0 z-[95] hidden items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="trial-date-modal-title"
+>
+  <div class="w-full max-w-md rounded-2xl border border-outline-variant/20 bg-white shadow-2xl">
+    <div class="flex items-center justify-between border-b border-outline-variant/20 px-5 py-4">
+      <h3 id="trial-date-modal-title" class="text-lg font-extrabold tracking-tight text-on-surface">Fecha de trial</h3>
+      <button
+        id="trial-date-close"
+        type="button"
+        class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container"
+        aria-label="Cerrar"
+      >
+        <span class="material-symbols-outlined text-base" aria-hidden="true">close</span>
+      </button>
+    </div>
+
+    <div class="px-5 py-4">
+      <div class="mb-3 flex items-center justify-between">
+        <button
+          id="trial-date-prev-month"
+          type="button"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-outline-variant/20 text-on-surface-variant transition-colors hover:bg-surface-container"
+          aria-label="Mes anterior"
+        >
+          <span class="material-symbols-outlined text-lg" aria-hidden="true">chevron_left</span>
+        </button>
+        <p id="trial-date-month-label" class="text-sm font-bold uppercase tracking-wider text-on-surface"></p>
+        <button
+          id="trial-date-next-month"
+          type="button"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-outline-variant/20 text-on-surface-variant transition-colors hover:bg-surface-container"
+          aria-label="Mes siguiente"
+        >
+          <span class="material-symbols-outlined text-lg" aria-hidden="true">chevron_right</span>
+        </button>
+      </div>
+
+      <div class="mb-2 grid grid-cols-7 gap-1 text-center text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+        <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
+      </div>
+      <div id="trial-date-days-grid" class="grid grid-cols-7 gap-1"></div>
+      <p id="trial-date-selected-label" class="mt-3 text-xs font-medium text-on-surface-variant">Sin fecha seleccionada</p>
+    </div>
+
+    <div class="flex flex-col-reverse gap-2 border-t border-outline-variant/20 px-5 py-4 sm:flex-row sm:justify-end">
+      <button
+        id="trial-date-cancel"
+        type="button"
+        class="rounded-xl bg-surface-container px-4 py-2.5 text-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container-high"
+      >
+        Cancelar
+      </button>
+      <button
+        id="trial-date-clear"
+        type="button"
+        class="rounded-xl border border-outline-variant/25 px-4 py-2.5 text-sm font-bold text-on-surface transition-colors hover:bg-surface-container"
+      >
+        Limpiar
+      </button>
+      <button
+        id="trial-date-save"
+        type="button"
+        class="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-on-primary transition-all hover:brightness-110 active:scale-[0.98]"
+      >
+        Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { api } from '../services/apiClient';
+  import {
+    getDaysInMonth,
+    getFirstDayOfWeek,
+    getNextMonthReferenceDate,
+    toUtcMidnightIso,
+  } from './trialDateCalendar';
+
+  interface TrialDateWindow {
+    openTrialDateModal: (professionalId: string, currentTrialEndDate?: string) => void;
+    closeTrialDateModal: () => void;
+  }
+
+  const overlay = document.getElementById('trial-date-modal-overlay') as HTMLDivElement;
+  const closeBtn = document.getElementById('trial-date-close') as HTMLButtonElement;
+  const cancelBtn = document.getElementById('trial-date-cancel') as HTMLButtonElement;
+  const clearBtn = document.getElementById('trial-date-clear') as HTMLButtonElement;
+  const saveBtn = document.getElementById('trial-date-save') as HTMLButtonElement;
+  const prevBtn = document.getElementById('trial-date-prev-month') as HTMLButtonElement;
+  const nextBtn = document.getElementById('trial-date-next-month') as HTMLButtonElement;
+  const monthLabel = document.getElementById('trial-date-month-label') as HTMLParagraphElement;
+  const selectedLabel = document.getElementById('trial-date-selected-label') as HTMLParagraphElement;
+  const daysGrid = document.getElementById('trial-date-days-grid') as HTMLDivElement;
+
+  const monthFormatter = new Intl.DateTimeFormat('es-AR', { month: 'long', year: 'numeric' });
+  const selectedFormatter = new Intl.DateTimeFormat('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  let currentProfessionalId = '';
+  let displayedYear = 0;
+  let displayedMonth = 0;
+  let selectedDate: Date | null = null;
+
+  function parseIsoDate(value?: string): Date | null {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  }
+
+  function getTodayStart(): Date {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }
+
+  function updateSelectedLabel() {
+    if (!selectedDate) {
+      selectedLabel.textContent = 'Sin fecha seleccionada';
+      return;
+    }
+
+    selectedLabel.textContent = `Fecha seleccionada: ${selectedFormatter.format(selectedDate)}`;
+  }
+
+  function renderCalendar() {
+    monthLabel.textContent = monthFormatter.format(new Date(displayedYear, displayedMonth, 1));
+    daysGrid.innerHTML = '';
+
+    const firstDay = getFirstDayOfWeek(displayedYear, displayedMonth);
+    const daysInMonth = getDaysInMonth(displayedYear, displayedMonth);
+    const todayStart = getTodayStart();
+
+    for (let i = 0; i < firstDay; i += 1) {
+      const empty = document.createElement('div');
+      empty.className = 'h-10';
+      daysGrid.appendChild(empty);
+    }
+
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const button = document.createElement('button');
+      const candidateDate = new Date(displayedYear, displayedMonth, day);
+      const isPast = candidateDate < todayStart;
+      const isSelected =
+        selectedDate !== null
+        && selectedDate.getFullYear() === displayedYear
+        && selectedDate.getMonth() === displayedMonth
+        && selectedDate.getDate() === day;
+
+      button.type = 'button';
+      button.textContent = String(day);
+      button.className = `h-10 rounded-lg text-sm font-semibold transition-colors ${
+        isSelected
+          ? 'bg-primary text-on-primary'
+          : 'bg-surface-container text-on-surface hover:bg-primary/10'
+      }`;
+      button.disabled = isPast;
+
+      if (isPast) {
+        button.classList.add('cursor-not-allowed', 'opacity-40', 'hover:bg-surface-container');
+      } else {
+        button.addEventListener('click', () => {
+          selectedDate = candidateDate;
+          updateSelectedLabel();
+          renderCalendar();
+        });
+      }
+
+      daysGrid.appendChild(button);
+    }
+  }
+
+  function closeModal() {
+    overlay.classList.add('hidden');
+    overlay.classList.remove('flex');
+    document.body.style.overflow = '';
+  }
+
+  function openModal(professionalId: string, currentTrialEndDate?: string) {
+    currentProfessionalId = professionalId;
+    selectedDate = parseIsoDate(currentTrialEndDate);
+    const nextMonthDate = getNextMonthReferenceDate();
+    displayedYear = nextMonthDate.getFullYear();
+    displayedMonth = nextMonthDate.getMonth();
+    updateSelectedLabel();
+    renderCalendar();
+
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function getSelectedIsoDate(): string | null {
+    if (!selectedDate) return null;
+    return toUtcMidnightIso(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(),
+      selectedDate.getDate(),
+    );
+  }
+
+  function getErrorMessage(error: unknown): string {
+    if (error instanceof Error && error.message) {
+      return error.message;
+    }
+    return 'Error desconocido';
+  }
+
+  async function saveTrialDate() {
+    const isoDate = getSelectedIsoDate();
+    if (!isoDate) {
+      alert('Seleccioná una fecha antes de guardar.');
+      return;
+    }
+
+    try {
+      await api.patch(`/admin/professionals/${currentProfessionalId}/trial`, { trialEndDate: isoDate });
+      closeModal();
+      document.dispatchEvent(new CustomEvent('trial-date-updated'));
+    } catch (error) {
+      alert(`No se pudo guardar la fecha de trial. ${getErrorMessage(error)}`);
+    }
+  }
+
+  async function clearTrialDate() {
+    try {
+      await api.patch(`/admin/professionals/${currentProfessionalId}/trial`, { trialEndDate: null });
+      closeModal();
+      document.dispatchEvent(new CustomEvent('trial-date-updated'));
+    } catch (error) {
+      alert(`No se pudo limpiar la fecha de trial. ${getErrorMessage(error)}`);
+    }
+  }
+
+  closeBtn.addEventListener('click', closeModal);
+  cancelBtn.addEventListener('click', closeModal);
+  saveBtn.addEventListener('click', saveTrialDate);
+  clearBtn.addEventListener('click', clearTrialDate);
+
+  prevBtn.addEventListener('click', () => {
+    const prev = new Date(displayedYear, displayedMonth - 1, 1);
+    displayedYear = prev.getFullYear();
+    displayedMonth = prev.getMonth();
+    renderCalendar();
+  });
+
+  nextBtn.addEventListener('click', () => {
+    const next = new Date(displayedYear, displayedMonth + 1, 1);
+    displayedYear = next.getFullYear();
+    displayedMonth = next.getMonth();
+    renderCalendar();
+  });
+
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeModal();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !overlay.classList.contains('hidden')) {
+      closeModal();
+    }
+  });
+
+  (window as unknown as TrialDateWindow).openTrialDateModal = openModal;
+  (window as unknown as TrialDateWindow).closeTrialDateModal = closeModal;
+</script>

@@ -35,6 +35,7 @@ export interface AdminProfessional {
   identityBackUrl: string | null;
   createdAt: string;
   updatedAt: string;
+  trialEndDate?: string | null;
   rubro?: { id: number; slug: string; name: string } | null;
   country?: { id: number; name: string; code: string } | null;
   province?: { id: number; name: string } | null;
