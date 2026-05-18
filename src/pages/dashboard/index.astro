@@ -1,225 +1,257 @@
 ---
 import DashboardLayout from '../../layouts/DashboardLayout.astro';
-
-// TODO: Replace with real stats from API
-const stats = [
-  { value: 123, label: 'Visualizaciones', variant: 'default' as const },
-  { value: 56, label: 'Conexiones', variant: 'secondary' as const },
-  { value: 12, label: 'Propuestas', variant: 'primary' as const },
-];
-
-// TODO: Replace with real tasks from API
-const quickActions = [
-  { text: 'Completar portafolio de arquitectura', done: false },
-  { text: 'Responder a 3 mensajes nuevos', done: false },
-  { text: 'Actualizar foto de perfil', done: true },
-];
-
-// TODO: Replace with real contacts from API
-const recentContacts = [
-  {
-    name: 'Julian M.',
-    role: 'Diseñador de interiores',
-    time: 'Hace 2h',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCdDmJT2ZfPGSV570SpT0WH494GWn2LS8jorNQPgYX7ag2MUeGtq-o8FEvtvpgMEjgBsTwfKDtsbxvoG2ug5VEpRyY8TJQkbBAtdvCgZWkF744eCkRlm__wMgVTIvODbHHTS1D8d0-iQ3J_0ObJUiWA3nQbBoTiN9S2a3z8SMwkFI_flz_TUPjEPUyonvch5mqad1JGx3fot0BZeRZOne1LtP-_hEa0dUufIdUAbO4q8LyYt3m7DAYYM_ww9z57VAXGpC6dnMlvRw',
-  },
-  {
-    name: 'Elena Sorres',
-    role: 'Gerente de proyecto',
-    time: 'Hace 5h',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD8OijlIMx9mSqZEue9ay_Gofk-DJqjqxFIeTzlDROQvQ-Hx2eW5KLe0BML7jTXwx3hQN10LCPgAMcJl8iByp0JDtja1Ghjn0a91DbufxtrbpXgQcbmhC2Mfc8YnH1hd1Q2ti_CvUcJCgcZkpd4laEyiMvTGHsVD4AFpzRiUYyHhu8gxk_hkQilTaaDztvktzltJ-8ILVORWvYamMXojVV2PbjbsHKDceZbYD3w0gzgePC-EWHUgxrnYDIifUu2X1pBxibE4tNpxg',
-  },
-  {
-    name: 'Marc Dupont',
-    role: 'Consultor',
-    time: 'Ayer',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBwa5r8oJnCTy37qrN_DW1hGfWsB61ZWY49-lEscJHvM2jk5z3m0Vt94KM5gpp8HeE5CQIL1_gNLRnHXIZYyNwF56S4-vAa5DEHft30OV1ij1x1on4MCAWpOnieYANF8Ht94zdwsI-_mxXhC5xZgb3UJOpYynNBEicTAHHZuXVKAnYj0U7ur6vpRmIntuIy9n6dpIvCfZS8LJRNoegq1Ltczq0lOsWC2vn1M_Kq8N0hpvWFnWwqNiMOgl7bDV7ggQdsf8BaMwI96g',
-  },
-];
-
-const communityImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCITJ3VjJo1DRy1JJ1u1dpIeG0MFKMHUbPUKZMCEnIbndHZoiDA_p7EjtdwXbemMTF5tsG2SOL0VZkSOUdcW--_ly-yiXCEP1w9YpFvxwRLNAlgqj3aH5IleW-aSW3s6hy4581_vIkdduPle0iLQ61CTfv_ETbSf2lZXlIv4sF8foJJ2QjAdXEcA4oob0zhEl1b4SYoZY5m7xu9BTiFeREdx_am2xvwJVcVH6ovOoRLPgdjmjUgnODOQCs89wKA62s5pG8oTCvWGw';
 ---
 
-<DashboardLayout title="TRAMA - Panel de control">
-  <!-- Header -->
-  <header class="mb-12 flex justify-between items-end">
-    <div>
-      <h1 id="dashboard-greeting" class="text-4xl font-black text-on-surface tracking-tighter">
-        ¡Hola!
-      </h1>
-      <p class="text-on-surface-variant font-medium mt-2">
-        Aquí tienes un resumen de tu actividad profesional hoy.
-      </p>
-    </div>
-    <div class="flex items-center gap-4">
-      <button
-        class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-colors"
-        aria-label="Notificaciones"
-      >
-        <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
-      </button>
-      <button
-        class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-colors"
-        aria-label="Buscar"
-      >
-        <span class="material-symbols-outlined" aria-hidden="true">search</span>
-      </button>
-    </div>
+<DashboardLayout title="TRAMA - Panel profesional">
+  <header class="mb-8 border-b border-outline-variant/15 pb-6">
+    <h1 id="dashboard-greeting" class="text-3xl font-black tracking-tight text-on-surface">Panel profesional</h1>
+    <p class="mt-2 text-sm font-medium text-on-surface-variant">
+      Seguimiento de tu actividad, validaciones y estado de suscripción.
+    </p>
   </header>
 
-  <!-- Stats Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-    {stats.map((stat) => {
-      const baseClasses = 'p-8 rounded-full flex flex-col items-center justify-center text-center group transition-colors duration-300 border border-outline-variant/5 shadow-sm relative overflow-hidden';
-      const variantClasses = {
-        default: 'md:col-span-4 bg-surface-container-lowest hover:bg-primary-container',
-        secondary: 'md:col-span-4 bg-surface-container-lowest hover:bg-secondary',
-        primary: 'md:col-span-4 bg-primary-container',
-      };
-      const valueClasses = {
-        default: 'text-4xl font-black text-primary group-hover:text-on-primary-container tracking-tighter mb-1',
-        secondary: 'text-4xl font-black text-secondary group-hover:text-on-secondary tracking-tighter mb-1',
-        primary: 'text-4xl font-black text-on-primary tracking-tighter mb-1 relative z-10',
-      };
-      const labelClasses = {
-        default: 'text-xs font-bold uppercase tracking-widest text-on-surface-variant group-hover:text-primary-fixed',
-        secondary: 'text-xs font-bold uppercase tracking-widest text-on-surface-variant group-hover:text-secondary-fixed',
-        primary: 'text-xs font-bold uppercase tracking-widest text-primary-fixed relative z-10',
-      };
-      return (
-        <div class={`${baseClasses} ${variantClasses[stat.variant]}`}>
-          {stat.variant === 'primary' && (
-            <div class="absolute inset-0 bg-gradient-to-br from-primary to-primary-container opacity-50 rounded-full"></div>
-          )}
-          <span class={valueClasses[stat.variant]}>{stat.value}</span>
-          <span class={labelClasses[stat.variant]}>{stat.label}</span>
-        </div>
-      );
-    })}
+  <section id="dashboard-loading" class="space-y-6">
+    <div class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined animate-spin text-primary" aria-hidden="true">progress_activity</span>
+        <p class="text-sm font-semibold text-on-surface">Cargando datos del dashboard...</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {Array.from({ length: 8 }).map(() => (
+        <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+          <div class="h-4 w-2/3 animate-pulse rounded bg-surface-container"></div>
+          <div class="mt-4 h-9 w-1/3 animate-pulse rounded bg-surface-container"></div>
+        </article>
+      ))}
+    </div>
+  </section>
 
-    <!-- Quick Actions -->
-    <div class="md:col-span-7 bg-surface-container-low p-8 rounded-3xl">
-      <div class="flex justify-between items-center mb-8">
-        <h2 class="text-xl font-extrabold text-on-surface tracking-tight">Acciones rápidas</h2>
-        <span class="text-[10px] font-bold bg-secondary-fixed text-on-secondary-fixed px-2 py-1 rounded-full uppercase tracking-tighter">
-          Pendiente
+  <section id="dashboard-error" class="hidden rounded-2xl border border-error/20 bg-error/10 p-5">
+    <div class="flex items-start gap-3">
+      <span class="material-symbols-outlined text-error" aria-hidden="true">error</span>
+      <div>
+        <p class="text-sm font-bold text-error">No pudimos cargar tu panel.</p>
+        <p id="dashboard-error-message" class="mt-1 text-sm text-on-surface-variant">
+          Intentá de nuevo en unos minutos.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section id="dashboard-content" class="hidden space-y-6">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+        <div class="flex items-center gap-2 text-on-surface-variant">
+          <span class="material-symbols-outlined text-base" aria-hidden="true">contacts</span>
+          <p class="text-xs font-bold uppercase tracking-widest">Contactos</p>
+        </div>
+        <p id="total-contacts" class="mt-3 text-3xl font-black text-primary">0</p>
+      </article>
+      <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+        <div class="flex items-center gap-2 text-on-surface-variant">
+          <span class="material-symbols-outlined text-base" aria-hidden="true">school</span>
+          <p class="text-xs font-bold uppercase tracking-widest">Estudios</p>
+        </div>
+        <p id="total-educations" class="mt-3 text-3xl font-black text-primary">0</p>
+      </article>
+      <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+        <div class="flex items-center gap-2 text-on-surface-variant">
+          <span class="material-symbols-outlined text-base" aria-hidden="true">workspace_premium</span>
+          <p class="text-xs font-bold uppercase tracking-widest">Certificaciones</p>
+        </div>
+        <p id="total-certifications" class="mt-3 text-3xl font-black text-primary">0</p>
+      </article>
+      <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+        <div class="flex items-center gap-2 text-on-surface-variant">
+          <span class="material-symbols-outlined text-base" aria-hidden="true">description</span>
+          <p class="text-xs font-bold uppercase tracking-widest">Documentos</p>
+        </div>
+        <p id="total-documents" class="mt-3 text-3xl font-black text-primary">0</p>
+      </article>
+      <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+        <div class="flex items-center gap-2 text-on-surface-variant">
+          <span class="material-symbols-outlined text-base" aria-hidden="true">chat</span>
+          <p class="text-xs font-bold uppercase tracking-widest">Mensajes</p>
+        </div>
+        <p id="total-messages" class="mt-3 text-3xl font-black text-primary">0</p>
+      </article>
+      <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+        <div class="flex items-center gap-2 text-on-surface-variant">
+          <span class="material-symbols-outlined text-base" aria-hidden="true">forum</span>
+          <p class="text-xs font-bold uppercase tracking-widest">Posts en comunidad</p>
+        </div>
+        <p id="total-community-posts" class="mt-3 text-3xl font-black text-primary">0</p>
+      </article>
+      <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+        <div class="flex items-center gap-2 text-on-surface-variant">
+          <span class="material-symbols-outlined text-base" aria-hidden="true">work</span>
+          <p class="text-xs font-bold uppercase tracking-widest">Postulaciones</p>
+        </div>
+        <p id="total-job-applications" class="mt-3 text-3xl font-black text-primary">0</p>
+      </article>
+      <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+        <div class="flex items-center gap-2 text-on-surface-variant">
+          <span class="material-symbols-outlined text-base" aria-hidden="true">verified</span>
+          <p class="text-xs font-bold uppercase tracking-widest">Validaciones</p>
+        </div>
+        <p id="total-validations" class="mt-3 text-3xl font-black text-primary">0</p>
+      </article>
+    </div>
+
+    <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-6">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant/15 pb-4">
+        <h2 class="text-lg font-extrabold tracking-tight text-on-surface">Estado del plan</h2>
+        <span id="plan-status-badge" class="rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-outline/10 text-outline">
+          Sin plan activo
         </span>
       </div>
-      <div class="space-y-4">
-        {quickActions.map((action) => (
-          <div class={`flex items-center gap-4 bg-surface-container-lowest p-4 rounded-xl transition-transform ${action.done ? 'opacity-50' : 'hover:translate-x-1 cursor-pointer'}`}>
-            <div class={`w-6 h-6 rounded-lg flex items-center justify-center ${action.done ? 'bg-primary text-on-primary' : 'border-2 border-primary/20 text-transparent hover:text-primary transition-colors'}`}>
-              <span class="material-symbols-outlined text-sm filled" aria-hidden="true">check</span>
-            </div>
-            <span class={`font-semibold text-on-surface ${action.done ? 'line-through' : ''}`}>
-              {action.text}
-            </span>
-            <span class="ml-auto material-symbols-outlined text-outline-variant" aria-hidden="true">chevron_right</span>
-          </div>
-        ))}
-      </div>
-    </div>
-
-    <!-- Recent Contacts -->
-    <div class="md:col-span-5 bg-surface-container-lowest p-8 rounded-3xl shadow-sm">
-      <h2 class="text-xl font-extrabold text-on-surface tracking-tight mb-8">Contactos recientes</h2>
-      <div class="space-y-6">
-        {recentContacts.map((contact) => (
-          <div class="flex items-center gap-4 group cursor-pointer">
-            <img
-              alt={`Foto de ${contact.name}`}
-              class="w-12 h-12 rounded-full object-cover group-hover:ring-2 ring-primary ring-offset-2 transition-all"
-              src={contact.avatar}
-            />
-            <div class="flex-1 border-b border-outline-variant/10 pb-4">
-              <p class="text-sm font-bold text-on-surface">{contact.name}</p>
-              <p class="text-xs text-on-surface-variant">{contact.role} &bull; {contact.time}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-      <a
-        href="/dashboard/contactos"
-        class="block w-full mt-6 py-3 text-xs font-bold text-primary hover:text-primary-container transition-colors uppercase tracking-widest text-center"
-      >
-        Ver todos los contactos
-      </a>
-    </div>
-
-    <!-- Community Banner -->
-    <div class="md:col-span-12 relative overflow-hidden rounded-3xl aspect-[21/9] flex items-end">
-      <img
-        alt="Espacio de estudio moderno con ventanales y luz natural"
-        class="absolute inset-0 w-full h-full object-cover"
-        src={communityImage}
-      />
-      <div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-inverse-surface/20 to-transparent"></div>
-      <div class="relative z-10 p-12 text-inverse-on-surface max-w-2xl">
-        <span class="text-[10px] font-bold bg-tertiary-container text-on-tertiary px-3 py-1 rounded-full uppercase tracking-widest mb-4 inline-block">
-          Comunidad Trama
-        </span>
-        <h3 class="text-3xl font-black tracking-tighter mb-4 leading-tight">
-          Descubre cómo los arquitectos locales están redefiniendo el espacio urbano en 2025.
-        </h3>
-        <div class="flex items-center gap-6">
-          <a
-            href="#"
-            class="bg-surface-container-lowest text-on-surface px-6 py-3 rounded-full text-xs font-bold hover:bg-primary-fixed transition-colors"
-          >
-            Leer artículo
-          </a>
-          <span class="text-xs font-medium text-inverse-on-surface/70">15 min lectura &bull; Publicado ayer</span>
+      <dl class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div class="rounded-xl bg-surface-container-lowest p-4">
+          <dt class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Plan</dt>
+          <dd id="plan-name" class="mt-2 text-sm font-bold text-on-surface">Sin plan activo</dd>
         </div>
-      </div>
-    </div>
-  </div>
+        <div class="rounded-xl bg-surface-container-lowest p-4">
+          <dt class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Vence el</dt>
+          <dd id="plan-expiration" class="mt-2 text-sm font-bold text-on-surface">—</dd>
+        </div>
+        <div class="rounded-xl bg-surface-container-lowest p-4">
+          <dt class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Fin de prueba</dt>
+          <dd id="trial-end" class="mt-2 text-sm font-bold text-on-surface">—</dd>
+        </div>
+      </dl>
+    </article>
+  </section>
 
   <script>
-    import { getUserIdFromToken, getToken, logout } from '../../services/authService';
-    import { api } from '../../services/apiClient';
+    import { getToken, logout, restoreSession } from '../../services/authService';
+    import { fetchProfessionalDashboard, type ProfessionalDashboard } from '../../services/dashboardService';
 
-    interface ProfessionalData {
-      id: number;
-      userId: string;
-      name: string;
-      bio: string;
-      photo: string;
-      services: string[];
-      priceMin: number;
-      priceMax: number;
-      city: string;
-      whatsapp: string;
-      emailContact: string;
-      isActive: boolean;
-      categories: { id: number; slug: string; name: string }[];
+    console.log('[DASHBOARD] Script loaded');
+
+    function formatInteger(value: number): string {
+      const safeValue = Number.isFinite(value) ? Math.trunc(value) : 0;
+      return safeValue.toLocaleString('es-AR');
     }
 
-    async function loadProfessionalData() {
-      const userId = getUserIdFromToken();
-      const token = getToken();
-      if (!userId || !token) return;
+    function formatDate(value: string | null): string {
+      if (!value) return '—';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return date.toLocaleDateString('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+    }
 
-      api.setHeader('Authorization', `Bearer ${token}`);
+    function setTotal(elementId: string, value: number): void {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      element.textContent = formatInteger(value);
+    }
 
+    function renderPlanState(data: ProfessionalDashboard): void {
+      const badge = document.getElementById('plan-status-badge');
+      const planName = document.getElementById('plan-name');
+      const planExpiration = document.getElementById('plan-expiration');
+      const trialEnd = document.getElementById('trial-end');
+
+      if (planName) {
+        planName.textContent = data.planName ?? 'Sin plan activo';
+      }
+      if (planExpiration) {
+        planExpiration.textContent = formatDate(data.planExpirationDate);
+      }
+      if (trialEnd) {
+        trialEnd.textContent = formatDate(data.trialEndDate);
+      }
+
+      if (!badge) return;
+      if (data.isOnTrial) {
+        badge.textContent = 'Prueba activa';
+        badge.className =
+          'rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-secondary-container text-on-secondary-container';
+        return;
+      }
+      if (data.planName) {
+        badge.textContent = 'Plan activo';
+        badge.className =
+          'rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-primary-container text-on-primary-container';
+        return;
+      }
+      badge.textContent = 'Sin plan activo';
+      badge.className = 'rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-outline/10 text-outline';
+    }
+
+    function showState(mode: 'loading' | 'error' | 'content'): void {
+      const loading = document.getElementById('dashboard-loading');
+      const error = document.getElementById('dashboard-error');
+      const content = document.getElementById('dashboard-content');
+
+      loading?.classList.toggle('hidden', mode !== 'loading');
+      error?.classList.toggle('hidden', mode !== 'error');
+      content?.classList.toggle('hidden', mode !== 'content');
+    }
+
+    function showErrorMessage(message: string): void {
+      const errorMessage = document.getElementById('dashboard-error-message');
+      if (errorMessage) {
+        errorMessage.textContent = message;
+      }
+      showState('error');
+    }
+
+    async function loadDashboard(): Promise<void> {
       try {
-        const data = await api.get<ProfessionalData>(`/professionals/by-user/${userId}`);
+        restoreSession();
 
-        // Update greeting with real name
-        const greeting = document.getElementById('dashboard-greeting');
-        if (greeting) {
-          greeting.textContent = `¡Hola, ${data.name}!`;
-        }
-
-        // Sidebar user card is now handled by DashboardSidebar.astro
-      } catch (err: any) {
-        if (err?.status === 401) {
-          logout();
+        const token = getToken();
+        if (!token) {
+          showErrorMessage('Sesión expirada. Volvé a iniciar sesión para ver tu panel.');
           return;
         }
-        console.error('Error loading professional data:', err);
+
+        showState('loading');
+
+        console.log('[DASHBOARD] About to fetch');
+        const dashboardData: ProfessionalDashboard = await fetchProfessionalDashboard();
+
+        setTotal('total-contacts', dashboardData.totalContacts);
+        setTotal('total-educations', dashboardData.totalEducations);
+        setTotal('total-certifications', dashboardData.totalCertifications);
+        setTotal('total-documents', dashboardData.totalDocuments);
+        setTotal('total-messages', dashboardData.totalMessages);
+        setTotal('total-community-posts', dashboardData.totalCommunityPosts);
+        setTotal('total-job-applications', dashboardData.totalJobApplications);
+        setTotal('total-validations', dashboardData.totalValidations);
+        renderPlanState(dashboardData);
+
+        showState('content');
+      } catch (err: any) {
+        console.error('[dashboard] Error while loading professional dashboard', err);
+        if (err?.status === 401) {
+          showErrorMessage('Sesión expirada. Volvé a iniciar sesión para ver tu panel.');
+          return;
+        }
+        showErrorMessage('No se pudieron obtener tus métricas. Intentá nuevamente.');
       }
     }
 
-    loadProfessionalData();
+    let hasLoadedDashboard = false;
+
+    function initializeDashboard(): void {
+      if (hasLoadedDashboard) return;
+      hasLoadedDashboard = true;
+      void loadDashboard();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeDashboard, { once: true });
+    } else {
+      initializeDashboard();
+    }
+
+    document.addEventListener('astro:page-load', initializeDashboard);
   </script>
 </DashboardLayout>
