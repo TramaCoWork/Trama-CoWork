@@ -64,6 +64,10 @@ export async function fetchCatalog(name: string): Promise<CatalogItem[]> {
   return items;
 }
 
+export function getFrequencyTypes(): Promise<string[]> {
+  return api.get<string[]>('/catalogs/frequency-types');
+}
+
 /**
  * Get a human-readable label for a catalog value (sync, from label map).
  */

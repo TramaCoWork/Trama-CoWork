@@ -1,0 +1,564 @@
+---
+import ConfirmModal from '../../components/ConfirmModal.astro';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="TRAMA Admin - Planes">
+  <ConfirmModal />
+
+  <header class="mb-8 flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-black text-on-surface tracking-tighter">Planes</h1>
+      <p class="text-on-surface-variant font-medium mt-1 text-sm">Gestión de planes de suscripción.</p>
+    </div>
+    <button
+      id="btn-create-plan"
+      type="button"
+      class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all"
+    >
+      Crear plan
+    </button>
+  </header>
+
+  <div class="bg-surface-container-low rounded-2xl p-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label for="f-is-active" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Estado</label>
+        <select id="f-is-active" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+          <option value="">Todos</option>
+          <option value="true">Activos</option>
+          <option value="false">Inactivos</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="f-frequency-type" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Frecuencia</label>
+        <select id="f-frequency-type" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+          <option value="">Todos</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="f-has-trial" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Trial</label>
+        <select id="f-has-trial" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+          <option value="">Todos</option>
+          <option value="true">Con trial</option>
+          <option value="false">Sin trial</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="flex justify-end mt-4">
+      <button id="btn-clear-filters" type="button" class="px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-widest text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors">Limpiar</button>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between mb-4">
+    <p id="results-info" class="text-sm text-on-surface-variant font-medium">Cargando...</p>
+    <div></div>
+  </div>
+
+  <div class="bg-surface-container-low rounded-2xl overflow-hidden border border-outline-variant/10">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-outline-variant/15 bg-surface-container">
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Nombre</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Monto</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Moneda</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Frecuencia</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Trial</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Activo</th>
+            <th class="text-center px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="plans-table-body">
+          <tr>
+            <td colspan="7" class="text-center py-12 text-on-surface-variant">
+              <div class="flex flex-col items-center gap-3">
+                <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                <span class="text-sm font-medium">Cargando planes...</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between mt-4">
+    <div></div>
+    <div id="pagination-bottom" class="flex items-center gap-2"></div>
+  </div>
+
+  <div
+    id="plan-modal"
+    class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/30 backdrop-blur-sm p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="plan-modal-title"
+  >
+    <div class="w-full max-w-2xl rounded-2xl bg-surface-container-low border border-outline-variant/15 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-outline-variant/15 px-6 py-4">
+        <h2 id="plan-modal-title" class="text-lg font-extrabold text-on-surface tracking-tight">Crear plan</h2>
+        <button id="btn-close-modal" type="button" class="text-on-surface-variant hover:text-on-surface" aria-label="Cerrar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="plan-form" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="md:col-span-2">
+          <label for="plan-name" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Nombre</label>
+          <input id="plan-name" name="name" type="text" required class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+        </div>
+
+        <div class="md:col-span-2">
+          <label for="plan-description" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Descripción</label>
+          <textarea id="plan-description" name="description" rows="3" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"></textarea>
+        </div>
+
+        <div>
+          <label for="plan-amount" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Monto</label>
+          <input id="plan-amount" name="amount" type="number" min="0" step="0.01" required placeholder="1000.00" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+        </div>
+
+        <div>
+          <label for="plan-currency" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Moneda</label>
+          <input id="plan-currency" name="currency" type="text" required placeholder="ARS" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+        </div>
+
+        <div>
+          <label for="plan-frequency" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Frecuencia</label>
+          <input id="plan-frequency" name="frequency" type="number" min="1" required class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+        </div>
+
+        <div>
+          <label for="plan-frequency-type" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Tipo frecuencia</label>
+          <select id="plan-frequency-type" name="frequencyType" required class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="plan-trial-days" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Trial (días)</label>
+          <input id="plan-trial-days" name="trialDays" type="number" min="0" required class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+        </div>
+
+        <label class="flex items-center gap-2 mt-6 text-sm font-semibold text-on-surface">
+          <input id="plan-is-active" name="isActive" type="checkbox" class="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20" />
+          Activo
+        </label>
+
+        <div class="md:col-span-2 flex justify-end gap-3 mt-2">
+          <button id="btn-cancel-form" type="button" class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors">Cancelar</button>
+          <button id="btn-submit-form" type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed top-6 right-6 z-[80] hidden transition-all duration-300 translate-y-[-1rem] opacity-0">
+    <div id="toast-inner" class="flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm">
+      <span id="toast-icon" class="material-symbols-outlined text-xl" aria-hidden="true"></span>
+      <span id="toast-msg"></span>
+    </div>
+  </div>
+
+  <script>
+    import { getToken, restoreSession } from '../../services/authService';
+    import { api } from '../../services/apiClient';
+    import { getFrequencyTypes } from '../../services/catalogService';
+    import {
+      createPlan,
+      deletePlan,
+      getAdminPlans,
+      type CreatePlanDto,
+      type AdminPlansFilters,
+      type Plan,
+      updatePlan,
+    } from '../../services/planService';
+
+    restoreSession();
+    const token = getToken();
+    if (token) api.setHeader('Authorization', `Bearer ${token}`);
+
+    let currentPlans: Plan[] = [];
+    let currentPage = 1;
+    const PAGE_SIZE = 10;
+    let currentMode: 'create' | 'edit' = 'create';
+    let editingPlanId: string | null = null;
+    let toastTimeout: ReturnType<typeof setTimeout>;
+
+    const tableBody = document.getElementById('plans-table-body') as HTMLTableSectionElement;
+    const resultsInfo = document.getElementById('results-info') as HTMLParagraphElement;
+    const paginationBottom = document.getElementById('pagination-bottom') as HTMLDivElement;
+    const modal = document.getElementById('plan-modal') as HTMLDivElement;
+    const modalTitle = document.getElementById('plan-modal-title') as HTMLHeadingElement;
+    const form = document.getElementById('plan-form') as HTMLFormElement;
+    const submitButton = document.getElementById('btn-submit-form') as HTMLButtonElement;
+    const nameInput = document.getElementById('plan-name') as HTMLInputElement;
+    const descriptionInput = document.getElementById('plan-description') as HTMLTextAreaElement;
+    const amountInput = document.getElementById('plan-amount') as HTMLInputElement;
+    const currencyInput = document.getElementById('plan-currency') as HTMLInputElement;
+    const frequencyInput = document.getElementById('plan-frequency') as HTMLInputElement;
+    const frequencyTypeInput = document.getElementById('plan-frequency-type') as HTMLSelectElement;
+    const trialDaysInput = document.getElementById('plan-trial-days') as HTMLInputElement;
+    const isActiveInput = document.getElementById('plan-is-active') as HTMLInputElement;
+    const toast = document.getElementById('toast') as HTMLDivElement;
+    const toastInner = document.getElementById('toast-inner') as HTMLDivElement;
+    const toastIcon = document.getElementById('toast-icon') as HTMLSpanElement;
+    const toastMsg = document.getElementById('toast-msg') as HTMLSpanElement;
+    const filterIsActive = document.getElementById('f-is-active') as HTMLSelectElement;
+    const filterFrequencyType = document.getElementById('f-frequency-type') as HTMLSelectElement;
+    const filterHasTrial = document.getElementById('f-has-trial') as HTMLSelectElement;
+
+    function showToast(message: string, type: 'success' | 'error' = 'success') {
+      toastMsg.textContent = message;
+      toastInner.className = 'flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm';
+      if (type === 'success') {
+        toastInner.classList.add('bg-primary-container', 'text-on-primary-container');
+        toastIcon.textContent = 'check_circle';
+      } else {
+        toastInner.classList.add('bg-error-container', 'text-on-error-container');
+        toastIcon.textContent = 'error';
+      }
+      toast.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-[-1rem]', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+      });
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('translate-y-[-1rem]', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+      }, 3000);
+    }
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderActiveBadge(isActive: boolean): string {
+      if (isActive) {
+        return '<span class="inline-block px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-primary-container text-on-primary-container">Sí</span>';
+      }
+      return '<span class="inline-block px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-error-container text-on-error-container">No</span>';
+    }
+
+    function formatFrequency(plan: Plan): string {
+      return `${plan.frequency} ${plan.frequencyType}`;
+    }
+
+    function setLoadingTable(message: string) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center py-12 text-on-surface-variant">
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+              <span class="text-sm font-medium">${message}</span>
+            </div>
+          </td>
+        </tr>`;
+    }
+
+    function renderTable(plans: Plan[]) {
+      if (plans.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center py-16 text-on-surface-variant">
+              <span class="material-symbols-outlined text-4xl mb-3 block text-outline" aria-hidden="true">inventory_2</span>
+              <p class="text-sm font-medium">No hay planes cargados.</p>
+            </td>
+          </tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = plans
+        .map((plan) => {
+          const description = escapeHtml(plan.description || '');
+          return `
+          <tr class="border-b border-outline-variant/10 hover:bg-surface-container/50 transition-colors">
+            <td class="px-5 py-3.5">
+              <p class="font-bold text-on-surface text-sm">${escapeHtml(plan.name)}</p>
+              <p class="text-xs text-on-surface-variant mt-1">${description || 'Sin descripción'}</p>
+            </td>
+            <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(plan.amount)}</td>
+            <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(plan.currency)}</td>
+            <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(formatFrequency(plan))}</td>
+            <td class="px-5 py-3.5 text-on-surface-variant text-xs">${plan.trialDays} días</td>
+            <td class="px-5 py-3.5">${renderActiveBadge(plan.isActive)}</td>
+            <td class="px-5 py-3.5 text-center">
+              <div class="flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  data-action="edit"
+                  data-id="${plan.id}"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors"
+                >
+                  <span class="material-symbols-outlined text-sm">edit</span>
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  data-action="delete"
+                  data-id="${plan.id}"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-error-container text-on-error-container hover:opacity-90 transition-opacity"
+                >
+                  <span class="material-symbols-outlined text-sm">delete</span>
+                  Eliminar
+                </button>
+              </div>
+            </td>
+          </tr>`;
+        })
+        .join('');
+    }
+
+    function renderPagination(page: number, totalPages: number) {
+      if (totalPages <= 1) {
+        paginationBottom.innerHTML = '';
+        return;
+      }
+
+      paginationBottom.innerHTML = `
+        <button class="pg-prev px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed" ${page <= 1 ? 'disabled' : ''}>
+          <span class="material-symbols-outlined text-sm align-middle">chevron_left</span> Anterior
+        </button>
+        <span class="text-xs font-bold text-on-surface-variant px-2">${page} / ${totalPages}</span>
+        <button class="pg-next px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed" ${page >= totalPages ? 'disabled' : ''}>
+          Siguiente <span class="material-symbols-outlined text-sm align-middle">chevron_right</span>
+        </button>
+      `;
+
+      paginationBottom.querySelector('.pg-prev')?.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          loadPlansList();
+        }
+      });
+      paginationBottom.querySelector('.pg-next')?.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          loadPlansList();
+        }
+      });
+    }
+
+    function getFilters(): AdminPlansFilters {
+      const filters: AdminPlansFilters = {
+        page: currentPage,
+        sizePage: PAGE_SIZE,
+      };
+
+      if (filterIsActive.value) {
+        filters.isActive = filterIsActive.value === 'true';
+      }
+
+      if (filterFrequencyType.value) {
+        filters.frequencyType = filterFrequencyType.value;
+      }
+
+      if (filterHasTrial.value) {
+        filters.hasTrial = filterHasTrial.value === 'true';
+      }
+
+      return filters;
+    }
+
+    async function loadPlansList() {
+      setLoadingTable('Cargando planes...');
+      try {
+        const response = await getAdminPlans(getFilters());
+        currentPlans = response.data;
+        renderTable(currentPlans);
+
+        const totalPages = Math.max(1, Math.ceil(response.total / response.sizePage));
+        const start = response.total > 0 ? (response.page - 1) * response.sizePage + 1 : 0;
+        const end = Math.min(response.page * response.sizePage, response.total);
+        resultsInfo.textContent =
+          response.total > 0
+            ? `Mostrando ${start}–${end} de ${response.total} planes`
+            : 'No se encontraron planes';
+        renderPagination(response.page, totalPages);
+      } catch (error: any) {
+        resultsInfo.textContent = 'Error al cargar planes';
+        paginationBottom.innerHTML = '';
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center py-12 text-error">
+              <span class="material-symbols-outlined text-3xl mb-2 block" aria-hidden="true">error</span>
+              <p class="text-sm font-bold">Error al cargar planes</p>
+              <p class="text-xs mt-1">${escapeHtml(error?.message || 'Error desconocido')}</p>
+            </td>
+          </tr>`;
+      }
+    }
+
+    async function loadFrequencyTypes() {
+      const values = await getFrequencyTypes();
+      frequencyTypeInput.innerHTML = '<option value="">Seleccionar...</option>';
+      filterFrequencyType.innerHTML = '<option value="">Todos</option>';
+      values.forEach((value) => {
+        const createOption = document.createElement('option');
+        createOption.value = value;
+        createOption.textContent = value;
+        frequencyTypeInput.appendChild(createOption);
+
+        const filterOption = document.createElement('option');
+        filterOption.value = value;
+        filterOption.textContent = value;
+        filterFrequencyType.appendChild(filterOption);
+      });
+    }
+
+    function openModal(mode: 'create' | 'edit', plan?: Plan) {
+      currentMode = mode;
+      editingPlanId = plan?.id || null;
+      modalTitle.textContent = mode === 'create' ? 'Crear plan' : 'Editar plan';
+      submitButton.textContent = mode === 'create' ? 'Crear' : 'Guardar cambios';
+
+      nameInput.value = plan?.name || '';
+      descriptionInput.value = plan?.description || '';
+      amountInput.value = plan?.amount || '';
+      currencyInput.value = plan?.currency || '';
+      frequencyInput.value = String(plan?.frequency || '');
+      frequencyTypeInput.value = plan?.frequencyType || '';
+      trialDaysInput.value = String(plan?.trialDays || 0);
+      isActiveInput.checked = Boolean(plan?.isActive ?? true);
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.body.style.overflow = '';
+      form.reset();
+      frequencyTypeInput.value = '';
+      isActiveInput.checked = true;
+      editingPlanId = null;
+      currentMode = 'create';
+    }
+
+    function buildPayload(): CreatePlanDto {
+      return {
+        name: nameInput.value.trim(),
+        description: descriptionInput.value.trim() || null,
+        amount: Number(amountInput.value),
+        currency: currencyInput.value.trim(),
+        frequency: Number(frequencyInput.value),
+        frequencyType: frequencyTypeInput.value,
+        trialDays: Number(trialDaysInput.value),
+        isActive: isActiveInput.checked,
+      };
+    }
+
+    async function handleSubmit(event: Event) {
+      event.preventDefault();
+      const payload = buildPayload();
+
+      submitButton.disabled = true;
+      try {
+        if (currentMode === 'create') {
+          await createPlan(payload);
+          showToast('Plan creado correctamente.', 'success');
+        } else if (editingPlanId) {
+          await updatePlan(editingPlanId, payload);
+          showToast('Plan actualizado correctamente.', 'success');
+        }
+
+        closeModal();
+        await loadPlansList();
+      } catch (error: any) {
+        showToast(error?.body?.message || error?.message || 'No se pudo guardar el plan.', 'error');
+      } finally {
+        submitButton.disabled = false;
+      }
+    }
+
+    function askDelete(plan: Plan) {
+      (window as any).openConfirmModal({
+        title: 'Confirmar eliminación',
+        body: `¿Eliminar el plan "${plan.name}"? Esta acción no se puede deshacer.`,
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        confirmStyle: 'error',
+        onConfirm: async () => {
+          try {
+            await deletePlan(plan.id);
+            showToast('Plan eliminado correctamente.', 'success');
+            await loadPlansList();
+          } catch (error: any) {
+            showToast(error?.body?.message || error?.message || 'No se pudo eliminar el plan.', 'error');
+          }
+        },
+      });
+    }
+
+    function onTableClick(event: Event) {
+      const target = event.target as HTMLElement;
+      const button = target.closest('button[data-action]') as HTMLButtonElement | null;
+      if (!button) return;
+
+      const planId = button.dataset.id;
+      if (!planId) return;
+
+      const plan = currentPlans.find(item => item.id === planId);
+      if (!plan) return;
+
+      if (button.dataset.action === 'edit') {
+        openModal('edit', plan);
+        return;
+      }
+
+      askDelete(plan);
+    }
+
+    document.getElementById('btn-create-plan')?.addEventListener('click', () => openModal('create'));
+    document.getElementById('btn-close-modal')?.addEventListener('click', closeModal);
+    document.getElementById('btn-cancel-form')?.addEventListener('click', closeModal);
+    form.addEventListener('submit', handleSubmit);
+    tableBody.addEventListener('click', onTableClick);
+    filterIsActive.addEventListener('change', () => {
+      currentPage = 1;
+      loadPlansList();
+    });
+    filterFrequencyType.addEventListener('change', () => {
+      currentPage = 1;
+      loadPlansList();
+    });
+    filterHasTrial.addEventListener('change', () => {
+      currentPage = 1;
+      loadPlansList();
+    });
+    document.getElementById('btn-clear-filters')?.addEventListener('click', () => {
+      filterIsActive.value = '';
+      filterFrequencyType.value = '';
+      filterHasTrial.value = '';
+      currentPage = 1;
+      loadPlansList();
+    });
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) closeModal();
+    });
+
+    async function init() {
+      try {
+        await loadFrequencyTypes();
+      } catch (error: any) {
+        showToast(error?.body?.message || error?.message || 'No se pudo cargar catálogo de frecuencias.', 'error');
+      }
+      await loadPlansList();
+    }
+
+    init();
+  </script>
+</AdminLayout>
