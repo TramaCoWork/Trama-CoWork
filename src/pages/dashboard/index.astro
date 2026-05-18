@@ -1,39 +1,61 @@
----
-import DashboardLayout from '../../layouts/DashboardLayout.astro';
+﻿---
+import DashboardLayout from "../../layouts/DashboardLayout.astro";
 ---
 
 <DashboardLayout title="TRAMA - Panel profesional">
   <header class="mb-8 border-b border-outline-variant/15 pb-6">
-    <h1 id="dashboard-greeting" class="text-3xl font-black tracking-tight text-on-surface">Panel profesional</h1>
+    <h1
+      id="dashboard-greeting"
+      class="text-3xl font-black tracking-tight text-on-surface"
+    >
+      Panel profesional
+    </h1>
     <p class="mt-2 text-sm font-medium text-on-surface-variant">
-      Seguimiento de tu actividad, validaciones y estado de suscripción.
+      Seguimiento de tu actividad, validaciones y estado de suscripci&oacute;n.
     </p>
   </header>
 
   <section id="dashboard-loading" class="space-y-6">
-    <div class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+    <div
+      class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5"
+    >
       <div class="flex items-center gap-3">
-        <span class="material-symbols-outlined animate-spin text-primary" aria-hidden="true">progress_activity</span>
-        <p class="text-sm font-semibold text-on-surface">Cargando datos del dashboard...</p>
+        <span
+          class="material-symbols-outlined animate-spin text-primary"
+          aria-hidden="true">progress_activity</span
+        >
+        <p class="text-sm font-semibold text-on-surface">
+          Cargando datos del dashboard...
+        </p>
       </div>
     </div>
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {Array.from({ length: 8 }).map(() => (
-        <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
-          <div class="h-4 w-2/3 animate-pulse rounded bg-surface-container"></div>
-          <div class="mt-4 h-9 w-1/3 animate-pulse rounded bg-surface-container"></div>
-        </article>
-      ))}
+      {
+        Array.from({ length: 8 }).map(() => (
+          <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+            <div class="h-4 w-2/3 animate-pulse rounded bg-surface-container" />
+            <div class="mt-4 h-9 w-1/3 animate-pulse rounded bg-surface-container" />
+          </article>
+        ))
+      }
     </div>
   </section>
 
-  <section id="dashboard-error" class="hidden rounded-2xl border border-error/20 bg-error/10 p-5">
+  <section
+    id="dashboard-error"
+    class="hidden rounded-2xl border border-error/20 bg-error/10 p-5"
+  >
     <div class="flex items-start gap-3">
-      <span class="material-symbols-outlined text-error" aria-hidden="true">error</span>
+      <span class="material-symbols-outlined text-error" aria-hidden="true"
+        >error</span
+      >
       <div>
         <p class="text-sm font-bold text-error">No pudimos cargar tu panel.</p>
-        <p id="dashboard-error-message" class="mt-1 text-sm text-on-surface-variant">
-          Intentá de nuevo en unos minutos.
+        <p
+          id="dashboard-error-message"
+          class="mt-1 text-sm text-on-surface-variant"
+        >
+          IntentÃ¡ de nuevo en unos minutos.
         </p>
       </div>
     </div>
@@ -41,107 +63,204 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
 
   <section id="dashboard-content" class="hidden space-y-6">
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+      <article
+        class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5"
+      >
         <div class="flex items-center gap-2 text-on-surface-variant">
-          <span class="material-symbols-outlined text-base" aria-hidden="true">contacts</span>
+          <span class="material-symbols-outlined text-base" aria-hidden="true"
+            >contacts</span
+          >
           <p class="text-xs font-bold uppercase tracking-widest">Contactos</p>
         </div>
-        <p id="total-contacts" class="mt-3 text-3xl font-black text-primary">0</p>
+        <p id="total-contacts" class="mt-3 text-3xl font-black text-primary">
+          0
+        </p>
       </article>
-      <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+      <article
+        class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5"
+      >
         <div class="flex items-center gap-2 text-on-surface-variant">
-          <span class="material-symbols-outlined text-base" aria-hidden="true">school</span>
+          <span class="material-symbols-outlined text-base" aria-hidden="true"
+            >school</span
+          >
           <p class="text-xs font-bold uppercase tracking-widest">Estudios</p>
         </div>
-        <p id="total-educations" class="mt-3 text-3xl font-black text-primary">0</p>
+        <p id="total-educations" class="mt-3 text-3xl font-black text-primary">
+          0
+        </p>
       </article>
-      <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+      <article
+        class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5"
+      >
         <div class="flex items-center gap-2 text-on-surface-variant">
-          <span class="material-symbols-outlined text-base" aria-hidden="true">workspace_premium</span>
-          <p class="text-xs font-bold uppercase tracking-widest">Certificaciones</p>
+          <span class="material-symbols-outlined text-base" aria-hidden="true"
+            >workspace_premium</span
+          >
+          <p class="text-xs font-bold uppercase tracking-widest">
+            Certificaciones
+          </p>
         </div>
-        <p id="total-certifications" class="mt-3 text-3xl font-black text-primary">0</p>
+        <p
+          id="total-certifications"
+          class="mt-3 text-3xl font-black text-primary"
+        >
+          0
+        </p>
       </article>
-      <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+      <article
+        class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5"
+      >
         <div class="flex items-center gap-2 text-on-surface-variant">
-          <span class="material-symbols-outlined text-base" aria-hidden="true">description</span>
+          <span class="material-symbols-outlined text-base" aria-hidden="true"
+            >description</span
+          >
           <p class="text-xs font-bold uppercase tracking-widest">Documentos</p>
         </div>
-        <p id="total-documents" class="mt-3 text-3xl font-black text-primary">0</p>
+        <p id="total-documents" class="mt-3 text-3xl font-black text-primary">
+          0
+        </p>
       </article>
-      <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+      <article
+        class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5"
+      >
         <div class="flex items-center gap-2 text-on-surface-variant">
-          <span class="material-symbols-outlined text-base" aria-hidden="true">chat</span>
+          <span class="material-symbols-outlined text-base" aria-hidden="true"
+            >chat</span
+          >
           <p class="text-xs font-bold uppercase tracking-widest">Mensajes</p>
         </div>
-        <p id="total-messages" class="mt-3 text-3xl font-black text-primary">0</p>
+        <p id="total-messages" class="mt-3 text-3xl font-black text-primary">
+          0
+        </p>
       </article>
-      <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+      <article
+        class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5"
+      >
         <div class="flex items-center gap-2 text-on-surface-variant">
-          <span class="material-symbols-outlined text-base" aria-hidden="true">forum</span>
-          <p class="text-xs font-bold uppercase tracking-widest">Posts en comunidad</p>
+          <span class="material-symbols-outlined text-base" aria-hidden="true"
+            >forum</span
+          >
+          <p class="text-xs font-bold uppercase tracking-widest">
+            Posts en comunidad
+          </p>
         </div>
-        <p id="total-community-posts" class="mt-3 text-3xl font-black text-primary">0</p>
+        <p
+          id="total-community-posts"
+          class="mt-3 text-3xl font-black text-primary"
+        >
+          0
+        </p>
       </article>
-      <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+      <article
+        class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5"
+      >
         <div class="flex items-center gap-2 text-on-surface-variant">
-          <span class="material-symbols-outlined text-base" aria-hidden="true">work</span>
-          <p class="text-xs font-bold uppercase tracking-widest">Postulaciones</p>
+          <span class="material-symbols-outlined text-base" aria-hidden="true"
+            >work</span
+          >
+          <p class="text-xs font-bold uppercase tracking-widest">
+            Postulaciones
+          </p>
         </div>
-        <p id="total-job-applications" class="mt-3 text-3xl font-black text-primary">0</p>
+        <p
+          id="total-job-applications"
+          class="mt-3 text-3xl font-black text-primary"
+        >
+          0
+        </p>
       </article>
-      <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+      <article
+        class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5"
+      >
         <div class="flex items-center gap-2 text-on-surface-variant">
-          <span class="material-symbols-outlined text-base" aria-hidden="true">verified</span>
-          <p class="text-xs font-bold uppercase tracking-widest">Validaciones</p>
+          <span class="material-symbols-outlined text-base" aria-hidden="true"
+            >verified</span
+          >
+          <p class="text-xs font-bold uppercase tracking-widest">
+            Validaciones
+          </p>
         </div>
-        <p id="total-validations" class="mt-3 text-3xl font-black text-primary">0</p>
+        <p id="total-validations" class="mt-3 text-3xl font-black text-primary">
+          0
+        </p>
       </article>
     </div>
 
-    <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-6">
-      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant/15 pb-4">
-        <h2 class="text-lg font-extrabold tracking-tight text-on-surface">Estado del plan</h2>
-        <span id="plan-status-badge" class="rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-outline/10 text-outline">
+    <article
+      class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-6"
+    >
+      <!-- Header: label + badge -->
+      <div class="flex items-center justify-between">
+        <p
+          class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant"
+        >
+          Estado del plan
+        </p>
+        <span
+          id="plan-status-badge"
+          class="rounded-full px-3 py-1 text-xs font-bold bg-outline/10 text-outline"
+        >
           Sin plan activo
         </span>
       </div>
-      <dl class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div class="rounded-xl bg-surface-container-lowest p-4">
-          <dt class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Plan</dt>
-          <dd id="plan-name" class="mt-2 text-sm font-bold text-on-surface">Sin plan activo</dd>
+
+      <!-- Plan name -->
+      <p
+        id="plan-name"
+        class="mt-2 text-xl font-extrabold tracking-tight text-on-surface"
+      >
+        Sin plan activo
+      </p>
+
+      <div id="plan-progress-section" class="mt-4">
+        <div class="flex items-center justify-between mb-1.5">
+          <span
+            id="plan-progress-title"
+            class="text-xs font-semibold text-on-surface-variant"></span>
+          <span
+            id="plan-progress-label"
+            class="text-xs font-bold text-on-surface"></span>
         </div>
-        <div class="rounded-xl bg-surface-container-lowest p-4">
-          <dt class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Vence el</dt>
-          <dd id="plan-expiration" class="mt-2 text-sm font-bold text-on-surface">—</dd>
+        <div class="h-2 w-full rounded-full bg-outline/15 overflow-hidden">
+          <div
+            id="plan-progress-bar"
+            class="h-full rounded-full bg-primary transition-all duration-500"
+            style="width: 0%"
+          >
+          </div>
         </div>
-        <div class="rounded-xl bg-surface-container-lowest p-4">
-          <dt class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Fin de prueba</dt>
-          <dd id="trial-end" class="mt-2 text-sm font-bold text-on-surface">—</dd>
-        </div>
-      </dl>
+        <p id="plan-progress-note" class="mt-3 text-xs text-on-surface-variant">
+        </p>
+      </div>
     </article>
   </section>
 
   <script>
-    import { getToken, logout, restoreSession } from '../../services/authService';
-    import { fetchProfessionalDashboard, type ProfessionalDashboard } from '../../services/dashboardService';
+    import {
+      getToken,
+      logout,
+      restoreSession,
+    } from "../../services/authService";
+    import {
+      fetchProfessionalDashboard,
+      type ProfessionalDashboard,
+    } from "../../services/dashboardService";
 
-    console.log('[DASHBOARD] Script loaded');
+    console.log("[DASHBOARD] Script loaded");
 
     function formatInteger(value: number): string {
       const safeValue = Number.isFinite(value) ? Math.trunc(value) : 0;
-      return safeValue.toLocaleString('es-AR');
+      return safeValue.toLocaleString("es-AR");
     }
 
     function formatDate(value: string | null): string {
-      if (!value) return '—';
+      if (!value) return "â€”";
       const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '—';
-      return date.toLocaleDateString('es-AR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
+      if (Number.isNaN(date.getTime())) return "â€”";
+      return date.toLocaleDateString("es-AR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
       });
     }
 
@@ -152,54 +271,129 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
     }
 
     function renderPlanState(data: ProfessionalDashboard): void {
-      const badge = document.getElementById('plan-status-badge');
-      const planName = document.getElementById('plan-name');
-      const planExpiration = document.getElementById('plan-expiration');
-      const trialEnd = document.getElementById('trial-end');
+      const TRIAL_TOTAL_DAYS = 30;
 
+      const badge = document.getElementById("plan-status-badge");
+      const planName = document.getElementById("plan-name");
+      const planProgressBar = document.getElementById(
+        "plan-progress-bar",
+      ) as HTMLElement | null;
+      const planProgressLabel = document.getElementById("plan-progress-label");
+      const planProgressNote = document.getElementById("plan-progress-note");
+      const planProgressTitle = document.getElementById("plan-progress-title");
+
+      // Plan name
       if (planName) {
-        planName.textContent = data.planName ?? 'Sin plan activo';
-      }
-      if (planExpiration) {
-        planExpiration.textContent = formatDate(data.planExpirationDate);
-      }
-      if (trialEnd) {
-        trialEnd.textContent = formatDate(data.trialEndDate);
+        planName.textContent = data.planName ?? "Sin plan activo";
       }
 
+      const setBar = (pct: number, colorClass: string) => {
+        if (planProgressBar) {
+          planProgressBar.style.width = `${pct}%`;
+          planProgressBar.className = `h-full rounded-full ${colorClass} transition-all duration-500`;
+        }
+      };
+
+      if (data.isOnTrial && data.trialEndDate) {
+        // State A — Trial active
+        const msLeft = Math.max(
+          0,
+          new Date(data.trialEndDate).getTime() - Date.now(),
+        );
+        const daysLeft = Math.ceil(msLeft / 86_400_000);
+        const daysUsed = Math.max(0, TRIAL_TOTAL_DAYS - daysLeft);
+        const pct = Math.min(
+          100,
+          Math.round((daysUsed / TRIAL_TOTAL_DAYS) * 100),
+        );
+
+        if (planProgressTitle)
+          planProgressTitle.textContent = "Periodo de prueba";
+        if (planProgressLabel)
+          planProgressLabel.textContent = `${daysUsed} / ${TRIAL_TOTAL_DAYS} días`;
+        setBar(pct, "bg-primary");
+        if (planProgressNote) {
+          planProgressNote.textContent =
+            daysLeft > 0
+              ? `Tu acceso premium expira en ${daysLeft} día${daysLeft === 1 ? "" : "s"}.`
+              : "Tu periodo de prueba ha finalizado.";
+          planProgressNote.className = "mt-3 text-xs text-primary";
+        }
+      } else if (!data.isOnTrial && data.planExpirationDate) {
+        // State B — Regular plan with expiration date
+        const msLeft = new Date(data.planExpirationDate).getTime() - Date.now();
+        const daysRemaining = Math.ceil(msLeft / 86_400_000);
+
+        if (daysRemaining > 0) {
+          const pct = Math.min(
+            100,
+            Math.max(0, Math.round((1 - daysRemaining / 365) * 100)),
+          );
+          if (planProgressTitle) planProgressTitle.textContent = "Plan activo";
+          if (planProgressLabel) {
+            planProgressLabel.textContent = `Vence el ${formatDate(data.planExpirationDate)}`;
+          }
+          setBar(pct, "bg-primary");
+          if (planProgressNote) {
+            planProgressNote.textContent = "";
+            planProgressNote.className = "mt-3 text-xs text-on-surface-variant";
+          }
+        } else {
+          // Expired plan
+          if (planProgressTitle) planProgressTitle.textContent = "Plan vencido";
+          if (planProgressLabel) planProgressLabel.textContent = "Expirado";
+          setBar(100, "bg-error");
+          if (planProgressNote) {
+            planProgressNote.textContent = "Tu plan ha vencido.";
+            planProgressNote.className = "mt-3 text-xs text-error";
+          }
+        }
+      } else {
+        // State C — No date / expired
+        if (planProgressTitle)
+          planProgressTitle.textContent = "Sin plan activo";
+        if (planProgressLabel) planProgressLabel.textContent = "Expirado";
+        setBar(100, "bg-error");
+        if (planProgressNote) {
+          planProgressNote.textContent = "Tu plan ha vencido.";
+          planProgressNote.className = "mt-3 text-xs text-error";
+        }
+      }
+
+      // Badge
       if (!badge) return;
       if (data.isOnTrial) {
-        badge.textContent = 'Prueba activa';
+        badge.textContent = "Prueba activa";
         badge.className =
-          'rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-secondary-container text-on-secondary-container';
+          "rounded-full px-3 py-1 text-xs font-bold bg-secondary-container text-on-secondary-container";
         return;
       }
       if (data.planName) {
-        badge.textContent = 'Plan activo';
+        badge.textContent = "Activo";
         badge.className =
-          'rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-primary-container text-on-primary-container';
+          "rounded-full px-3 py-1 text-xs font-bold bg-primary/20 text-primary";
         return;
       }
-      badge.textContent = 'Sin plan activo';
-      badge.className = 'rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider bg-outline/10 text-outline';
+      badge.textContent = "Sin plan activo";
+      badge.className =
+        "rounded-full px-3 py-1 text-xs font-bold bg-outline/10 text-outline";
     }
+    function showState(mode: "loading" | "error" | "content"): void {
+      const loading = document.getElementById("dashboard-loading");
+      const error = document.getElementById("dashboard-error");
+      const content = document.getElementById("dashboard-content");
 
-    function showState(mode: 'loading' | 'error' | 'content'): void {
-      const loading = document.getElementById('dashboard-loading');
-      const error = document.getElementById('dashboard-error');
-      const content = document.getElementById('dashboard-content');
-
-      loading?.classList.toggle('hidden', mode !== 'loading');
-      error?.classList.toggle('hidden', mode !== 'error');
-      content?.classList.toggle('hidden', mode !== 'content');
+      loading?.classList.toggle("hidden", mode !== "loading");
+      error?.classList.toggle("hidden", mode !== "error");
+      content?.classList.toggle("hidden", mode !== "content");
     }
 
     function showErrorMessage(message: string): void {
-      const errorMessage = document.getElementById('dashboard-error-message');
+      const errorMessage = document.getElementById("dashboard-error-message");
       if (errorMessage) {
         errorMessage.textContent = message;
       }
-      showState('error');
+      showState("error");
     }
 
     async function loadDashboard(): Promise<void> {
@@ -208,33 +402,43 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
 
         const token = getToken();
         if (!token) {
-          showErrorMessage('Sesión expirada. Volvé a iniciar sesión para ver tu panel.');
+          showErrorMessage(
+            "SesiÃ³n expirada. VolvÃ© a iniciar sesiÃ³n para ver tu panel.",
+          );
           return;
         }
 
-        showState('loading');
+        showState("loading");
 
-        console.log('[DASHBOARD] About to fetch');
-        const dashboardData: ProfessionalDashboard = await fetchProfessionalDashboard();
+        console.log("[DASHBOARD] About to fetch");
+        const dashboardData: ProfessionalDashboard =
+          await fetchProfessionalDashboard();
 
-        setTotal('total-contacts', dashboardData.totalContacts);
-        setTotal('total-educations', dashboardData.totalEducations);
-        setTotal('total-certifications', dashboardData.totalCertifications);
-        setTotal('total-documents', dashboardData.totalDocuments);
-        setTotal('total-messages', dashboardData.totalMessages);
-        setTotal('total-community-posts', dashboardData.totalCommunityPosts);
-        setTotal('total-job-applications', dashboardData.totalJobApplications);
-        setTotal('total-validations', dashboardData.totalValidations);
+        setTotal("total-contacts", dashboardData.totalContacts);
+        setTotal("total-educations", dashboardData.totalEducations);
+        setTotal("total-certifications", dashboardData.totalCertifications);
+        setTotal("total-documents", dashboardData.totalDocuments);
+        setTotal("total-messages", dashboardData.totalMessages);
+        setTotal("total-community-posts", dashboardData.totalCommunityPosts);
+        setTotal("total-job-applications", dashboardData.totalJobApplications);
+        setTotal("total-validations", dashboardData.totalValidations);
         renderPlanState(dashboardData);
 
-        showState('content');
+        showState("content");
       } catch (err: any) {
-        console.error('[dashboard] Error while loading professional dashboard', err);
+        console.error(
+          "[dashboard] Error while loading professional dashboard",
+          err,
+        );
         if (err?.status === 401) {
-          showErrorMessage('Sesión expirada. Volvé a iniciar sesión para ver tu panel.');
+          showErrorMessage(
+            "SesiÃ³n expirada. VolvÃ© a iniciar sesiÃ³n para ver tu panel.",
+          );
           return;
         }
-        showErrorMessage('No se pudieron obtener tus métricas. Intentá nuevamente.');
+        showErrorMessage(
+          "No se pudieron obtener tus mÃ©tricas. IntentÃ¡ nuevamente.",
+        );
       }
     }
 
@@ -246,12 +450,14 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       void loadDashboard();
     }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initializeDashboard, { once: true });
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initializeDashboard, {
+        once: true,
+      });
     } else {
       initializeDashboard();
     }
 
-    document.addEventListener('astro:page-load', initializeDashboard);
+    document.addEventListener("astro:page-load", initializeDashboard);
   </script>
 </DashboardLayout>
