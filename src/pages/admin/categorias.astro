@@ -1,0 +1,493 @@
+---
+import ConfirmModal from '../../components/ConfirmModal.astro';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="TRAMA Admin - Categorías">
+  <ConfirmModal />
+  <header class="mb-8 flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-widest text-primary">INICIO › RUBROS</p>
+      <h1 class="text-3xl font-black text-on-surface tracking-tighter mt-2">Gestión de Jerarquía</h1>
+      <p class="text-on-surface-variant font-medium mt-2 text-sm">
+        Administre los niveles de rubros, subrubros y las profesiones asociadas.
+      </p>
+    </div>
+    <button
+      id="btn-add-rubro"
+      type="button"
+      class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all"
+    >
+      + Agregar Rubro
+    </button>
+  </header>
+
+  <section>
+    <div id="rubros-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+  </section>
+
+  <section class="mt-10">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-extrabold text-on-surface tracking-tight">Resumen de Catálogo</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-5">
+        <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Rubros Totales</p>
+        <p id="summary-rubros" class="text-2xl font-black text-on-surface mt-2">—</p>
+      </div>
+      <div class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-5">
+        <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Subrubros Activos</p>
+        <p id="summary-subrubros" class="text-2xl font-black text-on-surface mt-2">—</p>
+      </div>
+      <div class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-5">
+        <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Profesionales Registrados</p>
+        <p id="summary-profesionales" class="text-2xl font-black text-on-surface mt-2">—</p>
+      </div>
+    </div>
+  </section>
+
+  <div id="rubroModalOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
+        <h3 id="rubroModalTitle" class="text-lg font-bold text-neutral-900">Agregar Rubro</h3>
+        <button
+          id="rubroModalClose"
+          type="button"
+          class="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
+          aria-label="Cerrar"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="rubroForm" class="px-6 py-5 space-y-4">
+        <input type="hidden" id="rubroId" />
+        <input type="hidden" id="rubroSlug" name="slug" />
+        <div>
+          <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1.5">Nombre</label>
+          <input
+            type="text"
+            id="rubroNombre"
+            name="name"
+            required
+            class="w-full px-3 py-2 rounded-lg border border-neutral-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+          />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1.5">Orden</label>
+          <input
+            type="number"
+            id="rubroOrden"
+            name="order"
+            value="0"
+            min="0"
+            class="w-full px-3 py-2 rounded-lg border border-neutral-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+          />
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="rubroActivo" name="isActive" checked class="w-4 h-4 accent-primary rounded" />
+          <label for="rubroActivo" class="text-sm text-neutral-700">Activo</label>
+        </div>
+      </form>
+
+      <div class="flex justify-end gap-3 px-6 py-4 border-t border-neutral-100">
+        <button
+          id="rubroModalCancelBtn"
+          type="button"
+          class="px-4 py-2 text-sm font-semibold text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          id="rubroModalSaveBtn"
+          type="button"
+          class="px-4 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary-alt rounded-lg transition-colors"
+        >
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed top-6 right-6 z-[80] hidden transition-all duration-300 translate-y-[-1rem] opacity-0">
+    <div id="toast-inner" class="flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm">
+      <span id="toast-icon" class="material-symbols-outlined text-xl" aria-hidden="true"></span>
+      <span id="toast-msg"></span>
+    </div>
+  </div>
+
+  <script>
+    import { getToken, restoreSession } from '../../services/authService';
+    import { api } from '../../services/apiClient';
+    import {
+      createRubro,
+      deleteRubro,
+      getRubros,
+      getSubrubros,
+      updateRubro,
+      type CreateRubroPayload,
+      type ProfessionCategory,
+      type UpdateRubroPayload,
+    } from '../../services/adminProfessionCategoriesService';
+
+    restoreSession();
+    const token = getToken();
+    if (token) api.setHeader('Authorization', `Bearer ${token}`);
+
+    let rubros: ProfessionCategory[] = [];
+    let subrubros: ProfessionCategory[] = [];
+    let currentMode: 'create' | 'edit' = 'create';
+    let editingRubroId: number | null = null;
+    let toastTimeout: ReturnType<typeof setTimeout>;
+
+    const rubrosGrid = document.getElementById('rubros-grid') as HTMLDivElement;
+    const summaryRubros = document.getElementById('summary-rubros') as HTMLParagraphElement;
+    const summarySubrubros = document.getElementById('summary-subrubros') as HTMLParagraphElement;
+    const summaryProfesionales = document.getElementById('summary-profesionales') as HTMLParagraphElement;
+    const addButton = document.getElementById('btn-add-rubro') as HTMLButtonElement;
+    const modalOverlay = document.getElementById('rubroModalOverlay') as HTMLDivElement;
+    const modalTitle = document.getElementById('rubroModalTitle') as HTMLHeadingElement;
+    const closeModalButton = document.getElementById('rubroModalClose') as HTMLButtonElement;
+    const cancelButton = document.getElementById('rubroModalCancelBtn') as HTMLButtonElement;
+    const saveButton = document.getElementById('rubroModalSaveBtn') as HTMLButtonElement;
+    const form = document.getElementById('rubroForm') as HTMLFormElement;
+    const nameInput = document.getElementById('rubroNombre') as HTMLInputElement;
+    const slugInput = document.getElementById('rubroSlug') as HTMLInputElement;
+    const orderInput = document.getElementById('rubroOrden') as HTMLInputElement;
+    const isActiveInput = document.getElementById('rubroActivo') as HTMLInputElement;
+    const toast = document.getElementById('toast') as HTMLDivElement;
+    const toastInner = document.getElementById('toast-inner') as HTMLDivElement;
+    const toastIcon = document.getElementById('toast-icon') as HTMLSpanElement;
+    const toastMsg = document.getElementById('toast-msg') as HTMLSpanElement;
+
+    function showToast(message: string, type: 'success' | 'error' = 'success') {
+      toastMsg.textContent = message;
+      toastInner.className = 'flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm';
+      if (type === 'success') {
+        toastInner.classList.add('bg-primary-container', 'text-on-primary-container');
+        toastIcon.textContent = 'check_circle';
+      } else {
+        toastInner.classList.add('bg-error-container', 'text-on-error-container');
+        toastIcon.textContent = 'error';
+      }
+      toast.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-[-1rem]', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+      });
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('translate-y-[-1rem]', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+      }, 3000);
+    }
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function generateSlug(text: string) {
+      const stopwords = new Set([
+        'de',
+        'del',
+        'la',
+        'las',
+        'el',
+        'los',
+        'un',
+        'una',
+        'unos',
+        'unas',
+        'y',
+        'e',
+        'o',
+        'u',
+        'a',
+        'ante',
+        'bajo',
+        'con',
+        'en',
+        'entre',
+        'hacia',
+        'hasta',
+        'para',
+        'por',
+        'sin',
+        'sobre',
+        'tras',
+        'al',
+        'lo',
+      ]);
+      return text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .split(/\s+/)
+        .filter((word) => word.length > 0 && !stopwords.has(word))
+        .join('-');
+    }
+
+    function setLoadingGrid(message: string) {
+      rubrosGrid.innerHTML = `
+        <div class="col-span-full text-center py-16 text-on-surface-variant">
+          <div class="flex flex-col items-center gap-3">
+            <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+            <span class="text-sm font-medium">${message}</span>
+          </div>
+        </div>`;
+    }
+
+    function getSubrubroCounts() {
+      const counts = new Map<number, number>();
+      subrubros.forEach((item) => {
+        if (item.parentId !== null) {
+          counts.set(item.parentId, (counts.get(item.parentId) ?? 0) + 1);
+        }
+      });
+      return counts;
+    }
+
+    function renderRubrosGrid() {
+      if (rubros.length === 0) {
+        rubrosGrid.innerHTML = `
+          <div class="col-span-full text-center py-16 text-on-surface-variant">
+            <span class="material-symbols-outlined text-4xl mb-3 block text-outline" aria-hidden="true">category</span>
+            <p class="text-sm font-medium">No hay rubros cargados.</p>
+          </div>`;
+        return;
+      }
+
+      const subrubroCounts = getSubrubroCounts();
+      rubrosGrid.innerHTML = rubros
+        .map((rubro) => {
+          const description = rubro.bio?.trim() ?? '';
+          const subrubroCount = subrubroCounts.get(rubro.id) ?? 0;
+          return `
+            <article class="bg-surface-container-low rounded-2xl shadow-sm hover:shadow-md p-6 border border-outline-variant/10 transition-shadow">
+              <h3 class="text-lg font-bold text-on-surface">${escapeHtml(rubro.name)}</h3>
+              ${description ? `<p class="text-sm text-on-surface-variant line-clamp-3 mb-3">${escapeHtml(description)}</p>` : ''}
+              <div class="my-4 h-px bg-outline-variant/15"></div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    data-action="edit"
+                    data-id="${rubro.id}"
+                    class="p-1.5 rounded-lg text-neutral-400 hover:text-primary hover:bg-primary/10 transition-colors"
+                    title="Editar"
+                    aria-label="Editar rubro"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    data-action="delete"
+                    data-id="${rubro.id}"
+                    class="p-1.5 rounded-lg text-neutral-400 hover:text-error hover:bg-error/10 transition-colors"
+                    title="Desactivar"
+                    aria-label="Desactivar rubro"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.021-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="flex items-center gap-3 text-sm">
+                  <span class="text-on-surface-variant font-semibold">${subrubroCount} Subrubros</span>
+                  <a href="/admin/subrubros?rubroId=${rubro.id}" class="text-primary font-bold hover:underline">Ver Subrubros →</a>
+                </div>
+              </div>
+            </article>`;
+        })
+        .join('');
+
+      rubrosGrid.innerHTML += `
+        <button
+          type="button"
+          data-action="new"
+          class="group bg-surface-container-lowest border-2 border-dashed border-outline-variant/40 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 hover:border-primary/60 transition-colors"
+        >
+          <div class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-2xl">+</div>
+          <div>
+            <p class="text-base font-bold text-on-surface">Nuevo Rubro</p>
+            <p class="text-xs text-on-surface-variant mt-1">Expandir el catálogo de categorías principales.</p>
+          </div>
+        </button>`;
+    }
+
+    function updateSummary() {
+      summaryRubros.textContent = String(rubros.length);
+      summarySubrubros.textContent = String(subrubros.filter((item) => item.isActive).length);
+      summaryProfesionales.textContent = '—';
+    }
+
+    function openRubroModal() {
+      modalOverlay.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeRubroModal() {
+      modalOverlay.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    function openModal(mode: 'create' | 'edit', rubro?: ProfessionCategory) {
+      currentMode = mode;
+      modalTitle.textContent = mode === 'create' ? 'Agregar Rubro' : 'Editar Rubro';
+      if (mode === 'create') {
+        editingRubroId = null;
+        form.reset();
+        orderInput.value = '0';
+        isActiveInput.checked = true;
+        slugInput.value = '';
+      } else if (rubro) {
+        editingRubroId = rubro.id;
+        nameInput.value = rubro.name;
+        slugInput.value = rubro.slug;
+        orderInput.value = String(rubro.order ?? 0);
+        isActiveInput.checked = rubro.isActive;
+      }
+      openRubroModal();
+    }
+
+    function getPayload(): CreateRubroPayload {
+      const payload: CreateRubroPayload = {
+        name: nameInput.value.trim(),
+        order: Number(orderInput.value || 0),
+        isActive: isActiveInput.checked,
+      };
+      const slug = slugInput.value.trim();
+      if (slug) payload.slug = slug;
+      return payload;
+    }
+
+    function getErrorMessage(error: any): string | null {
+      const body = error?.body;
+      if (body && typeof body === 'object' && 'message' in body && typeof body.message === 'string') {
+        return body.message;
+      }
+      if (typeof body === 'string') return body;
+      return null;
+    }
+
+    async function loadRubros() {
+      setLoadingGrid('Cargando rubros...');
+      try {
+        const [rubrosList, subrubrosList] = await Promise.all([getRubros(), getSubrubros()]);
+        rubros = rubrosList;
+        subrubros = subrubrosList;
+        renderRubrosGrid();
+        updateSummary();
+      } catch (error: any) {
+        rubrosGrid.innerHTML = `
+          <div class="col-span-full text-center py-16 text-error">
+            <span class="material-symbols-outlined text-4xl mb-3 block" aria-hidden="true">error</span>
+            <p class="text-sm font-bold">Error al cargar rubros</p>
+            <p class="text-xs mt-1">${escapeHtml(error?.message || 'Error desconocido')}</p>
+          </div>`;
+      }
+    }
+
+    async function handleSubmit(event: Event) {
+      event.preventDefault();
+      if (!nameInput.value.trim()) {
+        showToast('El nombre es obligatorio', 'error');
+        return;
+      }
+      const payload = getPayload();
+      try {
+        if (currentMode === 'create') {
+          await createRubro(payload);
+          showToast('Rubro agregado');
+        } else if (editingRubroId !== null) {
+          const updatePayload: UpdateRubroPayload = payload;
+          await updateRubro(editingRubroId, updatePayload);
+          showToast('Rubro actualizado');
+        }
+        closeRubroModal();
+        await loadRubros();
+      } catch (error: any) {
+        if (error?.status === 409) {
+          showToast('El slug ya existe', 'error');
+          return;
+        }
+        showToast('No se pudo guardar el rubro', 'error');
+      }
+    }
+
+    function askDeactivate(rubro: ProfessionCategory) {
+      (window as any).openConfirmModal({
+        title: '¿Desactivar rubro?',
+        body: `¿Desactivar el rubro "${rubro.name}"? Debe no tener subrubros activos.`,
+        confirmText: 'Desactivar',
+        cancelText: 'Cancelar',
+        confirmStyle: 'error',
+        onConfirm: async () => {
+          try {
+            await deleteRubro(rubro.id);
+            showToast('Rubro desactivado correctamente', 'success');
+            await loadRubros();
+          } catch (error: any) {
+            if (error?.status === 400) {
+              const message = getErrorMessage(error) || 'No se pudo desactivar el rubro';
+              showToast(message, 'error');
+              return;
+            }
+            showToast('Error al desactivar', 'error');
+          }
+        },
+      });
+    }
+
+    function handleGridClick(event: Event) {
+      const target = event.target as HTMLElement;
+      const actionButton = target.closest('[data-action]') as HTMLElement | null;
+      if (!actionButton) return;
+      const action = actionButton.dataset.action;
+      const idValue = actionButton.dataset.id;
+      if (action === 'new') {
+        openModal('create');
+        return;
+      }
+      if (!idValue) return;
+      const rubroId = Number(idValue);
+      const rubro = rubros.find((item) => item.id === rubroId);
+      if (!rubro) return;
+      if (action === 'edit') {
+        openModal('edit', rubro);
+      } else if (action === 'delete') {
+        askDeactivate(rubro);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      addButton.addEventListener('click', () => openModal('create'));
+      closeModalButton.addEventListener('click', closeRubroModal);
+      cancelButton.addEventListener('click', closeRubroModal);
+      saveButton.addEventListener('click', () => form.requestSubmit());
+      modalOverlay.addEventListener('click', (event) => {
+        if (event.target === modalOverlay) closeRubroModal();
+      });
+      form.addEventListener('submit', handleSubmit);
+      nameInput.addEventListener('input', () => {
+        slugInput.value = generateSlug(nameInput.value);
+      });
+      rubrosGrid.addEventListener('click', handleGridClick);
+      void loadRubros();
+    });
+  </script>
+</AdminLayout>
+
+<!-- Traceability: generated by Programmer at 2026-05-20 16:57:01 -->
