@@ -404,6 +404,7 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
 
       (document.getElementById('w-name') as HTMLInputElement).value = data.name || '';
       (document.getElementById('w-city') as HTMLInputElement).value = data.city || '';
+      (document.getElementById('w-address') as HTMLInputElement).value = data.address || '';
       (document.getElementById('w-whatsapp') as HTMLInputElement).value = data.whatsapp || '';
 
       const wCountry = document.getElementById('w-country') as HTMLSelectElement;
@@ -424,6 +425,7 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
       const payload: Record<string, any> = {
         name: (document.getElementById('w-name') as HTMLInputElement).value.trim() || undefined,
         city: (document.getElementById('w-city') as HTMLInputElement).value.trim() || undefined,
+        address: (document.getElementById('w-address') as HTMLInputElement).value.trim() || undefined,
         whatsapp: (document.getElementById('w-whatsapp') as HTMLInputElement).value.trim() || undefined,
         countryId: Number((document.getElementById('w-country') as HTMLSelectElement).value) || undefined,
         provinceId: Number((document.getElementById('w-province') as HTMLSelectElement).value) || undefined,
@@ -990,6 +992,7 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
       (document.getElementById('n-name') as HTMLInputElement).value = data.name || '';
       document.getElementById('n-display-dni')!.textContent = data.dni || '—';
       (document.getElementById('n-city') as HTMLInputElement).value = data.city || '';
+      (document.getElementById('n-address') as HTMLInputElement).value = data.address || '';
       (document.getElementById('n-whatsapp') as HTMLInputElement).value = data.whatsapp || '';
       (document.getElementById('n-linkedin') as HTMLInputElement).value = data.linkedin || '';
       // Load work modalities catalog for normal form
@@ -1049,6 +1052,7 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
           await api.patch(`/professionals/${profileId}/personal`, {
             name: (document.getElementById('n-name') as HTMLInputElement).value.trim() || undefined,
             city: (document.getElementById('n-city') as HTMLInputElement).value.trim() || undefined,
+            address: (document.getElementById('n-address') as HTMLInputElement).value.trim() || undefined,
             countryId: Number(nCountry.value) || undefined,
             provinceId: Number(nProvince.value) || undefined,
             whatsapp: (document.getElementById('n-whatsapp') as HTMLInputElement).value.trim() || undefined,

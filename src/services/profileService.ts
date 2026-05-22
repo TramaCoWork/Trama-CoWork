@@ -34,6 +34,7 @@ export interface ProfessionalProfile {
   province?: { id: number; name: string; countryId: number } | null;
   dni: string | null;
   birthDate: string | null;
+  address?: string;
   linkedin: string | null;
   pricePerHour: string | null;
   workModality: string | null;
@@ -56,6 +57,7 @@ export interface PersonalDataPayload {
   name?: string;
   dni?: string;
   city?: string;
+  address?: string;
   whatsapp?: string;
   linkedin?: string;
   pricePerHour?: string;
