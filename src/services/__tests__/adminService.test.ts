@@ -18,6 +18,7 @@ describe('adminService', () => {
       email: 'ana@test.com',
       password: 'supersecure',
       city: 'Buenos Aires',
+      address: 'Av. Corrientes 1234, Piso 5',
       rubroId: '1',
       countryId: '2',
       provinceId: '3',

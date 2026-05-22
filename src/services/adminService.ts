@@ -148,6 +148,7 @@ export interface AdminRegisterProfessionalPayload {
   email: string;
   password: string;
   city: string;
+  address?: string;
   rubroId: number;
   countryId: number;
   provinceId: number;
