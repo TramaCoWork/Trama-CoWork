@@ -39,7 +39,7 @@ const columns = [
       <span id="filters-chevron" class="material-symbols-outlined ml-auto text-base transition-transform">expand_more</span>
     </button>
     <div id="filters-body" class="px-5 pb-5">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-end">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4 items-end">
         <div>
           <label class="block text-[10px] font-semibold uppercase tracking-widest text-[var(--color-neutral-600)] mb-1">Estado</label>
           <select id="filter-status" class="w-full border border-[var(--color-neutral-200)] rounded-lg px-3 py-2 text-sm text-[var(--color-neutral-900)] bg-white">
@@ -51,6 +51,14 @@ const columns = [
             <option value="rejected">Rechazado</option>
             <option value="suspended">Suspendido</option>
             <option value="waiting_payment">Esperando pago</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] font-semibold uppercase tracking-widest text-[var(--color-neutral-600)] mb-1">Acceso</label>
+          <select id="filter-is-active" class="w-full border border-[var(--color-neutral-200)] rounded-lg px-3 py-2 text-sm text-[var(--color-neutral-900)] bg-white">
+            <option value="">Todos</option>
+            <option value="true">Activo</option>
+            <option value="false">Inactivo</option>
           </select>
         </div>
         <div>
@@ -173,11 +181,14 @@ const columns = [
     function getFilters(): ProfessionalFilters {
       const filters: ProfessionalFilters = { sizePage: PAGE_SIZE, page: currentPage };
       const status = (document.getElementById('filter-status') as HTMLSelectElement).value;
+      const isActive = (document.getElementById('filter-is-active') as HTMLSelectElement).value;
       const country = (document.getElementById('filter-country') as HTMLSelectElement).value;
       const province = (document.getElementById('filter-province') as HTMLSelectElement).value;
       const rubro = (document.getElementById('filter-rubro') as HTMLSelectElement).value;
 
       if (status) filters.profileStatus = status;
+      if (isActive === 'true') filters.isActive = true;
+      if (isActive === 'false') filters.isActive = false;
       if (country) filters.countryId = Number(country);
       if (province) filters.provinceId = Number(province);
       if (rubro) filters.rubroId = Number(rubro);
@@ -206,6 +217,10 @@ const columns = [
           const location = [p.city, p.country?.name].filter(Boolean).join(', ') || '—';
           const statusLabel = STATUS_LABELS[p.profileStatus] || p.profileStatus || '—';
           const statusClass = STATUS_CLASSES[p.profileStatus] || 'bg-gray-100 text-gray-500';
+          const accessBadge = p.isActive
+            ? 'bg-teal-100 text-teal-800'
+            : 'bg-neutral-100 text-neutral-600';
+          const accessLabel = p.isActive ? 'Activo' : 'Inactivo';
           const isTrial = p.trialEndDate && new Date(p.trialEndDate) > new Date();
           const trialBadge = isTrial
             ? `<span class="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border border-gray-400 text-gray-500">TRIAL</span>`
@@ -226,6 +241,7 @@ const columns = [
             <td class="px-5 py-3 text-[var(--color-neutral-600)] text-xs">${p.rubro?.name || '—'}</td>
             <td class="px-5 py-3">
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${statusClass}">${statusLabel}</span>
+              <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${accessBadge}">${accessLabel}</span>
               ${trialBadge}
             </td>
             <td class="px-5 py-3">
@@ -385,6 +401,7 @@ const columns = [
     document.getElementById('btn-search')?.addEventListener('click', () => { currentPage = 1; loadData(); });
     document.getElementById('btn-reset')?.addEventListener('click', () => {
       (document.getElementById('filter-status') as HTMLSelectElement).value = '';
+      (document.getElementById('filter-is-active') as HTMLSelectElement).value = '';
       (document.getElementById('filter-country') as HTMLSelectElement).value = '';
       (document.getElementById('filter-province') as HTMLSelectElement).value = '';
       (document.getElementById('filter-province') as HTMLSelectElement).disabled = true;

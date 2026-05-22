@@ -158,6 +158,11 @@ export interface AdminRegisterProfessionalPayload {
   trialEndDate?: string;
   emailVerified: boolean;
   profileStatus: string;
+  isActive?: boolean;
+}
+
+export interface AdminUpdateProfessionalPayload {
+  isActive?: boolean;
 }
 
 export interface AdminRegisterProfessionalResponse {
@@ -203,6 +208,17 @@ export async function registerProfessional(
     return await api.post<AdminRegisterProfessionalResponse>('/admin/professionals/register', payload);
   } catch (error) {
     throw toAdminError(error, 'Error al registrar profesional');
+  }
+}
+
+export async function updateProfessional(
+  id: string,
+  payload: AdminUpdateProfessionalPayload,
+): Promise<unknown> {
+  try {
+    return await api.patch(`/admin/professionals/${id}`, payload);
+  } catch (error) {
+    throw toAdminError(error, 'Error al actualizar profesional');
   }
 }
 

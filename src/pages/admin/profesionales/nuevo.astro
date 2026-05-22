@@ -184,6 +184,19 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
           <input id="emailVerified" name="emailVerified" type="checkbox" checked class="w-4 h-4 accent-primary rounded" />
           <label for="emailVerified" class="text-sm text-on-surface-variant font-medium">Email verificado</label>
         </div>
+        <div class="flex flex-col gap-2 rounded-xl border border-outline-variant/20 bg-surface-container-lowest p-4">
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado de acceso</p>
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <p class="text-sm text-on-surface-variant">El profesional podrá acceder al sistema</p>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="is-active-toggle" class="sr-only peer" />
+              <div
+                class="w-11 h-6 bg-neutral-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#087781]"
+              ></div>
+              <span class="ml-3 text-sm font-medium text-neutral-900">Activo</span>
+            </label>
+          </div>
+        </div>
         <div>
           <label for="photo" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Foto (opcional)</label>
           <input
@@ -459,6 +472,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         professionCategoryIds,
         emailVerified: fd.get('emailVerified') === 'on',
         profileStatus: str('profileStatus') || 'active',
+        isActive: (document.getElementById('is-active-toggle') as HTMLInputElement).checked,
       };
     }
 
