@@ -41,3 +41,5 @@ vault/memory/.engine/.index-state.json
 
 # CodeGraph — índice local del código (no commitear)
 .codegraph/
+
+.pnpm-store/
