@@ -243,7 +243,7 @@ export async function uploadProfessionalPhoto(profileId: string, file: File): Pr
   const formData = new FormData();
   formData.append('file', file);
   try {
-    await api.upload(`/admin/uploads/professionals/${profileId}/photo`, formData);
+    await api.upload(`/uploads/admin/professionals/${profileId}/photo`, formData);
   } catch (error) {
     throw toAdminError(error, 'Error al subir foto');
   }
