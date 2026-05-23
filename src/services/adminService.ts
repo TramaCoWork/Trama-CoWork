@@ -162,6 +162,23 @@ export interface AdminRegisterProfessionalPayload {
 }
 
 export interface AdminUpdateProfessionalPayload {
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  dni?: string;
+  city?: string;
+  countryId?: number | string;
+  provinceId?: number | string;
+  whatsapp?: string;
+  linkedin?: string;
+  workModality?: string;
+  rubroId?: number | string;
+  professionCategoryIds?: number[] | string[];
+  services?: string[];
+  pricePerHour?: number | string;
+  priceMin?: number | string;
+  bio?: string;
+  tramaMotivation?: string;
   isActive?: boolean;
 }
 

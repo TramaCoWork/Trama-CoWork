@@ -66,7 +66,7 @@ export async function renderFeaturedSection(containerId: string): Promise<void> 
     }
     container.innerHTML = professionals
       .map((pro) => {
-        const photo = pro.photo ?? DEFAULT_PHOTO;
+        const photo = `${API_BASE}/uploads/photo/${pro.id}`;
         const category = pro.rubro?.name ?? (pro.services?.[0] ?? '');
         const city = pro.city ?? '';
         const price =

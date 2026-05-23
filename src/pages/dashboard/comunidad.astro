@@ -303,11 +303,12 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
     type Message,
   } from '../../services/messagingService';
   import { searchProfessionalsByName } from '../../services/professionalsService';
-  import { getProfilePhotoUrl } from '../../services/profileService';
   import { associateCommunityImages } from '../../services/uploadService';
   import { getUserIdFromToken, getToken } from '../../services/authService';
-  import { api, apiURL } from '../../services/apiClient';
+  import { api } from '../../services/apiClient';
   import { renderMarkdown } from '../../utils/markdown';
+
+  const API_BASE = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
   // ─── Auth ─────────────────────────────────────────────────────
   const token = getToken();
@@ -500,7 +501,7 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
       return '<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-primary text-base" aria-hidden="true">person</span></div>';
     }
 
-    const avatarUrl = getProfilePhotoUrl(participant.profileId);
+    const avatarUrl = getProfessionalAvatarUrl(participant.profileId);
     return `<img src="${escapeHtml(avatarUrl)}" alt="" class="w-10 h-10 rounded-full object-cover shrink-0 bg-surface-container" loading="lazy" />`;
   }
 
@@ -766,7 +767,7 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
   }
 
   function getProfessionalAvatarUrl(profileId: string): string {
-    return escapeHtml(apiURL(`/uploads/photo/${profileId}`));
+    return `${API_BASE}/uploads/photo/${encodeURIComponent(profileId)}`;
   }
 
   function renderNewMessageComposeError(message: string) {

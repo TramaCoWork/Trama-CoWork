@@ -123,6 +123,13 @@ export interface PhotoUploadResponse {
   url: string;
 }
 
+const DEFAULT_PROFILE_PHOTO = '/images/default-avatar.svg';
+
+function getApiBaseUrl(): string {
+  const baseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000';
+  return baseUrl.replace(/\/+$/, '');
+}
+
 export async function uploadProfilePhoto(file: File): Promise<PhotoUploadResponse> {
   const formData = new FormData();
   formData.append('file', file);
@@ -137,9 +144,37 @@ export async function deleteProfilePhoto(): Promise<{ deleted: boolean }> {
  * Construye la URL pública de la foto de perfil.
  * GET /uploads/photo/:profileId es público (sin auth).
  */
-export function getProfilePhotoUrl(profileId: string): string {
-  const baseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000';
-  return `${baseUrl.replace(/\/+$/, '')}/uploads/photo/${profileId}`;
+export function getProfilePhotoUrl(photo: string | null | undefined, profileId: string | number): string;
+export function getProfilePhotoUrl(profileId: string | number): string;
+export function getProfilePhotoUrl(
+  photoOrProfileId: string | number | null | undefined,
+  profileId?: string | number,
+): string {
+  const baseUrl = getApiBaseUrl();
+
+  if (profileId !== undefined) {
+    const photo = typeof photoOrProfileId === 'string' ? photoOrProfileId.trim() : '';
+
+    if (!photo) {
+      return DEFAULT_PROFILE_PHOTO;
+    }
+
+    if (/^https?:\/\//i.test(photo)) {
+      return photo;
+    }
+
+    if (photo.startsWith('/')) {
+      return `${baseUrl}${photo}`;
+    }
+
+    return `${baseUrl}/${photo}`;
+  }
+
+  if (photoOrProfileId === null || photoOrProfileId === undefined) {
+    return DEFAULT_PROFILE_PHOTO;
+  }
+
+  return `${baseUrl}/uploads/photo/${photoOrProfileId}`;
 }
 
 // ─── Identity (DNI front/back) ─────────────────────────────────

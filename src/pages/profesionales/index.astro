@@ -36,6 +36,7 @@ import SearchHeader from '../../components/SearchHeader.astro';
 
 <script>
   import { renderProfessionalsList, searchProfessionals, type SearchFilters } from '../../services/professionalsService';
+  const API_BASE = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
   const listEl = document.getElementById('pro-list')!;
   const countEl = document.getElementById('pro-count')!;
@@ -62,7 +63,6 @@ import SearchHeader from '../../components/SearchHeader.astro';
 
     // Re-use the card renderer from the service by importing renderCard indirectly
     // Since renderCard is not exported, we replicate the list rendering here
-    const API_BASE = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
     const DEFAULT_PHOTO = '/images/default-avatar.svg';
 
     listEl.innerHTML = results.map(pro => {

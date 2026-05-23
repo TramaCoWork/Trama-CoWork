@@ -44,6 +44,44 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       </div>
       <div id="prof-photo-wrap" class="shrink-0">
         <img id="prof-photo" src="/images/default-avatar.svg" alt="Foto" class="w-20 h-20 rounded-full object-cover border-4 border-surface-container-lowest shadow-lg" />
+        <div class="mt-2 flex flex-col items-center gap-1">
+          <input id="prof-photo-input" type="file" accept="image/*" class="hidden" />
+          <button
+            id="btn-change-photo"
+            type="button"
+            class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors"
+          >
+            <span class="material-symbols-outlined text-sm" aria-hidden="true">photo_camera</span>
+            Cambiar foto
+          </button>
+          <span id="prof-photo-feedback" class="hidden text-[11px] text-on-surface-variant">Subiendo...</span>
+        </div>
+      </div>
+      <div class="ml-2 flex items-center gap-2">
+        <button
+          id="btn-edit-mode"
+          type="button"
+          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all"
+        >
+          <span class="material-symbols-outlined text-lg" aria-hidden="true">edit</span>
+          Editar
+        </button>
+        <button
+          id="btn-save-edit"
+          type="button"
+          class="hidden inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          <span class="material-symbols-outlined text-lg" aria-hidden="true">save</span>
+          Guardar
+        </button>
+        <button
+          id="btn-cancel-edit"
+          type="button"
+          class="hidden inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface hover:bg-surface-container-high active:scale-[0.98] transition-all"
+        >
+          <span class="material-symbols-outlined text-lg" aria-hidden="true">close</span>
+          Cancelar
+        </button>
       </div>
     </div>
 
@@ -57,14 +95,64 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
           <h2 class="text-lg font-extrabold text-on-surface tracking-tight">Datos personales</h2>
         </div>
         <div class="grid grid-cols-2 gap-4 text-sm">
-          <div><span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">DNI</span><span id="d-dni" class="text-on-surface font-medium">—</span></div>
-          <div><span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Ciudad</span><span id="d-city" class="text-on-surface font-medium">—</span></div>
-          <div><span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">País</span><span id="d-country" class="text-on-surface font-medium">—</span></div>
-          <div><span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Provincia</span><span id="d-province" class="text-on-surface font-medium">—</span></div>
-          <div><span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">WhatsApp</span><span id="d-whatsapp" class="text-on-surface font-medium">—</span></div>
-          <div><span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">LinkedIn</span><span id="d-linkedin" class="text-on-surface font-medium break-all">—</span></div>
-          <div><span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Modalidad</span><span id="d-modality" class="text-on-surface font-medium">—</span></div>
-          <div><span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Completitud</span><span id="d-completion" class="text-on-surface font-medium">—</span></div>
+          <div>
+            <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Nombre</span>
+            <span id="d-firstName" class="display-field text-on-surface font-medium">—</span>
+            <input id="e-firstName" type="text" class="edit-input hidden w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+          </div>
+          <div>
+            <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Apellido</span>
+            <span id="d-lastName" class="display-field text-on-surface font-medium">—</span>
+            <input id="e-lastName" type="text" class="edit-input hidden w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+          </div>
+          <div>
+            <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">DNI</span>
+            <span id="d-dni" class="display-field text-on-surface font-medium">—</span>
+            <input id="e-dni" type="text" class="edit-input hidden w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+          </div>
+          <div>
+            <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Ciudad</span>
+            <span id="d-city" class="display-field text-on-surface font-medium">—</span>
+            <input id="e-city" type="text" class="edit-input hidden w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+          </div>
+          <div>
+            <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">País</span>
+            <span id="d-country" class="display-field text-on-surface font-medium">—</span>
+            <select id="e-country" class="edit-input hidden w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20">
+              <option value="">Seleccioná país</option>
+            </select>
+          </div>
+          <div>
+            <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Provincia</span>
+            <span id="d-province" class="display-field text-on-surface font-medium">—</span>
+            <select id="e-province" class="edit-input hidden w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20">
+              <option value="">Seleccioná provincia</option>
+            </select>
+          </div>
+          <div>
+            <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">WhatsApp</span>
+            <span id="d-whatsapp" class="display-field text-on-surface font-medium">—</span>
+            <input id="e-whatsapp" type="text" class="edit-input hidden w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+          </div>
+          <div>
+            <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">LinkedIn</span>
+            <span id="d-linkedin" class="display-field text-on-surface font-medium break-all">—</span>
+            <input id="e-linkedin" type="url" class="edit-input hidden w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+          </div>
+          <div>
+            <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Modalidad</span>
+            <span id="d-modality" class="display-field text-on-surface font-medium">—</span>
+            <select id="e-modality" class="edit-input hidden w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20">
+              <option value="">Seleccioná modalidad</option>
+              <option value="presencial">Presencial</option>
+              <option value="online">Online</option>
+              <option value="ambas">Ambas</option>
+            </select>
+          </div>
+          <div>
+            <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Completitud</span>
+            <span id="d-completion" class="display-field text-on-surface font-medium">—</span>
+          </div>
         </div>
       </div>
 
@@ -76,23 +164,43 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         </div>
         <div>
           <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Rubro</span>
-          <span id="d-rubro" class="text-on-surface font-medium text-sm">—</span>
+          <span id="d-rubro" class="display-field text-on-surface font-medium text-sm">—</span>
+          <select id="e-rubro" class="edit-input hidden w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 mt-1">
+            <option value="">Seleccioná rubro</option>
+          </select>
         </div>
         <div>
           <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Especialidades</span>
-          <div id="d-professions" class="flex flex-wrap gap-1.5 mt-1"></div>
+          <div id="d-professions" class="display-field flex flex-wrap gap-1.5 mt-1"></div>
+          <div id="e-professions-wrap" class="edit-input hidden space-y-2 mt-1">
+            <p id="e-profession-count" class="text-xs text-on-surface-variant">0/5 seleccionadas</p>
+            <div id="e-profession-groups" class="space-y-3 bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-3"></div>
+          </div>
         </div>
         <div>
           <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Servicios</span>
-          <div id="d-services" class="flex flex-wrap gap-1.5 mt-1"></div>
+          <div id="d-services" class="display-field flex flex-wrap gap-1.5 mt-1"></div>
+          <div id="e-services-wrap" class="edit-input hidden space-y-2 mt-1">
+            <div id="e-services-chips" class="flex flex-wrap gap-1.5"></div>
+            <input id="e-service-input" type="text" placeholder="Escribí un servicio y Enter" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+          </div>
         </div>
         <div class="grid grid-cols-2 gap-4 text-sm">
-          <div><span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Precio USD/h</span><span id="d-price-usd" class="text-on-surface font-medium">—</span></div>
-          <div><span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Precio ARS/h</span><span id="d-price-ars" class="text-on-surface font-medium">—</span></div>
+          <div>
+            <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Precio USD/h</span>
+            <span id="d-price-usd" class="display-field text-on-surface font-medium">—</span>
+            <input id="e-price-usd" type="number" min="0" step="0.01" class="edit-input hidden w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+          </div>
+          <div>
+            <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Precio ARS/h</span>
+            <span id="d-price-ars" class="display-field text-on-surface font-medium">—</span>
+            <input id="e-price-ars" type="number" min="0" step="0.01" class="edit-input hidden w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+          </div>
         </div>
         <div>
           <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Bio</span>
-          <p id="d-bio" class="text-on-surface text-sm leading-relaxed">—</p>
+          <p id="d-bio" class="display-field text-on-surface text-sm leading-relaxed">—</p>
+          <textarea id="e-bio" rows="4" class="edit-input hidden w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-y">—</textarea>
         </div>
       </div>
     </div>
@@ -103,7 +211,8 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         <span class="material-symbols-outlined text-primary" aria-hidden="true">emoji_objects</span>
         <h2 class="text-lg font-extrabold text-on-surface tracking-tight">Motivación</h2>
       </div>
-      <p id="d-motivation" class="text-on-surface text-sm leading-relaxed">—</p>
+      <p id="d-motivation" class="display-field text-on-surface text-sm leading-relaxed">—</p>
+      <textarea id="e-motivation" rows="4" class="edit-input hidden w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-y"></textarea>
     </div>
 
     <!-- Estado de acceso -->
@@ -225,11 +334,16 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       fetchProfessionalDocuments,
       fetchValidationHistory,
       updateProfessional,
+      uploadProfessionalPhoto,
       validateProfile,
       verifyDocument,
     } from '../../../services/adminService';
+    import type { AdminUpdateProfessionalPayload } from '../../../services/adminService';
     import type { AdminProfessional, ProfessionalDocument, ValidationRecord } from '../../../services/adminService';
     import { getProfilePhotoUrl } from '../../../services/profileService';
+    import { fetchCountries, fetchProvinces } from '../../../services/locationService';
+    import { fetchRubros, fetchProfessionsByRubro } from '../../../services/professionCategoriesService';
+    import { fetchCatalog, getCatalogLabel } from '../../../services/catalogService';
 
     restoreSession();
     const token = getToken();
@@ -239,6 +353,12 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     const profileId = new URLSearchParams(window.location.search).get('id') || '';
 
     const DEFAULT_AVATAR = '/images/default-avatar.svg';
+    const baseUrl = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
+    const MAX_PROFS = 5;
+
+    let profData: AdminProfessional | null = null;
+    let isEditMode = false;
+    let editServices: string[] = [];
 
     const STATUS_MAP: Record<string, { label: string; cls: string }> = {
       incomplete:      { label: 'Incompleto',    cls: 'bg-outline/10 text-outline' },
@@ -296,19 +416,26 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       // Photo
       const photo = document.getElementById('prof-photo') as HTMLImageElement;
       if (p.photo) {
-        const url = getProfilePhotoUrl(p.id);
+        const url = getProfilePhotoUrl(p.photo, p.id);
         photo.onerror = () => { photo.onerror = null; photo.src = DEFAULT_AVATAR; };
         photo.src = url;
+      } else {
+        photo.src = DEFAULT_AVATAR;
       }
 
+      const [firstName = '', ...restName] = (p.name || '').trim().split(/\s+/).filter(Boolean);
+      const lastName = restName.join(' ');
+
       // Personal
+      document.getElementById('d-firstName')!.textContent = firstName || '—';
+      document.getElementById('d-lastName')!.textContent = lastName || '—';
       document.getElementById('d-dni')!.textContent = p.dni || '—';
       document.getElementById('d-city')!.textContent = p.city || '—';
       document.getElementById('d-country')!.textContent = p.country?.name || '—';
       document.getElementById('d-province')!.textContent = p.province?.name || '—';
       document.getElementById('d-whatsapp')!.textContent = p.whatsapp || '—';
       document.getElementById('d-linkedin')!.textContent = p.linkedin || '—';
-      document.getElementById('d-modality')!.textContent = p.workModality || '—';
+      document.getElementById('d-modality')!.textContent = p.workModality ? getCatalogLabel('work-modalities', p.workModality) : '—';
       document.getElementById('d-completion')!.textContent = `${p.completionPct}%`;
 
       // Professional
@@ -347,9 +474,308 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       }
     }
 
+    function splitName(name: string | null | undefined): { firstName: string; lastName: string } {
+      const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+      if (!parts.length) return { firstName: '', lastName: '' };
+      return { firstName: parts[0], lastName: parts.slice(1).join(' ') };
+    }
+
+    function asString(value: string | number | null | undefined): string {
+      return value == null ? '' : String(value);
+    }
+
+    function normalizeString(value: string): string | undefined {
+      const trimmed = value.trim();
+      return trimmed ? trimmed : undefined;
+    }
+
+    function parseOptionalNumber(value: string): number | undefined {
+      const trimmed = value.trim();
+      if (!trimmed) return undefined;
+      const parsed = Number(trimmed);
+      return Number.isFinite(parsed) ? parsed : undefined;
+    }
+
+    async function loadCountriesInto(selectId: '#e-country', selectedId?: number | null) {
+      const sel = document.querySelector(selectId) as HTMLSelectElement | null;
+      if (!sel) return;
+      sel.innerHTML = '<option value="">Seleccioná país</option>';
+      try {
+        const countries = await fetchCountries();
+        sel.innerHTML += countries.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        if (selectedId) sel.value = String(selectedId);
+      } catch {
+        sel.innerHTML = '<option value="">Error al cargar países</option>';
+      }
+    }
+
+    async function loadProvincesInto(selectId: '#e-province', countryId?: number | null, selectedId?: number | null) {
+      const sel = document.querySelector(selectId) as HTMLSelectElement | null;
+      if (!sel) return;
+      if (!countryId) {
+        sel.innerHTML = '<option value="">Seleccioná provincia</option>';
+        return;
+      }
+      sel.disabled = true;
+      sel.innerHTML = '<option value="">Cargando...</option>';
+      try {
+        const provinces = await fetchProvinces(countryId);
+        sel.innerHTML = '<option value="">Seleccioná provincia</option>' + provinces.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        if (selectedId) sel.value = String(selectedId);
+      } catch {
+        sel.innerHTML = '<option value="">Error al cargar provincias</option>';
+      } finally {
+        sel.disabled = false;
+      }
+    }
+
+    async function loadRubrosInto(selectId: '#e-rubro', selectedId?: number | null) {
+      const sel = document.querySelector(selectId) as HTMLSelectElement | null;
+      if (!sel) return;
+      sel.innerHTML = '<option value="">Seleccioná rubro</option>';
+      try {
+        const rubros = await fetchRubros();
+        sel.innerHTML += rubros.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+        if (selectedId) sel.value = String(selectedId);
+      } catch {
+        sel.innerHTML = '<option value="">Error al cargar rubros</option>';
+      }
+    }
+
+    function getCheckedProfessionIds(): number[] {
+      const container = document.getElementById('e-profession-groups');
+      if (!container) return [];
+      return Array.from(container.querySelectorAll<HTMLInputElement>('.prof-cb:checked')).map(cb => Number(cb.value));
+    }
+
+    function applyProfessionLimit(container: HTMLElement, countEl: HTMLElement) {
+      const all = Array.from(container.querySelectorAll<HTMLInputElement>('.prof-cb'));
+      const checkedCount = all.filter(cb => cb.checked).length;
+      countEl.textContent = `${checkedCount}/${MAX_PROFS} seleccionadas`;
+      all.forEach(cb => {
+        const label = cb.closest('label');
+        const disable = !cb.checked && checkedCount >= MAX_PROFS;
+        cb.disabled = disable;
+        label?.classList.toggle('opacity-50', disable);
+      });
+    }
+
+    async function loadProfessionsInto(rubroId?: number | null, selectedIds: number[] = []) {
+      const container = document.getElementById('e-profession-groups');
+      const countEl = document.getElementById('e-profession-count');
+      if (!container || !countEl) return;
+      if (!rubroId) {
+        container.innerHTML = '<p class="text-sm text-on-surface-variant">Seleccioná un rubro para cargar profesiones.</p>';
+        countEl.textContent = `0/${MAX_PROFS} seleccionadas`;
+        return;
+      }
+      try {
+        const groups = await fetchProfessionsByRubro(rubroId);
+        container.innerHTML = groups.map(group => `
+          <div class="space-y-2">
+            <h4 class="text-sm font-bold text-on-surface-variant uppercase tracking-wider">${group.name}</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              ${(group.children || []).map(prof => `
+                <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container cursor-pointer transition-colors">
+                  <input
+                    type="checkbox"
+                    value="${prof.id}"
+                    class="prof-cb rounded-md border-outline-variant text-primary focus:ring-primary w-5 h-5"
+                    ${selectedIds.includes(prof.id) ? 'checked' : ''}
+                  />
+                  <span class="text-sm font-medium text-on-surface">${prof.name}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        `).join('');
+        const checkboxes = container.querySelectorAll<HTMLInputElement>('.prof-cb');
+        checkboxes.forEach(cb => cb.addEventListener('change', () => applyProfessionLimit(container, countEl)));
+        applyProfessionLimit(container, countEl);
+      } catch {
+        container.innerHTML = '<p class="text-sm text-error">Error al cargar profesiones</p>';
+        countEl.textContent = `0/${MAX_PROFS} seleccionadas`;
+      }
+    }
+
+    function renderServicesInto(containerId: '#e-services-wrap', services: string[]) {
+      const wrap = document.querySelector(containerId) as HTMLElement | null;
+      const chips = document.getElementById('e-services-chips');
+      const input = document.getElementById('e-service-input') as HTMLInputElement | null;
+      if (!wrap || !chips || !input) return;
+
+      const render = () => {
+        chips.innerHTML = services.length
+          ? services.map((service, index) => `
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-secondary-container text-on-secondary-container">
+                ${service}
+                <button type="button" data-rm="${index}" class="hover:text-error transition-colors" aria-label="Eliminar ${service}">
+                  <span class="material-symbols-outlined text-sm" aria-hidden="true">close</span>
+                </button>
+              </span>
+            `).join('')
+          : '<span class="text-sm text-on-surface-variant">Sin servicios</span>';
+        chips.querySelectorAll<HTMLButtonElement>('[data-rm]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            services.splice(Number(btn.dataset.rm), 1);
+            render();
+          });
+        });
+      };
+
+      input.onkeydown = (event: KeyboardEvent) => {
+        if (event.key !== 'Enter') return;
+        event.preventDefault();
+        const value = input.value.trim();
+        if (!value || services.includes(value)) {
+          input.value = '';
+          return;
+        }
+        services.push(value);
+        input.value = '';
+        render();
+      };
+
+      render();
+    }
+
+    async function toggleEditMode(on: boolean) {
+      isEditMode = on;
+      document.querySelectorAll<HTMLElement>('.edit-input').forEach(el => el.classList.toggle('hidden', !on));
+      document.querySelectorAll<HTMLElement>('.display-field').forEach(el => el.classList.toggle('hidden', on));
+      document.getElementById('btn-edit-mode')?.classList.toggle('hidden', on);
+      document.getElementById('btn-save-edit')?.classList.toggle('hidden', !on);
+      document.getElementById('btn-cancel-edit')?.classList.toggle('hidden', !on);
+
+      if (!profData) return;
+
+      if (on) {
+        const { firstName, lastName } = splitName(profData.name);
+        (document.getElementById('e-firstName') as HTMLInputElement).value = firstName;
+        (document.getElementById('e-lastName') as HTMLInputElement).value = lastName;
+        (document.getElementById('e-dni') as HTMLInputElement).value = profData.dni || '';
+        (document.getElementById('e-city') as HTMLInputElement).value = profData.city || '';
+        (document.getElementById('e-whatsapp') as HTMLInputElement).value = profData.whatsapp || '';
+        (document.getElementById('e-linkedin') as HTMLInputElement).value = profData.linkedin || '';
+        (document.getElementById('e-modality') as HTMLSelectElement).value = profData.workModality || '';
+        (document.getElementById('e-price-usd') as HTMLInputElement).value = asString(profData.pricePerHour);
+        (document.getElementById('e-price-ars') as HTMLInputElement).value = asString(profData.priceMin);
+        (document.getElementById('e-bio') as HTMLTextAreaElement).value = profData.bio || '';
+        (document.getElementById('e-motivation') as HTMLTextAreaElement).value = profData.tramaMotivation || '';
+        editServices = [...(profData.services || [])];
+        renderServicesInto('#e-services-wrap', editServices);
+
+        await loadCountriesInto('#e-country', profData.countryId ?? undefined);
+        await loadProvincesInto('#e-province', profData.countryId ?? undefined, profData.provinceId ?? undefined);
+        await loadRubrosInto('#e-rubro', profData.rubroId ?? undefined);
+        await loadProfessionsInto(profData.rubroId ?? undefined, (profData.professionCategories || []).map(p => p.id));
+      } else {
+        populateProfile(profData);
+      }
+    }
+
+    async function saveEditForm() {
+      if (!profData) return;
+      const saveBtn = document.getElementById('btn-save-edit') as HTMLButtonElement | null;
+      if (saveBtn) saveBtn.disabled = true;
+
+      const firstName = normalizeString((document.getElementById('e-firstName') as HTMLInputElement).value) || '';
+      const lastName = normalizeString((document.getElementById('e-lastName') as HTMLInputElement).value) || '';
+      const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
+
+      const payload: AdminUpdateProfessionalPayload = {
+        name: fullName || undefined,
+        firstName: firstName || undefined,
+        lastName: lastName || undefined,
+        dni: normalizeString((document.getElementById('e-dni') as HTMLInputElement).value),
+        city: normalizeString((document.getElementById('e-city') as HTMLInputElement).value),
+        countryId: parseOptionalNumber((document.getElementById('e-country') as HTMLSelectElement).value),
+        provinceId: parseOptionalNumber((document.getElementById('e-province') as HTMLSelectElement).value),
+        whatsapp: normalizeString((document.getElementById('e-whatsapp') as HTMLInputElement).value),
+        linkedin: normalizeString((document.getElementById('e-linkedin') as HTMLInputElement).value),
+        workModality: normalizeString((document.getElementById('e-modality') as HTMLSelectElement).value),
+        rubroId: parseOptionalNumber((document.getElementById('e-rubro') as HTMLSelectElement).value),
+        professionCategoryIds: getCheckedProfessionIds(),
+        services: editServices,
+        pricePerHour: parseOptionalNumber((document.getElementById('e-price-usd') as HTMLInputElement).value),
+        priceMin: parseOptionalNumber((document.getElementById('e-price-ars') as HTMLInputElement).value),
+        bio: normalizeString((document.getElementById('e-bio') as HTMLTextAreaElement).value),
+        tramaMotivation: normalizeString((document.getElementById('e-motivation') as HTMLTextAreaElement).value),
+      };
+
+      try {
+        await updateProfessional(profData.id, payload);
+        const updatedProfile = await fetchProfessionalDetail(profData.id);
+        profData = updatedProfile;
+        populateProfile(updatedProfile);
+        await toggleEditMode(false);
+        showToast('Cambios guardados', 'success');
+      } catch (err: any) {
+        showToast(err?.message || 'Error al guardar', 'error');
+      } finally {
+        if (saveBtn) saveBtn.disabled = false;
+      }
+    }
+
+    function setPhotoUploadState(message: string | null, isError = false) {
+      const feedback = document.getElementById('prof-photo-feedback');
+      if (!feedback) return;
+      if (!message) {
+        feedback.textContent = '';
+        feedback.classList.add('hidden');
+        feedback.classList.remove('text-error');
+        feedback.classList.add('text-on-surface-variant');
+        return;
+      }
+      feedback.textContent = message;
+      feedback.classList.remove('hidden');
+      feedback.classList.toggle('text-error', isError);
+      feedback.classList.toggle('text-on-surface-variant', !isError);
+    }
+
+    function wirePhotoUpload() {
+      const trigger = document.getElementById('btn-change-photo') as HTMLButtonElement | null;
+      const input = document.getElementById('prof-photo-input') as HTMLInputElement | null;
+      const image = document.getElementById('prof-photo') as HTMLImageElement | null;
+      if (!trigger || !input || !image) return;
+
+      trigger.addEventListener('click', () => input.click());
+
+      input.addEventListener('change', async () => {
+        const file = input.files?.[0];
+        if (!file || !profData) return;
+        if (file.size > 2 * 1024 * 1024) {
+          showToast('Max 2MB', 'error');
+          setPhotoUploadState('Archivo demasiado grande', true);
+          input.value = '';
+          return;
+        }
+
+        const previewUrl = URL.createObjectURL(file);
+        const previousSrc = image.src;
+        image.src = previewUrl;
+        trigger.disabled = true;
+        setPhotoUploadState('Subiendo...');
+
+        try {
+          await uploadProfessionalPhoto(profData.id, file);
+          image.src = `${getProfilePhotoUrl(profData.id)}?t=${Date.now()}`;
+          setPhotoUploadState('Foto actualizada');
+          showToast('Foto actualizada', 'success');
+        } catch (err: any) {
+          image.src = previousSrc;
+          setPhotoUploadState(err?.message || 'Error al subir foto', true);
+          showToast(err?.message || 'Error al subir foto', 'error');
+        } finally {
+          URL.revokeObjectURL(previewUrl);
+          input.value = '';
+          trigger.disabled = false;
+        }
+      });
+    }
+
     function populateIdentity(profileId: string, frontUrl: string | null, backUrl: string | null) {
       const container = document.getElementById('d-identity')!;
-      const baseUrl = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
       const sides: { key: string; label: string; hasUrl: boolean }[] = [
         { key: 'front', label: 'Frente', hasUrl: !!frontUrl },
@@ -683,6 +1109,26 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       });
     });
 
+    document.getElementById('btn-edit-mode')?.addEventListener('click', () => {
+      toggleEditMode(true);
+    });
+    document.getElementById('btn-cancel-edit')?.addEventListener('click', () => {
+      toggleEditMode(false);
+    });
+    document.getElementById('btn-save-edit')?.addEventListener('click', () => {
+      saveEditForm();
+    });
+
+    document.getElementById('e-country')?.addEventListener('change', () => {
+      const countryId = Number((document.getElementById('e-country') as HTMLSelectElement).value);
+      loadProvincesInto('#e-province', countryId || undefined, undefined);
+    });
+
+    document.getElementById('e-rubro')?.addEventListener('change', () => {
+      const rubroId = Number((document.getElementById('e-rubro') as HTMLSelectElement).value);
+      loadProfessionsInto(rubroId || undefined, []);
+    });
+
     const accessToggle = document.getElementById('is-active-toggle') as HTMLInputElement | null;
     accessToggle?.addEventListener('change', async () => {
       if (!profileId) return;
@@ -717,6 +1163,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
           fetchValidationHistory(profileId).catch(() => [] as ValidationRecord[]),
         ]);
 
+        profData = profile;
         populateProfile(profile);
         populateIdentity(profileId, profile.identityFrontUrl, profile.identityBackUrl);
         populateDocuments(docs);
@@ -731,6 +1178,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       }
     }
 
+    wirePhotoUpload();
     init();
   </script>
 </AdminLayout>

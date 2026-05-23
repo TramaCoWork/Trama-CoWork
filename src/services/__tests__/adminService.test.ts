@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { registerProfessional, uploadProfessionalPhoto } from '../adminService';
+import { api } from '../apiClient';
+import {
+  registerProfessional,
+  updateProfessional,
+  uploadProfessionalPhoto,
+  type AdminUpdateProfessionalPayload,
+} from '../adminService';
 
 describe('adminService', () => {
   beforeEach(() => {
@@ -108,6 +114,44 @@ describe('adminService', () => {
 
       const file = new Blob(['file']) as File;
       await expect(uploadProfessionalPhoto('profile-999', file)).rejects.toThrow('Falló');
+    });
+  });
+
+  describe('updateProfessional', () => {
+    it('acepta payload completo de edición (type check)', () => {
+      const payload = {
+        isActive: true,
+        firstName: 'Ana',
+        lastName: 'Pérez',
+        name: 'Ana Pérez',
+        dni: '12345678',
+        city: 'Córdoba',
+        countryId: 1,
+        provinceId: 2,
+        whatsapp: '5491122334455',
+        linkedin: 'https://linkedin.com/in/anaperez',
+        workModality: 'online',
+        rubroId: 3,
+        professionCategoryIds: [10, 11],
+        services: ['Mentoría', 'Consultoría'],
+        pricePerHour: 25,
+        priceMin: 15000,
+        bio: 'Bio de prueba',
+        tramaMotivation: 'Motivación de prueba',
+      } satisfies AdminUpdateProfessionalPayload;
+
+      expect(payload.firstName).toBe('Ana');
+      expect(payload.professionCategoryIds).toHaveLength(2);
+    });
+
+    it('llama api.patch con path y payload correctos', async () => {
+      const patchSpy = vi.spyOn(api, 'patch').mockResolvedValue({ ok: true });
+      const payload: AdminUpdateProfessionalPayload = { city: 'Rosario', isActive: false };
+
+      await updateProfessional('prof-123', payload);
+
+      expect(patchSpy).toHaveBeenCalledWith('/admin/professionals/prof-123', payload);
+      patchSpy.mockRestore();
     });
   });
 });
