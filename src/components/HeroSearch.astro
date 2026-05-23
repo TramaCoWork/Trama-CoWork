@@ -1,5 +1,5 @@
 ---
-import heroImage from '../assets/images/hero-cowork.jpg';
+import heroImage from "../assets/images/hero-cowork.jpg";
 ---
 
 <!-- Hero con imagen de fondo -->
@@ -14,18 +14,25 @@ import heroImage from '../assets/images/hero-cowork.jpg';
       aria-hidden="true"
     />
     <!-- Overlay gradiente para legibilidad del texto -->
-    <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent"></div>
+    <div
+      class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent"
+    >
+    </div>
 
     <!-- Contenido del hero -->
     <div class="relative z-10 max-w-7xl mx-auto px-6 py-20 w-full">
       <div class="max-w-xl">
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
-          Encontrá al<br/>
-          <span class="text-primary italic">profesional ideal</span><br/>
-          para tu necesidad.
+        <h1
+          class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6"
+        >
+          Descubr&iacute;<br />
+          <span class="text-primary italic">profesionales confiables</span><br
+          />
+          para impulsar tus proyectos.
         </h1>
         <p class="text-white/80 text-base md:text-lg leading-relaxed max-w-md">
-          Descubrí y contactá profesionales especializados, con la tranquilidad de saber que cada perfil fue revisado y validado por nuestro equipo.
+          En TRAMA validamos cada perfil para que puedas conectar con talento
+          real, especializado y alineado a tus necesidades.
         </p>
       </div>
     </div>
@@ -33,11 +40,20 @@ import heroImage from '../assets/images/hero-cowork.jpg';
 
   <!-- Tarjeta de búsqueda superpuesta -->
   <div class="relative z-20 max-w-4xl mx-auto px-6 -mt-16">
-    <div class="bg-surface-container-lowest p-6 md:p-8 rounded-2xl shadow-xl border border-outline-variant/30">
-      <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3">
+    <div
+      class="bg-surface-container-lowest p-6 md:p-8 rounded-2xl shadow-xl border border-outline-variant/30"
+    >
+      <div
+        class="flex flex-col md:flex-row items-stretch md:items-center gap-3"
+      >
         <!-- Select de rubro -->
-        <div class="flex-1 flex items-center gap-3 bg-surface-container-low px-5 py-3 rounded-xl border border-outline-variant/10">
-          <span class="material-symbols-outlined text-primary text-xl" aria-hidden="true">category</span>
+        <div
+          class="flex-1 flex items-center gap-3 bg-surface-container-low px-5 py-3 rounded-xl border border-outline-variant/10"
+        >
+          <span
+            class="material-symbols-outlined text-primary text-xl"
+            aria-hidden="true">category</span
+          >
           <label for="hero-rubro" class="sr-only">Área profesional</label>
           <select
             id="hero-rubro"
@@ -61,34 +77,36 @@ import heroImage from '../assets/images/hero-cowork.jpg';
 </section>
 
 <script>
-  import { fetchRubros } from '../services/professionCategoriesService';
+  import { fetchRubros } from "../services/professionCategoriesService";
 
-  const rubroSelect = document.getElementById('hero-rubro') as HTMLSelectElement;
-  const btnBuscar = document.getElementById('btn-buscar');
+  const rubroSelect = document.getElementById(
+    "hero-rubro",
+  ) as HTMLSelectElement;
+  const btnBuscar = document.getElementById("btn-buscar");
 
   // Cargar rubros
   async function loadRubros() {
     try {
       const rubros = await fetchRubros();
-      rubros.forEach(r => {
-        const opt = document.createElement('option');
+      rubros.forEach((r) => {
+        const opt = document.createElement("option");
         opt.value = r.slug;
         opt.textContent = r.name;
         rubroSelect.appendChild(opt);
       });
     } catch (err) {
-      console.error('Error cargando rubros:', err);
+      console.error("Error cargando rubros:", err);
     }
   }
 
   loadRubros();
 
   // Buscar
-  btnBuscar?.addEventListener('click', () => {
+  btnBuscar?.addEventListener("click", () => {
     const rubro = rubroSelect.value;
     const params = new URLSearchParams();
-    if (rubro) params.set('rubro', rubro);
-    const url = `/profesionales${params.toString() ? '?' + params.toString() : ''}`;
+    if (rubro) params.set("rubro", rubro);
+    const url = `/profesionales${params.toString() ? "?" + params.toString() : ""}`;
     window.location.href = url;
   });
 </script>

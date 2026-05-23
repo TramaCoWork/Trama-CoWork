@@ -1,44 +1,44 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import HeroSearch from '../components/HeroSearch.astro';
-import CTASection from '../components/CTASection.astro';
+import Layout from "../layouts/Layout.astro";
+import HeroSearch from "../components/HeroSearch.astro";
+import CTASection from "../components/CTASection.astro";
 
 const categories = [
   {
-    icon: 'palette',
-    title: 'Diseño & Creatividad',
-    description: 'Diseñadores gráficos, UX/UI, ilustradores y más.',
-    href: '/profesionales?rubro=diseno-creatividad',
+    icon: "palette",
+    title: "Diseño & Creatividad",
+    description: "Diseñadores gráficos, UX/UI, ilustradores y más.",
+    href: "/profesionales?rubro=diseno-creatividad",
   },
   {
-    icon: 'apartment',
-    title: 'Arquitectura & Construcción',
-    description: 'Arquitectos, diseñadores de interiores, ingenieros y más.',
-    href: '/profesionales?rubro=arquitectura-construccion',
+    icon: "apartment",
+    title: "Arquitectura & Construcción",
+    description: "Arquitectos, diseñadores de interiores, ingenieros y más.",
+    href: "/profesionales?rubro=arquitectura-construccion",
   },
   {
-    icon: 'code',
-    title: 'Tecnología & Desarrollo',
-    description: 'Desarrolladores web, móviles, software y más.',
-    href: '/profesionales?rubro=tecnologia-desarrollo',
+    icon: "code",
+    title: "Tecnología & Desarrollo",
+    description: "Desarrolladores web, móviles, software y más.",
+    href: "/profesionales?rubro=tecnologia-desarrollo",
   },
   {
-    icon: 'campaign',
-    title: 'Marketing & Comunicación',
-    description: 'Especialistas en marketing digital, contenidos y más.',
-    href: '/profesionales?rubro=marketing-comunicacion',
+    icon: "campaign",
+    title: "Marketing & Comunicación",
+    description: "Especialistas en marketing digital, contenidos y más.",
+    href: "/profesionales?rubro=marketing-comunicacion",
   },
   {
-    icon: 'edit_note',
-    title: 'Redacción & Traducción',
-    description: 'Redactores, correctores, traductores y más.',
-    href: '/profesionales?rubro=redaccion-traduccion',
+    icon: "edit_note",
+    title: "Redacción & Traducción",
+    description: "Redactores, correctores, traductores y más.",
+    href: "/profesionales?rubro=redaccion-traduccion",
   },
   {
-    icon: 'more_horiz',
-    title: 'Otras áreas',
-    description: 'Descubrí más profesionales en diversas disciplinas.',
-    href: '/rubros',
+    icon: "more_horiz",
+    title: "Otras áreas",
+    description: "Descubrí más profesionales en diversas disciplinas.",
+    href: "/rubros",
   },
 ];
 ---
@@ -51,33 +51,46 @@ const categories = [
   <section class="py-16 bg-[#f8fafa]">
     <div class="max-w-7xl mx-auto px-6">
       <div class="mb-10">
-        <h2 class="text-3xl font-black tracking-tight text-neutral-900 mb-2">Sesiones de Profesionales</h2>
+        <h2 class="text-3xl font-black tracking-tight text-neutral-900 mb-2">
+          Algunos perfiles
+        </h2>
         <div class="h-1 w-16 bg-primary rounded-full"></div>
       </div>
-      <div id="featured-profesionales" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 min-h-[200px]">
+      <div
+        id="featured-profesionales"
+        class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 min-h-[200px]"
+      >
         <!-- skeleton placeholders while loading -->
-        <div class="bg-white rounded-2xl shadow-sm p-6 flex flex-col items-center animate-pulse">
+        <div
+          class="bg-white rounded-2xl shadow-sm p-6 flex flex-col items-center animate-pulse"
+        >
           <div class="w-24 h-24 rounded-full bg-neutral-200 mb-4"></div>
           <div class="h-4 w-28 bg-neutral-200 rounded mb-2"></div>
           <div class="h-3 w-20 bg-neutral-100 rounded mb-2"></div>
           <div class="h-3 w-16 bg-neutral-100 rounded mb-3"></div>
           <div class="h-5 w-24 bg-neutral-200 rounded"></div>
         </div>
-        <div class="bg-white rounded-2xl shadow-sm p-6 flex flex-col items-center animate-pulse hidden sm:flex">
+        <div
+          class="bg-white rounded-2xl shadow-sm p-6 flex flex-col items-center animate-pulse hidden sm:flex"
+        >
           <div class="w-24 h-24 rounded-full bg-neutral-200 mb-4"></div>
           <div class="h-4 w-28 bg-neutral-200 rounded mb-2"></div>
           <div class="h-3 w-20 bg-neutral-100 rounded mb-2"></div>
           <div class="h-3 w-16 bg-neutral-100 rounded mb-3"></div>
           <div class="h-5 w-24 bg-neutral-200 rounded"></div>
         </div>
-        <div class="bg-white rounded-2xl shadow-sm p-6 flex flex-col items-center animate-pulse hidden sm:flex">
+        <div
+          class="bg-white rounded-2xl shadow-sm p-6 flex flex-col items-center animate-pulse hidden sm:flex"
+        >
           <div class="w-24 h-24 rounded-full bg-neutral-200 mb-4"></div>
           <div class="h-4 w-28 bg-neutral-200 rounded mb-2"></div>
           <div class="h-3 w-20 bg-neutral-100 rounded mb-2"></div>
           <div class="h-3 w-16 bg-neutral-100 rounded mb-3"></div>
           <div class="h-5 w-24 bg-neutral-200 rounded"></div>
         </div>
-        <div class="bg-white rounded-2xl shadow-sm p-6 flex flex-col items-center animate-pulse hidden lg:flex">
+        <div
+          class="bg-white rounded-2xl shadow-sm p-6 flex flex-col items-center animate-pulse hidden lg:flex"
+        >
           <div class="w-24 h-24 rounded-full bg-neutral-200 mb-4"></div>
           <div class="h-4 w-28 bg-neutral-200 rounded mb-2"></div>
           <div class="h-3 w-20 bg-neutral-100 rounded mb-2"></div>
@@ -89,8 +102,8 @@ const categories = [
   </section>
 
   <script>
-    import { renderFeaturedSection } from '../services/homeService';
-    renderFeaturedSection('featured-profesionales');
+    import { renderFeaturedSection } from "../services/homeService";
+    renderFeaturedSection("featured-profesionales");
   </script>
 
   <!-- Explora Profesionales - Categorías -->
@@ -98,27 +111,48 @@ const categories = [
     <div class="max-w-7xl mx-auto px-6">
       <div class="flex justify-between items-end mb-16">
         <div>
-          <h2 class="text-4xl font-black tracking-tighter text-on-surface mb-2">Explora profesionales</h2>
-          <div class="h-1.5 w-24 bg-primary rounded-full" aria-hidden="true"></div>
+          <h2 class="text-4xl font-black tracking-tighter text-on-surface mb-2">
+            Explora profesionales
+          </h2>
+          <div class="h-1.5 w-24 bg-primary rounded-full" aria-hidden="true">
+          </div>
         </div>
-        <a class="text-primary font-bold flex items-center gap-2 hover:gap-4 transition-all group" href="/rubros">
+        <a
+          class="text-primary font-bold flex items-center gap-2 hover:gap-4 transition-all group"
+          href="/rubros"
+        >
           Ver todas las categorías
-          <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+          <span class="material-symbols-outlined" aria-hidden="true"
+            >arrow_forward</span
+          >
         </a>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-        {categories.map((cat) => (
-          <a
-            href={cat.href}
-            class="bg-surface-container-lowest rounded-2xl border border-outline-variant/20 p-6 flex flex-col items-center text-center hover:shadow-lg hover:border-primary/30 transition-all group"
-          >
-            <div class="w-14 h-14 rounded-xl bg-surface-container-low flex items-center justify-center mb-4 group-hover:bg-primary/10 transition-colors">
-              <span class="material-symbols-outlined text-3xl text-outline group-hover:text-primary transition-colors" aria-hidden="true">{cat.icon}</span>
-            </div>
-            <h3 class="font-bold text-on-surface text-sm mb-2 leading-tight">{cat.title}</h3>
-            <p class="text-xs text-on-surface-variant leading-relaxed">{cat.description}</p>
-          </a>
-        ))}
+      <div
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6"
+      >
+        {
+          categories.map((cat) => (
+            <a
+              href={cat.href}
+              class="bg-surface-container-lowest rounded-2xl border border-outline-variant/20 p-6 flex flex-col items-center text-center hover:shadow-lg hover:border-primary/30 transition-all group"
+            >
+              <div class="w-14 h-14 rounded-xl bg-surface-container-low flex items-center justify-center mb-4 group-hover:bg-primary/10 transition-colors">
+                <span
+                  class="material-symbols-outlined text-3xl text-outline group-hover:text-primary transition-colors"
+                  aria-hidden="true"
+                >
+                  {cat.icon}
+                </span>
+              </div>
+              <h3 class="font-bold text-on-surface text-sm mb-2 leading-tight">
+                {cat.title}
+              </h3>
+              <p class="text-xs text-on-surface-variant leading-relaxed">
+                {cat.description}
+              </p>
+            </a>
+          ))
+        }
       </div>
     </div>
   </section>
