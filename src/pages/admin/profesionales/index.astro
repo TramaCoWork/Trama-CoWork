@@ -102,9 +102,10 @@ const columns = [
     import { api } from '../../../services/apiClient';
     import { fetchAllProfessionals } from '../../../services/adminService';
     import type { AdminProfessional, ProfessionalFilters } from '../../../services/adminService';
-    import { getProfilePhotoUrl } from '../../../services/profileService';
     import { fetchRubros } from '../../../services/professionCategoriesService';
     import { fetchCountries, fetchProvinces } from '../../../services/locationService';
+
+    const API_BASE = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
     restoreSession();
     const token = getToken();
@@ -212,7 +213,7 @@ const columns = [
       } else {
         tbody.innerHTML = data.map(p => {
           const avatarHtml = p.photo
-            ? `<img src="${getProfilePhotoUrl(p.photo, p.id)}" alt="${p.name}" class="w-10 h-10 rounded-full object-cover flex-shrink-0">`
+            ? `<img src="${API_BASE}/uploads/photo/${p.id}" alt="${p.name}" class="w-10 h-10 rounded-full object-cover flex-shrink-0">`
             : `<div class="w-10 h-10 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-sm font-bold flex-shrink-0">${(p.name || '?')[0].toUpperCase()}</div>`;
           const emailDisplay = p.emailContact || p.user?.email || '';
           const location = [p.city, p.country?.name].filter(Boolean).join(', ') || '—';
