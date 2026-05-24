@@ -44,9 +44,13 @@ import Layout from '../../layouts/Layout.astro';
           </div>
           <p id="pro-bio-hero" class="text-lg text-on-surface-variant max-w-2xl font-light"></p>
           <div class="flex gap-4 pt-4">
-            <a href="#contactar" class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-8 py-3 rounded-lg font-bold shadow-lg active:opacity-80 transition-all hover:shadow-xl">
+            <button
+              id="open-contact-modal"
+              type="button"
+              class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-8 py-3 rounded-lg font-bold shadow-lg active:opacity-80 transition-all hover:shadow-xl"
+            >
               Contactar
-            </a>
+            </button>
             <button class="bg-surface-container-highest text-on-surface px-8 py-3 rounded-lg font-bold transition-all hover:bg-surface-variant/30" type="button">
               Compartir perfil
             </button>
@@ -86,15 +90,110 @@ import Layout from '../../layouts/Layout.astro';
       </div>
     </section>
   </div>
+
+  <div
+    id="contact-modal"
+    class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/50 backdrop-blur-sm px-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="contact-modal-title"
+  >
+    <div class="w-full max-w-2xl rounded-2xl bg-surface-container-lowest shadow-2xl border border-outline-variant/20">
+      <div class="flex items-center justify-between border-b border-outline-variant/20 px-6 py-4">
+        <h2 id="contact-modal-title" class="text-xl font-bold text-on-surface">Contactar profesional</h2>
+        <button
+          id="close-contact-modal-icon"
+          type="button"
+          class="rounded-lg p-1 text-on-surface-variant hover:bg-surface-container-high transition-colors"
+          aria-label="Cerrar modal"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </div>
+
+      <div class="px-6 py-5">
+        <div id="contact-modal-success" class="hidden mb-4 rounded-xl bg-primary-container px-4 py-3 text-sm font-semibold text-on-primary-container"></div>
+        <div id="contact-modal-error" class="hidden mb-4 rounded-xl bg-error-container px-4 py-3 text-sm font-semibold text-on-error-container"></div>
+
+        <form id="contact-modal-form" class="space-y-4" novalidate>
+          <div>
+            <label for="contact-modal-email" class="mb-1.5 block text-sm font-semibold text-on-surface">Email *</label>
+            <input
+              id="contact-modal-email"
+              name="email"
+              type="email"
+              required
+              class="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+              placeholder="tu@email.com"
+            />
+          </div>
+
+          <div>
+            <label for="contact-modal-message" class="mb-1.5 block text-sm font-semibold text-on-surface">Mensaje * <span class="text-outline font-medium">(mínimo 10 caracteres)</span></label>
+            <textarea
+              id="contact-modal-message"
+              name="message"
+              required
+              minlength="10"
+              rows="5"
+              class="w-full resize-none rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+              placeholder="Escribí tu mensaje para este profesional..."
+            ></textarea>
+          </div>
+
+          <div
+            class="cf-turnstile"
+            data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY}
+            data-theme="light"
+          ></div>
+
+          <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button
+              id="close-contact-modal"
+              type="button"
+              class="rounded-xl border border-outline-variant bg-surface-container-low px-5 py-2.5 text-sm font-bold text-on-surface transition-colors hover:bg-surface-container-high"
+            >
+              Cerrar
+            </button>
+            <button
+              id="submit-contact-modal"
+              type="submit"
+              class="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Enviar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </Layout>
+
+<script
+  is:inline
+  src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+  async
+  defer></script>
 
 <script>
   import { api } from '../../services/apiClient';
   const API_BASE = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
   const DEFAULT_AVATAR = '/images/default-avatar.svg';
+  const isDev = import.meta.env.DEV;
 
-  interface ProfessionalData {
+  const contactModal = document.getElementById('contact-modal') as HTMLDivElement;
+  const openContactModalBtn = document.getElementById('open-contact-modal') as HTMLButtonElement;
+  const closeContactModalBtn = document.getElementById('close-contact-modal') as HTMLButtonElement;
+  const closeContactModalIconBtn = document.getElementById('close-contact-modal-icon') as HTMLButtonElement;
+  const contactModalForm = document.getElementById('contact-modal-form') as HTMLFormElement;
+  const submitContactModalBtn = document.getElementById('submit-contact-modal') as HTMLButtonElement;
+  const contactModalEmail = document.getElementById('contact-modal-email') as HTMLInputElement;
+  const contactModalMessage = document.getElementById('contact-modal-message') as HTMLTextAreaElement;
+  const contactModalSuccess = document.getElementById('contact-modal-success') as HTMLDivElement;
+  const contactModalError = document.getElementById('contact-modal-error') as HTMLDivElement;
+
+interface ProfessionalData {
     id: number;
     userId: string;
     name: string;
@@ -106,7 +205,140 @@ import Layout from '../../layouts/Layout.astro';
     city: string;
     whatsapp: string;
     emailContact: string;
-    categories: { id: number; slug: string; name: string }[];
+  categories: { id: number; slug: string; name: string }[];
+}
+
+  function openContactModal() {
+    hideContactModalMessages();
+    contactModal.classList.remove('hidden');
+    contactModal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeContactModal() {
+    contactModal.classList.add('hidden');
+    contactModal.classList.remove('flex');
+    document.body.style.overflow = '';
+  }
+
+  function hideContactModalMessages() {
+    contactModalSuccess.classList.add('hidden');
+    contactModalError.classList.add('hidden');
+  }
+
+  function showContactModalError(message: string) {
+    contactModalSuccess.classList.add('hidden');
+    contactModalError.textContent = message;
+    contactModalError.classList.remove('hidden');
+  }
+
+  function showContactModalSuccess(message: string) {
+    contactModalError.classList.add('hidden');
+    contactModalSuccess.textContent = message;
+    contactModalSuccess.classList.remove('hidden');
+  }
+
+  function getProfessionalIdFromQuery(): string | null {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('id');
+  }
+
+  function getTurnstileToken(): string | null {
+    if (isDev) {
+      return 'dev-mode-bypass';
+    }
+
+    return (window as any).turnstile?.getResponse() || null;
+  }
+
+  function resetTurnstile() {
+    if (!isDev) {
+      (window as any).turnstile?.reset();
+    }
+  }
+
+  function setSubmitLoading(isLoading: boolean) {
+    submitContactModalBtn.disabled = isLoading;
+    submitContactModalBtn.textContent = isLoading ? 'Enviando...' : 'Enviar';
+  }
+
+  async function submitContactForm(event: SubmitEvent) {
+    event.preventDefault();
+    hideContactModalMessages();
+
+    const professionalId = getProfessionalIdFromQuery();
+    const email = contactModalEmail.value.trim();
+    const message = contactModalMessage.value.trim();
+
+    if (!professionalId) {
+      showContactModalError('No se pudo identificar al profesional.');
+      return;
+    }
+
+    if (!email || !message) {
+      showContactModalError('Completá todos los campos obligatorios.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showContactModalError('Ingresá un email válido.');
+      return;
+    }
+
+    if (message.length < 10) {
+      showContactModalError('El mensaje debe tener al menos 10 caracteres.');
+      return;
+    }
+
+    const turnstileToken = getTurnstileToken();
+    if (!turnstileToken) {
+      showContactModalError('Por favor, completá la verificación de seguridad.');
+      return;
+    }
+
+    setSubmitLoading(true);
+
+    try {
+      await api.post('/contact/professional', { email, message, professionalId, turnstileToken });
+      showContactModalSuccess('¡Mensaje enviado exitosamente!');
+      contactModalForm.reset();
+      resetTurnstile();
+    } catch (error: any) {
+      if (error?.status === 400) {
+        showContactModalError('Captcha inválido. Intentá nuevamente.');
+      } else if (error?.status === 404) {
+        showContactModalError('Profesional no encontrado.');
+      } else {
+        showContactModalError(error?.body?.message || 'Error al enviar el mensaje. Intentá nuevamente.');
+      }
+      resetTurnstile();
+    } finally {
+      setSubmitLoading(false);
+    }
+  }
+
+  function setupContactModalEvents() {
+    openContactModalBtn.addEventListener('click', openContactModal);
+    closeContactModalBtn.addEventListener('click', closeContactModal);
+    closeContactModalIconBtn.addEventListener('click', closeContactModal);
+    contactModalForm.addEventListener('submit', submitContactForm);
+
+    contactModal.addEventListener('click', (event) => {
+      if (event.target === contactModal) {
+        closeContactModal();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !contactModal.classList.contains('hidden')) {
+        closeContactModal();
+      }
+    });
+  }
+
+  function sanitizeWhatsappNumber(value: string): string {
+    return value.replace(/\D/g, '');
   }
 
   async function loadProfile() {
@@ -173,12 +405,23 @@ import Layout from '../../layouts/Layout.astro';
       }
 
       if (pro.whatsapp) {
+        const sanitizedWhatsapp = sanitizeWhatsappNumber(pro.whatsapp);
+        const whatsappMessage = encodeURIComponent('Desde Tramacowork.com nos estamos conectando...');
+        const whatsappUrl = `https://wa.me/${sanitizedWhatsapp}?text=${whatsappMessage}`;
+
+        if (sanitizedWhatsapp) {
         infoItems.push(`
           <div class="flex items-start gap-4">
             <span class="material-symbols-outlined text-primary" aria-hidden="true">chat</span>
-            <div><p class="text-sm font-bold">WhatsApp</p><p class="text-on-surface-variant text-sm">${pro.whatsapp}</p></div>
+            <div class="min-w-0">
+              <p class="text-sm font-bold">WhatsApp</p>
+              <a href="${whatsappUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center mt-1 rounded-lg px-3 py-2 text-sm font-semibold text-white bg-primary hover:opacity-90 transition-opacity">
+                Contactar por WhatsApp
+              </a>
+            </div>
           </div>
         `);
+        }
       }
 
       if (pro.emailContact) {
@@ -239,5 +482,6 @@ import Layout from '../../layouts/Layout.astro';
     document.getElementById('profile-error')!.classList.remove('hidden');
   }
 
+  setupContactModalEvents();
   loadProfile();
 </script>
