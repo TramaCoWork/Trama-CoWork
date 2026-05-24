@@ -11,29 +11,24 @@ interface Props {
 const { title, description = 'Red profesional de talento curado en diseño, arquitectura y tecnología.' } = Astro.props;
 const gtmId = import.meta.env.PUBLIC_GTM_ID;
 const gaId = import.meta.env.PUBLIC_GA_ID;
-const gaScriptSrc = gaId ? `https://www.googletagmanager.com/gtag/js?id=${gaId}` : undefined;
 ---
 
 <!doctype html>
 <html lang="es">
   <head>
     {gtmId && (
-      <Fragment>
-        <script
-          set:html={`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtmId}');`}
-        ></script>
-      </Fragment>
+      <script
+        set:html={`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtmId}');`}
+      ></script>
     )}
+    {gaId && <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>}
     {gaId && (
-      <Fragment>
-        <script async src={gaScriptSrc}></script>
-        <script define:vars={{ gaId }}>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', gaId);
-        </script>
-      </Fragment>
+      <script
+        set:html={`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${gaId}');`}
+      ></script>
     )}
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -43,16 +38,14 @@ const gaScriptSrc = gaId ? `https://www.googletagmanager.com/gtag/js?id=${gaId}`
   </head>
   <body class="bg-surface font-body text-on-surface">
     {gtmId && (
-      <Fragment>
-        <noscript>
-          <iframe
-            src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
-            height="0"
-            width="0"
-            style="display:none;visibility:hidden"
-          ></iframe>
-        </noscript>
-      </Fragment>
+      <noscript>
+        <iframe
+          src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+          height="0"
+          width="0"
+          style="display:none;visibility:hidden"
+        ></iframe>
+      </noscript>
     )}
     <Navbar />
     <main>
