@@ -1,9 +1,12 @@
 ---
-import AdminLayout from '../../layouts/AdminLayout.astro';
+import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
 <AdminLayout title="TRAMA Admin - Profesiones">
-  <div id="errorState" class="hidden flex flex-col items-center justify-center py-24 text-center">
+  <div
+    id="errorState"
+    class="hidden flex flex-col items-center justify-center py-24 text-center"
+  >
     <svg
       xmlns="http://www.w3.org/2000/svg"
       class="w-16 h-16 text-neutral-300 mb-4"
@@ -16,10 +19,14 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         stroke-linejoin="round"
         stroke-width="1.5"
         d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-      />
+      ></path>
     </svg>
-    <h2 class="text-xl font-bold text-neutral-700 mb-2">Subrubro no especificado</h2>
-    <p class="text-sm text-neutral-500 mb-6">Accedé a esta página desde la lista de subrubros.</p>
+    <h2 class="text-xl font-bold text-neutral-700 mb-2">
+      Subrubro no especificado
+    </h2>
+    <p class="text-sm text-neutral-500 mb-6">
+      Accedé a esta página desde la lista de subrubros.
+    </p>
     <a
       href="/admin/categorias"
       class="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-alt transition-colors"
@@ -29,19 +36,36 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   </div>
 
   <div id="mainContent" class="hidden">
-    <nav class="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-2 flex items-center gap-1.5 flex-wrap">
-      <a href="/admin/categorias" class="hover:text-primary transition-colors">INICIO</a>
+    <nav
+      class="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-2 flex items-center gap-1.5 flex-wrap"
+    >
+      <a href="/admin/categorias" class="hover:text-primary transition-colors"
+        >INICIO</a
+      >
       <span>›</span>
-      <a href="/admin/categorias" class="hover:text-primary transition-colors">CATEGORÍAS</a>
+      <a href="/admin/categorias" class="hover:text-primary transition-colors"
+        >CATEGORÍAS</a
+      >
       <span>›</span>
-      <a id="breadcrumbRubro" href="#" class="hover:text-primary transition-colors">...</a>
+      <a
+        id="breadcrumbRubro"
+        href="#"
+        class="hover:text-primary transition-colors">...</a
+      >
       <span>›</span>
       <span id="breadcrumbSubrubro" class="text-primary">...</span>
     </nav>
     <div class="flex items-start justify-between mb-8">
       <div>
-        <h1 id="pageTitle" class="text-3xl font-black tracking-tight text-neutral-900 mb-1">Profesiones</h1>
-        <p class="text-sm text-neutral-500">Administre las profesiones de este subrubro.</p>
+        <h1
+          id="pageTitle"
+          class="text-3xl font-black tracking-tight text-neutral-900 mb-1"
+        >
+          Profesiones
+        </h1>
+        <p class="text-sm text-neutral-500">
+          Administre las profesiones de este subrubro.
+        </p>
       </div>
       <button
         id="btnAgregarProfesion"
@@ -55,7 +79,10 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
           stroke="currentColor"
           stroke-width="2.5"
         >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 4.5v15m7.5-7.5h-15"></path>
         </svg>
         + AGREGAR PROFESIÓN
       </button>
@@ -63,24 +90,45 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
       <div class="bg-white rounded-2xl shadow-sm p-5 border border-neutral-100">
-        <p class="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-3">Total Profesiones</p>
+        <p
+          class="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-3"
+        >
+          Total Profesiones
+        </p>
         <p id="metricTotal" class="text-4xl font-black text-neutral-900">—</p>
         <p class="text-xs text-neutral-400 mt-1">Dominios especializados</p>
       </div>
       <div class="bg-white rounded-2xl shadow-sm p-5 border border-neutral-100">
-        <p class="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-3">Profesiones Activas</p>
+        <p
+          class="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-3"
+        >
+          Profesiones Activas
+        </p>
         <p id="metricActivas" class="text-4xl font-black text-primary">—</p>
         <p class="text-xs text-neutral-400 mt-1">Disponibles actualmente</p>
       </div>
       <div class="bg-white rounded-2xl shadow-sm p-5 border border-neutral-100">
-        <p class="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-3">Subrubro Padre</p>
-        <p id="metricSubrubro" class="text-xl font-black text-neutral-700 leading-tight">—</p>
+        <p
+          class="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-3"
+        >
+          Subrubro Padre
+        </p>
+        <p
+          id="metricSubrubro"
+          class="text-xl font-black text-neutral-700 leading-tight"
+        >
+          —
+        </p>
         <p class="text-xs text-neutral-400 mt-1">Categoría contenedora</p>
       </div>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
-      <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
+    <div
+      class="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden"
+    >
+      <div
+        class="flex items-center justify-between px-6 py-4 border-b border-neutral-100"
+      >
         <div class="flex items-center gap-3">
           <h2 class="text-base font-bold text-neutral-900">Professions List</h2>
           <span
@@ -103,8 +151,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
             <input
               id="searchInput"
@@ -120,19 +167,29 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         <table class="w-full">
           <thead>
             <tr class="border-b-2 border-neutral-100">
-              <th class="text-left px-6 py-3 text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+              <th
+                class="text-left px-6 py-3 text-xs font-semibold text-neutral-400 uppercase tracking-wider"
+              >
                 Profession Name
               </th>
-              <th class="text-left px-6 py-3 text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+              <th
+                class="text-left px-6 py-3 text-xs font-semibold text-neutral-400 uppercase tracking-wider"
+              >
                 Slug
               </th>
-              <th class="text-center px-6 py-3 text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+              <th
+                class="text-center px-6 py-3 text-xs font-semibold text-neutral-400 uppercase tracking-wider"
+              >
                 Orden
               </th>
-              <th class="text-center px-6 py-3 text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+              <th
+                class="text-center px-6 py-3 text-xs font-semibold text-neutral-400 uppercase tracking-wider"
+              >
                 Status
               </th>
-              <th class="text-center px-6 py-3 text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+              <th
+                class="text-center px-6 py-3 text-xs font-semibold text-neutral-400 uppercase tracking-wider"
+              >
                 Actions
               </th>
             </tr>
@@ -141,24 +198,45 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         </table>
       </div>
 
-      <div class="flex items-center justify-between px-6 py-4 border-t border-neutral-100">
-        <p id="paginationInfo" class="text-sm text-neutral-500">Showing 0 to 0 of 0 professions</p>
+      <div
+        class="flex items-center justify-between px-6 py-4 border-t border-neutral-100"
+      >
+        <p id="paginationInfo" class="text-sm text-neutral-500">
+          Showing 0 to 0 of 0 professions
+        </p>
         <div id="paginationButtons" class="flex items-center gap-1"></div>
       </div>
     </div>
   </div>
 
-  <div id="profesionModalOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+  <div
+    id="profesionModalOverlay"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  >
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-      <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
-        <h3 id="profesionModalTitle" class="text-lg font-bold text-neutral-900">Agregar Profesión</h3>
+      <div
+        class="flex items-center justify-between px-6 py-4 border-b border-neutral-100"
+      >
+        <h3 id="profesionModalTitle" class="text-lg font-bold text-neutral-900">
+          Agregar Profesión
+        </h3>
         <button
           id="profesionModalClose"
           class="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
           aria-label="Cerrar"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 18L18 6M6 6l12 12"></path>
           </svg>
         </button>
       </div>
@@ -167,7 +245,10 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         <input type="hidden" id="profesionSlug" />
         <input type="hidden" id="profesionSubrubroId" />
         <div>
-          <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1.5">Nombre *</label>
+          <label
+            class="block text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1.5"
+            >Nombre *</label
+          >
           <input
             type="text"
             id="profesionNombre"
@@ -176,7 +257,10 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
           />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1.5">Orden</label>
+          <label
+            class="block text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1.5"
+            >Orden</label
+          >
           <input
             type="number"
             id="profesionOrden"
@@ -185,8 +269,15 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
           />
         </div>
         <div class="flex items-center gap-2">
-          <input type="checkbox" id="profesionActivo" checked class="w-4 h-4 accent-primary rounded" />
-          <label for="profesionActivo" class="text-sm text-neutral-700">Activo</label>
+          <input
+            type="checkbox"
+            id="profesionActivo"
+            checked
+            class="w-4 h-4 accent-primary rounded"
+          />
+          <label for="profesionActivo" class="text-sm text-neutral-700"
+            >Activo</label
+          >
         </div>
       </form>
       <div class="flex justify-end gap-3 px-6 py-4 border-t border-neutral-100">
@@ -208,10 +299,15 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     </div>
   </div>
 
-  <div id="profesionConfirmOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+  <div
+    id="profesionConfirmOverlay"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  >
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
       <div class="px-6 py-5">
-        <h3 class="text-base font-bold text-neutral-900 mb-2">¿Desactivar profesión?</h3>
+        <h3 class="text-base font-bold text-neutral-900 mb-2">
+          ¿Desactivar profesión?
+        </h3>
         <p id="profesionConfirmMessage" class="text-sm text-neutral-500"></p>
       </div>
       <div class="flex justify-end gap-3 px-6 py-4 border-t border-neutral-100">
@@ -231,16 +327,25 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     </div>
   </div>
 
-  <div id="toast" class="fixed top-6 right-6 z-[80] hidden transition-all duration-300 translate-y-[-1rem] opacity-0">
-    <div id="toast-inner" class="flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm">
-      <span id="toast-icon" class="material-symbols-outlined text-xl" aria-hidden="true"></span>
+  <div
+    id="toast"
+    class="fixed top-6 right-6 z-[80] hidden transition-all duration-300 translate-y-[-1rem] opacity-0"
+  >
+    <div
+      id="toast-inner"
+      class="flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm"
+    >
+      <span
+        id="toast-icon"
+        class="material-symbols-outlined text-xl"
+        aria-hidden="true"></span>
       <span id="toast-msg"></span>
     </div>
   </div>
 
   <script>
-    import { getToken, restoreSession } from '../../services/authService';
-    import { api } from '../../services/apiClient';
+    import { getToken, restoreSession } from "../../services/authService";
+    import { api } from "../../services/apiClient";
     import {
       createProfesion,
       deleteProfesion,
@@ -251,49 +356,101 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       type ProfessionCategory,
       type ProfessionCategoryDetail,
       type UpdateProfesionPayload,
-    } from '../../services/adminProfessionCategoriesService';
+    } from "../../services/adminProfessionCategoriesService";
 
     restoreSession();
     const token = getToken();
-    if (token) api.setHeader('Authorization', `Bearer ${token}`);
+    if (token) api.setHeader("Authorization", `Bearer ${token}`);
 
-    const errorState = document.getElementById('errorState') as HTMLDivElement;
-    const mainContent = document.getElementById('mainContent') as HTMLDivElement;
-    const breadcrumbRubro = document.getElementById('breadcrumbRubro') as HTMLAnchorElement;
-    const breadcrumbSubrubro = document.getElementById('breadcrumbSubrubro') as HTMLSpanElement;
-    const pageTitle = document.getElementById('pageTitle') as HTMLHeadingElement;
-    const metricTotal = document.getElementById('metricTotal') as HTMLParagraphElement;
-    const metricActivas = document.getElementById('metricActivas') as HTMLParagraphElement;
-    const metricSubrubro = document.getElementById('metricSubrubro') as HTMLParagraphElement;
-    const tableBody = document.getElementById('tableBody') as HTMLTableSectionElement;
-    const tableCount = document.getElementById('tableCount') as HTMLSpanElement;
-    const searchInput = document.getElementById('searchInput') as HTMLInputElement;
-    const paginationInfo = document.getElementById('paginationInfo') as HTMLParagraphElement;
-    const paginationButtons = document.getElementById('paginationButtons') as HTMLDivElement;
-    const addButton = document.getElementById('btnAgregarProfesion') as HTMLButtonElement;
-    const modalOverlay = document.getElementById('profesionModalOverlay') as HTMLDivElement;
-    const modalTitle = document.getElementById('profesionModalTitle') as HTMLHeadingElement;
-    const modalClose = document.getElementById('profesionModalClose') as HTMLButtonElement;
-    const modalCancel = document.getElementById('profesionModalCancelBtn') as HTMLButtonElement;
-    const modalSave = document.getElementById('profesionModalSaveBtn') as HTMLButtonElement;
-    const form = document.getElementById('profesionForm') as HTMLFormElement;
-    const idInput = document.getElementById('profesionId') as HTMLInputElement;
-    const slugInput = document.getElementById('profesionSlug') as HTMLInputElement;
-    const subrubroInput = document.getElementById('profesionSubrubroId') as HTMLInputElement;
-    const nameInput = document.getElementById('profesionNombre') as HTMLInputElement;
-    const orderInput = document.getElementById('profesionOrden') as HTMLInputElement;
-    const isActiveInput = document.getElementById('profesionActivo') as HTMLInputElement;
-    const confirmOverlay = document.getElementById('profesionConfirmOverlay') as HTMLDivElement;
-    const confirmMessage = document.getElementById('profesionConfirmMessage') as HTMLParagraphElement;
-    const confirmCancel = document.getElementById('profesionConfirmCancelBtn') as HTMLButtonElement;
-    const confirmDelete = document.getElementById('profesionConfirmDeleteBtn') as HTMLButtonElement;
-    const toast = document.getElementById('toast') as HTMLDivElement;
-    const toastInner = document.getElementById('toast-inner') as HTMLDivElement;
-    const toastIcon = document.getElementById('toast-icon') as HTMLSpanElement;
-    const toastMsg = document.getElementById('toast-msg') as HTMLSpanElement;
+    const errorState = document.getElementById("errorState") as HTMLDivElement;
+    const mainContent = document.getElementById(
+      "mainContent",
+    ) as HTMLDivElement;
+    const breadcrumbRubro = document.getElementById(
+      "breadcrumbRubro",
+    ) as HTMLAnchorElement;
+    const breadcrumbSubrubro = document.getElementById(
+      "breadcrumbSubrubro",
+    ) as HTMLSpanElement;
+    const pageTitle = document.getElementById(
+      "pageTitle",
+    ) as HTMLHeadingElement;
+    const metricTotal = document.getElementById(
+      "metricTotal",
+    ) as HTMLParagraphElement;
+    const metricActivas = document.getElementById(
+      "metricActivas",
+    ) as HTMLParagraphElement;
+    const metricSubrubro = document.getElementById(
+      "metricSubrubro",
+    ) as HTMLParagraphElement;
+    const tableBody = document.getElementById(
+      "tableBody",
+    ) as HTMLTableSectionElement;
+    const tableCount = document.getElementById("tableCount") as HTMLSpanElement;
+    const searchInput = document.getElementById(
+      "searchInput",
+    ) as HTMLInputElement;
+    const paginationInfo = document.getElementById(
+      "paginationInfo",
+    ) as HTMLParagraphElement;
+    const paginationButtons = document.getElementById(
+      "paginationButtons",
+    ) as HTMLDivElement;
+    const addButton = document.getElementById(
+      "btnAgregarProfesion",
+    ) as HTMLButtonElement;
+    const modalOverlay = document.getElementById(
+      "profesionModalOverlay",
+    ) as HTMLDivElement;
+    const modalTitle = document.getElementById(
+      "profesionModalTitle",
+    ) as HTMLHeadingElement;
+    const modalClose = document.getElementById(
+      "profesionModalClose",
+    ) as HTMLButtonElement;
+    const modalCancel = document.getElementById(
+      "profesionModalCancelBtn",
+    ) as HTMLButtonElement;
+    const modalSave = document.getElementById(
+      "profesionModalSaveBtn",
+    ) as HTMLButtonElement;
+    const form = document.getElementById("profesionForm") as HTMLFormElement;
+    const idInput = document.getElementById("profesionId") as HTMLInputElement;
+    const slugInput = document.getElementById(
+      "profesionSlug",
+    ) as HTMLInputElement;
+    const subrubroInput = document.getElementById(
+      "profesionSubrubroId",
+    ) as HTMLInputElement;
+    const nameInput = document.getElementById(
+      "profesionNombre",
+    ) as HTMLInputElement;
+    const orderInput = document.getElementById(
+      "profesionOrden",
+    ) as HTMLInputElement;
+    const isActiveInput = document.getElementById(
+      "profesionActivo",
+    ) as HTMLInputElement;
+    const confirmOverlay = document.getElementById(
+      "profesionConfirmOverlay",
+    ) as HTMLDivElement;
+    const confirmMessage = document.getElementById(
+      "profesionConfirmMessage",
+    ) as HTMLParagraphElement;
+    const confirmCancel = document.getElementById(
+      "profesionConfirmCancelBtn",
+    ) as HTMLButtonElement;
+    const confirmDelete = document.getElementById(
+      "profesionConfirmDeleteBtn",
+    ) as HTMLButtonElement;
+    const toast = document.getElementById("toast") as HTMLDivElement;
+    const toastInner = document.getElementById("toast-inner") as HTMLDivElement;
+    const toastIcon = document.getElementById("toast-icon") as HTMLSpanElement;
+    const toastMsg = document.getElementById("toast-msg") as HTMLSpanElement;
 
     const params = new URLSearchParams(window.location.search);
-    const subrubroId = Number(params.get('subrubroId'));
+    const subrubroId = Number(params.get("subrubroId"));
 
     let profesiones: ProfessionCategory[] = [];
     let filtered: ProfessionCategory[] = [];
@@ -304,79 +461,86 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     let editingId: number | null = null;
     let toastTimeout: ReturnType<typeof setTimeout>;
 
-    function showToast(message: string, type: 'success' | 'error' = 'success') {
+    function showToast(message: string, type: "success" | "error" = "success") {
       toastMsg.textContent = message;
-      toastInner.className = 'flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm';
-      if (type === 'success') {
-        toastInner.classList.add('bg-primary-container', 'text-on-primary-container');
-        toastIcon.textContent = 'check_circle';
+      toastInner.className =
+        "flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm";
+      if (type === "success") {
+        toastInner.classList.add(
+          "bg-primary-container",
+          "text-on-primary-container",
+        );
+        toastIcon.textContent = "check_circle";
       } else {
-        toastInner.classList.add('bg-error-container', 'text-on-error-container');
-        toastIcon.textContent = 'error';
+        toastInner.classList.add(
+          "bg-error-container",
+          "text-on-error-container",
+        );
+        toastIcon.textContent = "error";
       }
-      toast.classList.remove('hidden');
+      toast.classList.remove("hidden");
       requestAnimationFrame(() => {
-        toast.classList.remove('translate-y-[-1rem]', 'opacity-0');
-        toast.classList.add('translate-y-0', 'opacity-100');
+        toast.classList.remove("translate-y-[-1rem]", "opacity-0");
+        toast.classList.add("translate-y-0", "opacity-100");
       });
       clearTimeout(toastTimeout);
       toastTimeout = setTimeout(() => {
-        toast.classList.add('translate-y-[-1rem]', 'opacity-0');
-        toast.classList.remove('translate-y-0', 'opacity-100');
-        setTimeout(() => toast.classList.add('hidden'), 300);
+        toast.classList.add("translate-y-[-1rem]", "opacity-0");
+        toast.classList.remove("translate-y-0", "opacity-100");
+        setTimeout(() => toast.classList.add("hidden"), 300);
       }, 3000);
     }
 
     function escapeHtml(value: string): string {
       return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
     }
 
     function generateSlug(text: string) {
       const stopwords = new Set([
-        'de',
-        'del',
-        'la',
-        'las',
-        'el',
-        'los',
-        'un',
-        'una',
-        'unos',
-        'unas',
-        'y',
-        'e',
-        'o',
-        'u',
-        'a',
-        'ante',
-        'bajo',
-        'con',
-        'en',
-        'entre',
-        'hacia',
-        'hasta',
-        'para',
-        'por',
-        'sin',
-        'sobre',
-        'tras',
-        'al',
-        'lo',
+        "de",
+        "del",
+        "la",
+        "las",
+        "el",
+        "los",
+        "un",
+        "una",
+        "unos",
+        "unas",
+        "y",
+        "e",
+        "o",
+        "u",
+        "a",
+        "ante",
+        "bajo",
+        "con",
+        "en",
+        "entre",
+        "hacia",
+        "hasta",
+        "para",
+        "por",
+        "sin",
+        "sobre",
+        "tras",
+        "al",
+        "lo",
       ]);
       return text
         .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9\s-]/g, '')
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9\s-]/g, "")
         .trim()
         .split(/\s+/)
         .filter((word) => word.length > 0 && !stopwords.has(word))
-        .join('-');
+        .join("-");
     }
 
     function setLoadingTable(message: string) {
@@ -393,10 +557,15 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
     function getErrorMessage(error: any): string | null {
       const body = error?.body;
-      if (body && typeof body === 'object' && 'message' in body && typeof body.message === 'string') {
+      if (
+        body &&
+        typeof body === "object" &&
+        "message" in body &&
+        typeof body.message === "string"
+      ) {
         return body.message;
       }
-      if (typeof body === 'string') return body;
+      if (typeof body === "string") return body;
       return null;
     }
 
@@ -411,23 +580,25 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
           breadcrumbRubro.textContent = subrubro.parent.name.toUpperCase();
           breadcrumbRubro.href = `/admin/subrubros?rubroId=${subrubro.parent.id}`;
         } else {
-          breadcrumbRubro.textContent = 'CATEGORÍAS';
-          breadcrumbRubro.href = '/admin/categorias';
+          breadcrumbRubro.textContent = "CATEGORÍAS";
+          breadcrumbRubro.href = "/admin/categorias";
         }
 
-        setLoadingTable('Cargando profesiones...');
+        setLoadingTable("Cargando profesiones...");
         profesiones = await getProfesiones(subrubroId);
         filtered = [...profesiones];
         updateMetrics();
         renderTable();
       } catch (error: any) {
-        showToast('Error al cargar los datos', 'error');
+        showToast("Error al cargar los datos", "error");
       }
     }
 
     function updateMetrics() {
       metricTotal.textContent = String(profesiones.length);
-      metricActivas.textContent = String(profesiones.filter((item) => item.isActive).length);
+      metricActivas.textContent = String(
+        profesiones.filter((item) => item.isActive).length,
+      );
       tableCount.textContent = `${filtered.length} ENTRIES`;
     }
 
@@ -445,7 +616,9 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
           .map((profesion) => {
             const safeName = escapeHtml(profesion.name);
             const safeSlug = escapeHtml(profesion.slug);
-            const nameForJs = profesion.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            const nameForJs = profesion.name
+              .replace(/\\/g, "\\\\")
+              .replace(/'/g, "\\'");
             return `
               <tr class="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
                 <td class="px-6 py-4">
@@ -487,7 +660,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
                 </td>
               </tr>`;
           })
-          .join('');
+          .join("");
       }
 
       renderPagination();
@@ -503,10 +676,10 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
       const btnClass = (active: boolean) =>
         active
-          ? 'px-3 py-1.5 text-sm font-semibold text-white bg-primary rounded-lg'
-          : 'px-3 py-1.5 text-sm font-semibold text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors';
+          ? "px-3 py-1.5 text-sm font-semibold text-white bg-primary rounded-lg"
+          : "px-3 py-1.5 text-sm font-semibold text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors";
 
-      let html = `<button onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-1.5 text-sm font-semibold text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors disabled:opacity-40">Previous</button>`;
+      let html = `<button onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? "disabled" : ""} class="px-3 py-1.5 text-sm font-semibold text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors disabled:opacity-40">Previous</button>`;
       let startPage = Math.max(1, currentPage - 2);
       let endPage = Math.min(totalPages, startPage + 4);
       if (endPage - startPage < 4) {
@@ -515,7 +688,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       for (let i = startPage; i <= endPage; i += 1) {
         html += `<button onclick="goPage(${i})" class="${btnClass(i === currentPage)}">${i}</button>`;
       }
-      html += `<button onclick="goPage(${currentPage + 1})" ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''} class="px-3 py-1.5 text-sm font-semibold text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors disabled:opacity-40">Next</button>`;
+      html += `<button onclick="goPage(${currentPage + 1})" ${currentPage === totalPages || totalPages === 0 ? "disabled" : ""} class="px-3 py-1.5 text-sm font-semibold text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors disabled:opacity-40">Next</button>`;
       paginationButtons.innerHTML = html;
     }
 
@@ -531,14 +704,14 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     function openCreateModal() {
       editingId = null;
       form.reset();
-      idInput.value = '';
-      slugInput.value = '';
-      orderInput.value = '0';
+      idInput.value = "";
+      slugInput.value = "";
+      orderInput.value = "0";
       isActiveInput.checked = true;
       subrubroInput.value = String(subrubroId);
-      modalTitle.textContent = 'Agregar Profesión';
-      modalOverlay.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
+      modalTitle.textContent = "Agregar Profesión";
+      modalOverlay.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
       nameInput.focus();
     }
 
@@ -552,31 +725,31 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       orderInput.value = String(profesion.order ?? 0);
       isActiveInput.checked = profesion.isActive;
       subrubroInput.value = String(subrubroId);
-      modalTitle.textContent = 'Editar Profesión';
-      modalOverlay.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
+      modalTitle.textContent = "Editar Profesión";
+      modalOverlay.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
     }
 
     window.openEditModal = openEditModal;
 
     function closeModal() {
-      modalOverlay.classList.add('hidden');
-      document.body.style.overflow = '';
+      modalOverlay.classList.add("hidden");
+      document.body.style.overflow = "";
     }
 
     function openConfirm(id: number, name: string) {
       pendingDeleteId = id;
       confirmMessage.textContent = `¿Desactivar la profesión "${name}"? Esta acción puede revertirse con PATCH isActive: true.`;
-      confirmOverlay.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
+      confirmOverlay.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
     }
 
     window.openConfirm = openConfirm;
 
     function closeConfirm() {
       pendingDeleteId = null;
-      confirmOverlay.classList.add('hidden');
-      document.body.style.overflow = '';
+      confirmOverlay.classList.add("hidden");
+      document.body.style.overflow = "";
     }
 
     async function reloadProfesiones() {
@@ -590,7 +763,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     async function handleSubmit() {
       const nombre = nameInput.value.trim();
       if (!nombre) {
-        showToast('El nombre es requerido', 'error');
+        showToast("El nombre es requerido", "error");
         return;
       }
       const slug = slugInput.value.trim();
@@ -606,7 +779,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
           };
           if (slug) payload.slug = slug;
           await updateProfesion(editingId, payload);
-          showToast('Profesión actualizada correctamente', 'success');
+          showToast("Profesión actualizada correctamente", "success");
         } else {
           const payload: CreateProfesionPayload = {
             name: nombre,
@@ -616,16 +789,19 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
           };
           if (slug) payload.slug = slug;
           await createProfesion(payload);
-          showToast('Profesión creada correctamente', 'success');
+          showToast("Profesión creada correctamente", "success");
         }
         closeModal();
         await reloadProfesiones();
       } catch (error: any) {
-        if (error?.status === 409 || String(error?.message || '').includes('409')) {
-          showToast('El slug ya existe', 'error');
+        if (
+          error?.status === 409 ||
+          String(error?.message || "").includes("409")
+        ) {
+          showToast("El slug ya existe", "error");
           return;
         }
-        showToast('Error al guardar la profesión', 'error');
+        showToast("Error al guardar la profesión", "error");
       }
     }
 
@@ -634,31 +810,35 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       try {
         await deleteProfesion(pendingDeleteId);
         closeConfirm();
-        showToast('Profesión desactivada correctamente', 'success');
+        showToast("Profesión desactivada correctamente", "success");
         await reloadProfesiones();
       } catch (error: any) {
         closeConfirm();
         if (error?.status === 400) {
-          const message = getErrorMessage(error) || 'No se puede desactivar: tiene profesionales o documentos asociados';
-          showToast(message, 'error');
+          const message =
+            getErrorMessage(error) ||
+            "No se puede desactivar: tiene profesionales o documentos asociados";
+          showToast(message, "error");
           return;
         }
-        showToast('Error al desactivar', 'error');
+        showToast("Error al desactivar", "error");
       }
     }
 
     if (Number.isNaN(subrubroId)) {
-      errorState.classList.remove('hidden');
+      errorState.classList.remove("hidden");
     } else {
-      mainContent.classList.remove('hidden');
+      mainContent.classList.remove("hidden");
       void init();
     }
 
-    searchInput.addEventListener('input', () => {
+    searchInput.addEventListener("input", () => {
       const q = searchInput.value.toLowerCase().trim();
       filtered = q
         ? profesiones.filter(
-            (item) => item.name.toLowerCase().includes(q) || item.slug.toLowerCase().includes(q),
+            (item) =>
+              item.name.toLowerCase().includes(q) ||
+              item.slug.toLowerCase().includes(q),
           )
         : [...profesiones];
       currentPage = 1;
@@ -666,30 +846,28 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       renderTable();
     });
 
-    nameInput.addEventListener('input', () => {
+    nameInput.addEventListener("input", () => {
       if (!editingId) {
         slugInput.value = generateSlug(nameInput.value);
       }
     });
 
-    addButton.addEventListener('click', openCreateModal);
-    modalClose.addEventListener('click', closeModal);
-    modalCancel.addEventListener('click', closeModal);
-    modalOverlay.addEventListener('click', (event) => {
+    addButton.addEventListener("click", openCreateModal);
+    modalClose.addEventListener("click", closeModal);
+    modalCancel.addEventListener("click", closeModal);
+    modalOverlay.addEventListener("click", (event) => {
       if (event.target === modalOverlay) closeModal();
     });
-    modalSave.addEventListener('click', () => form.requestSubmit());
-    form.addEventListener('submit', (event) => {
+    modalSave.addEventListener("click", () => form.requestSubmit());
+    form.addEventListener("submit", (event) => {
       event.preventDefault();
       void handleSubmit();
     });
 
-    confirmCancel.addEventListener('click', closeConfirm);
-    confirmOverlay.addEventListener('click', (event) => {
+    confirmCancel.addEventListener("click", closeConfirm);
+    confirmOverlay.addEventListener("click", (event) => {
       if (event.target === confirmOverlay) closeConfirm();
     });
-    confirmDelete.addEventListener('click', () => void handleDelete());
+    confirmDelete.addEventListener("click", () => void handleDelete());
   </script>
 </AdminLayout>
-
-<!-- Traceability: generated by Programmer at 2026-05-20 17:39:39 -->

@@ -1,14 +1,18 @@
 ---
-import ConfirmModal from '../../components/ConfirmModal.astro';
-import AdminLayout from '../../layouts/AdminLayout.astro';
+import ConfirmModal from "../../components/ConfirmModal.astro";
+import AdminLayout from "../../layouts/AdminLayout.astro";
 ---
 
 <AdminLayout title="TRAMA Admin - Categorías">
   <ConfirmModal />
   <header class="mb-8 flex flex-wrap items-center justify-between gap-4">
     <div>
-      <p class="text-xs font-bold uppercase tracking-widest text-primary">INICIO › RUBROS</p>
-      <h1 class="text-3xl font-black text-on-surface tracking-tighter mt-2">Gestión de Jerarquía</h1>
+      <p class="text-xs font-bold uppercase tracking-widest text-primary">
+        INICIO › RUBROS
+      </p>
+      <h1 class="text-3xl font-black text-on-surface tracking-tighter mt-2">
+        Gestión de Jerarquía
+      </h1>
       <p class="text-on-surface-variant font-medium mt-2 text-sm">
         Administre los niveles de rubros, subrubros y las profesiones asociadas.
       </p>
@@ -23,41 +27,94 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   </header>
 
   <section>
-    <div id="rubros-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+    <div
+      id="rubros-grid"
+      class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+    >
+    </div>
   </section>
 
   <section class="mt-10">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-extrabold text-on-surface tracking-tight">Resumen de Catálogo</h2>
+      <h2 class="text-lg font-extrabold text-on-surface tracking-tight">
+        Resumen de Catálogo
+      </h2>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-5">
-        <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Rubros Totales</p>
-        <p id="summary-rubros" class="text-2xl font-black text-on-surface mt-2">—</p>
+      <div
+        class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-5"
+      >
+        <p
+          class="text-xs font-bold uppercase tracking-widest text-on-surface-variant"
+        >
+          Rubros Totales
+        </p>
+        <p id="summary-rubros" class="text-2xl font-black text-on-surface mt-2">
+          —
+        </p>
       </div>
-      <div class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-5">
-        <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Subrubros Activos</p>
-        <p id="summary-subrubros" class="text-2xl font-black text-on-surface mt-2">—</p>
+      <div
+        class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-5"
+      >
+        <p
+          class="text-xs font-bold uppercase tracking-widest text-on-surface-variant"
+        >
+          Subrubros Activos
+        </p>
+        <p
+          id="summary-subrubros"
+          class="text-2xl font-black text-on-surface mt-2"
+        >
+          —
+        </p>
       </div>
-      <div class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-5">
-        <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Profesionales Registrados</p>
-        <p id="summary-profesionales" class="text-2xl font-black text-on-surface mt-2">—</p>
+      <div
+        class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-5"
+      >
+        <p
+          class="text-xs font-bold uppercase tracking-widest text-on-surface-variant"
+        >
+          Profesionales Registrados
+        </p>
+        <p
+          id="summary-profesionales"
+          class="text-2xl font-black text-on-surface mt-2"
+        >
+          —
+        </p>
       </div>
     </div>
   </section>
 
-  <div id="rubroModalOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+  <div
+    id="rubroModalOverlay"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+  >
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-      <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
-        <h3 id="rubroModalTitle" class="text-lg font-bold text-neutral-900">Agregar Rubro</h3>
+      <div
+        class="flex items-center justify-between px-6 py-4 border-b border-neutral-100"
+      >
+        <h3 id="rubroModalTitle" class="text-lg font-bold text-neutral-900">
+          Agregar Rubro
+        </h3>
         <button
           id="rubroModalClose"
           type="button"
           class="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
           aria-label="Cerrar"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 18L18 6M6 6l12 12"></path>
           </svg>
         </button>
       </div>
@@ -66,7 +123,10 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         <input type="hidden" id="rubroId" />
         <input type="hidden" id="rubroSlug" name="slug" />
         <div>
-          <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1.5">Nombre</label>
+          <label
+            class="block text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1.5"
+            >Nombre</label
+          >
           <input
             type="text"
             id="rubroNombre"
@@ -76,7 +136,10 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
           />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1.5">Orden</label>
+          <label
+            class="block text-xs font-semibold text-neutral-500 uppercase tracking-wide mb-1.5"
+            >Orden</label
+          >
           <input
             type="number"
             id="rubroOrden"
@@ -87,8 +150,16 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
           />
         </div>
         <div class="flex items-center gap-2">
-          <input type="checkbox" id="rubroActivo" name="isActive" checked class="w-4 h-4 accent-primary rounded" />
-          <label for="rubroActivo" class="text-sm text-neutral-700">Activo</label>
+          <input
+            type="checkbox"
+            id="rubroActivo"
+            name="isActive"
+            checked
+            class="w-4 h-4 accent-primary rounded"
+          />
+          <label for="rubroActivo" class="text-sm text-neutral-700"
+            >Activo</label
+          >
         </div>
       </form>
 
@@ -111,16 +182,25 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     </div>
   </div>
 
-  <div id="toast" class="fixed top-6 right-6 z-[80] hidden transition-all duration-300 translate-y-[-1rem] opacity-0">
-    <div id="toast-inner" class="flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm">
-      <span id="toast-icon" class="material-symbols-outlined text-xl" aria-hidden="true"></span>
+  <div
+    id="toast"
+    class="fixed top-6 right-6 z-[80] hidden transition-all duration-300 translate-y-[-1rem] opacity-0"
+  >
+    <div
+      id="toast-inner"
+      class="flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm"
+    >
+      <span
+        id="toast-icon"
+        class="material-symbols-outlined text-xl"
+        aria-hidden="true"></span>
       <span id="toast-msg"></span>
     </div>
   </div>
 
   <script>
-    import { getToken, restoreSession } from '../../services/authService';
-    import { api } from '../../services/apiClient';
+    import { getToken, restoreSession } from "../../services/authService";
+    import { api } from "../../services/apiClient";
     import {
       createRubro,
       deleteRubro,
@@ -130,111 +210,142 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       type CreateRubroPayload,
       type ProfessionCategory,
       type UpdateRubroPayload,
-    } from '../../services/adminProfessionCategoriesService';
+    } from "../../services/adminProfessionCategoriesService";
 
     restoreSession();
     const token = getToken();
-    if (token) api.setHeader('Authorization', `Bearer ${token}`);
+    if (token) api.setHeader("Authorization", `Bearer ${token}`);
 
     let rubros: ProfessionCategory[] = [];
     let subrubros: ProfessionCategory[] = [];
-    let currentMode: 'create' | 'edit' = 'create';
+    let currentMode: "create" | "edit" = "create";
     let editingRubroId: number | null = null;
     let toastTimeout: ReturnType<typeof setTimeout>;
 
-    const rubrosGrid = document.getElementById('rubros-grid') as HTMLDivElement;
-    const summaryRubros = document.getElementById('summary-rubros') as HTMLParagraphElement;
-    const summarySubrubros = document.getElementById('summary-subrubros') as HTMLParagraphElement;
-    const summaryProfesionales = document.getElementById('summary-profesionales') as HTMLParagraphElement;
-    const addButton = document.getElementById('btn-add-rubro') as HTMLButtonElement;
-    const modalOverlay = document.getElementById('rubroModalOverlay') as HTMLDivElement;
-    const modalTitle = document.getElementById('rubroModalTitle') as HTMLHeadingElement;
-    const closeModalButton = document.getElementById('rubroModalClose') as HTMLButtonElement;
-    const cancelButton = document.getElementById('rubroModalCancelBtn') as HTMLButtonElement;
-    const saveButton = document.getElementById('rubroModalSaveBtn') as HTMLButtonElement;
-    const form = document.getElementById('rubroForm') as HTMLFormElement;
-    const nameInput = document.getElementById('rubroNombre') as HTMLInputElement;
-    const slugInput = document.getElementById('rubroSlug') as HTMLInputElement;
-    const orderInput = document.getElementById('rubroOrden') as HTMLInputElement;
-    const isActiveInput = document.getElementById('rubroActivo') as HTMLInputElement;
-    const toast = document.getElementById('toast') as HTMLDivElement;
-    const toastInner = document.getElementById('toast-inner') as HTMLDivElement;
-    const toastIcon = document.getElementById('toast-icon') as HTMLSpanElement;
-    const toastMsg = document.getElementById('toast-msg') as HTMLSpanElement;
+    const rubrosGrid = document.getElementById("rubros-grid") as HTMLDivElement;
+    const summaryRubros = document.getElementById(
+      "summary-rubros",
+    ) as HTMLParagraphElement;
+    const summarySubrubros = document.getElementById(
+      "summary-subrubros",
+    ) as HTMLParagraphElement;
+    const summaryProfesionales = document.getElementById(
+      "summary-profesionales",
+    ) as HTMLParagraphElement;
+    const addButton = document.getElementById(
+      "btn-add-rubro",
+    ) as HTMLButtonElement;
+    const modalOverlay = document.getElementById(
+      "rubroModalOverlay",
+    ) as HTMLDivElement;
+    const modalTitle = document.getElementById(
+      "rubroModalTitle",
+    ) as HTMLHeadingElement;
+    const closeModalButton = document.getElementById(
+      "rubroModalClose",
+    ) as HTMLButtonElement;
+    const cancelButton = document.getElementById(
+      "rubroModalCancelBtn",
+    ) as HTMLButtonElement;
+    const saveButton = document.getElementById(
+      "rubroModalSaveBtn",
+    ) as HTMLButtonElement;
+    const form = document.getElementById("rubroForm") as HTMLFormElement;
+    const nameInput = document.getElementById(
+      "rubroNombre",
+    ) as HTMLInputElement;
+    const slugInput = document.getElementById("rubroSlug") as HTMLInputElement;
+    const orderInput = document.getElementById(
+      "rubroOrden",
+    ) as HTMLInputElement;
+    const isActiveInput = document.getElementById(
+      "rubroActivo",
+    ) as HTMLInputElement;
+    const toast = document.getElementById("toast") as HTMLDivElement;
+    const toastInner = document.getElementById("toast-inner") as HTMLDivElement;
+    const toastIcon = document.getElementById("toast-icon") as HTMLSpanElement;
+    const toastMsg = document.getElementById("toast-msg") as HTMLSpanElement;
 
-    function showToast(message: string, type: 'success' | 'error' = 'success') {
+    function showToast(message: string, type: "success" | "error" = "success") {
       toastMsg.textContent = message;
-      toastInner.className = 'flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm';
-      if (type === 'success') {
-        toastInner.classList.add('bg-primary-container', 'text-on-primary-container');
-        toastIcon.textContent = 'check_circle';
+      toastInner.className =
+        "flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm";
+      if (type === "success") {
+        toastInner.classList.add(
+          "bg-primary-container",
+          "text-on-primary-container",
+        );
+        toastIcon.textContent = "check_circle";
       } else {
-        toastInner.classList.add('bg-error-container', 'text-on-error-container');
-        toastIcon.textContent = 'error';
+        toastInner.classList.add(
+          "bg-error-container",
+          "text-on-error-container",
+        );
+        toastIcon.textContent = "error";
       }
-      toast.classList.remove('hidden');
+      toast.classList.remove("hidden");
       requestAnimationFrame(() => {
-        toast.classList.remove('translate-y-[-1rem]', 'opacity-0');
-        toast.classList.add('translate-y-0', 'opacity-100');
+        toast.classList.remove("translate-y-[-1rem]", "opacity-0");
+        toast.classList.add("translate-y-0", "opacity-100");
       });
       clearTimeout(toastTimeout);
       toastTimeout = setTimeout(() => {
-        toast.classList.add('translate-y-[-1rem]', 'opacity-0');
-        toast.classList.remove('translate-y-0', 'opacity-100');
-        setTimeout(() => toast.classList.add('hidden'), 300);
+        toast.classList.add("translate-y-[-1rem]", "opacity-0");
+        toast.classList.remove("translate-y-0", "opacity-100");
+        setTimeout(() => toast.classList.add("hidden"), 300);
       }, 3000);
     }
 
     function escapeHtml(value: string): string {
       return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
     }
 
     function generateSlug(text: string) {
       const stopwords = new Set([
-        'de',
-        'del',
-        'la',
-        'las',
-        'el',
-        'los',
-        'un',
-        'una',
-        'unos',
-        'unas',
-        'y',
-        'e',
-        'o',
-        'u',
-        'a',
-        'ante',
-        'bajo',
-        'con',
-        'en',
-        'entre',
-        'hacia',
-        'hasta',
-        'para',
-        'por',
-        'sin',
-        'sobre',
-        'tras',
-        'al',
-        'lo',
+        "de",
+        "del",
+        "la",
+        "las",
+        "el",
+        "los",
+        "un",
+        "una",
+        "unos",
+        "unas",
+        "y",
+        "e",
+        "o",
+        "u",
+        "a",
+        "ante",
+        "bajo",
+        "con",
+        "en",
+        "entre",
+        "hacia",
+        "hasta",
+        "para",
+        "por",
+        "sin",
+        "sobre",
+        "tras",
+        "al",
+        "lo",
       ]);
       return text
         .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9\s-]/g, '')
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9\s-]/g, "")
         .trim()
         .split(/\s+/)
         .filter((word) => word.length > 0 && !stopwords.has(word))
-        .join('-');
+        .join("-");
     }
 
     function setLoadingGrid(message: string) {
@@ -270,12 +381,12 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       const subrubroCounts = getSubrubroCounts();
       rubrosGrid.innerHTML = rubros
         .map((rubro) => {
-          const description = rubro.bio?.trim() ?? '';
+          const description = rubro.bio?.trim() ?? "";
           const subrubroCount = subrubroCounts.get(rubro.id) ?? 0;
           return `
             <article class="bg-surface-container-low rounded-2xl shadow-sm hover:shadow-md p-6 border border-outline-variant/10 transition-shadow">
               <h3 class="text-lg font-bold text-on-surface">${escapeHtml(rubro.name)}</h3>
-              ${description ? `<p class="text-sm text-on-surface-variant line-clamp-3 mb-3">${escapeHtml(description)}</p>` : ''}
+              ${description ? `<p class="text-sm text-on-surface-variant line-clamp-3 mb-3">${escapeHtml(description)}</p>` : ""}
               <div class="my-4 h-px bg-outline-variant/15"></div>
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
@@ -311,7 +422,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
               </div>
             </article>`;
         })
-        .join('');
+        .join("");
 
       rubrosGrid.innerHTML += `
         <button
@@ -329,29 +440,32 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
     function updateSummary() {
       summaryRubros.textContent = String(rubros.length);
-      summarySubrubros.textContent = String(subrubros.filter((item) => item.isActive).length);
-      summaryProfesionales.textContent = '—';
+      summarySubrubros.textContent = String(
+        subrubros.filter((item) => item.isActive).length,
+      );
+      summaryProfesionales.textContent = "—";
     }
 
     function openRubroModal() {
-      modalOverlay.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
+      modalOverlay.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
     }
 
     function closeRubroModal() {
-      modalOverlay.classList.add('hidden');
-      document.body.style.overflow = '';
+      modalOverlay.classList.add("hidden");
+      document.body.style.overflow = "";
     }
 
-    function openModal(mode: 'create' | 'edit', rubro?: ProfessionCategory) {
+    function openModal(mode: "create" | "edit", rubro?: ProfessionCategory) {
       currentMode = mode;
-      modalTitle.textContent = mode === 'create' ? 'Agregar Rubro' : 'Editar Rubro';
-      if (mode === 'create') {
+      modalTitle.textContent =
+        mode === "create" ? "Agregar Rubro" : "Editar Rubro";
+      if (mode === "create") {
         editingRubroId = null;
         form.reset();
-        orderInput.value = '0';
+        orderInput.value = "0";
         isActiveInput.checked = true;
-        slugInput.value = '';
+        slugInput.value = "";
       } else if (rubro) {
         editingRubroId = rubro.id;
         nameInput.value = rubro.name;
@@ -375,17 +489,25 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
     function getErrorMessage(error: any): string | null {
       const body = error?.body;
-      if (body && typeof body === 'object' && 'message' in body && typeof body.message === 'string') {
+      if (
+        body &&
+        typeof body === "object" &&
+        "message" in body &&
+        typeof body.message === "string"
+      ) {
         return body.message;
       }
-      if (typeof body === 'string') return body;
+      if (typeof body === "string") return body;
       return null;
     }
 
     async function loadRubros() {
-      setLoadingGrid('Cargando rubros...');
+      setLoadingGrid("Cargando rubros...");
       try {
-        const [rubrosList, subrubrosList] = await Promise.all([getRubros(), getSubrubros()]);
+        const [rubrosList, subrubrosList] = await Promise.all([
+          getRubros(),
+          getSubrubros(),
+        ]);
         rubros = rubrosList;
         subrubros = subrubrosList;
         renderRubrosGrid();
@@ -395,7 +517,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
           <div class="col-span-full text-center py-16 text-error">
             <span class="material-symbols-outlined text-4xl mb-3 block" aria-hidden="true">error</span>
             <p class="text-sm font-bold">Error al cargar rubros</p>
-            <p class="text-xs mt-1">${escapeHtml(error?.message || 'Error desconocido')}</p>
+            <p class="text-xs mt-1">${escapeHtml(error?.message || "Error desconocido")}</p>
           </div>`;
       }
     }
@@ -403,49 +525,50 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     async function handleSubmit(event: Event) {
       event.preventDefault();
       if (!nameInput.value.trim()) {
-        showToast('El nombre es obligatorio', 'error');
+        showToast("El nombre es obligatorio", "error");
         return;
       }
       const payload = getPayload();
       try {
-        if (currentMode === 'create') {
+        if (currentMode === "create") {
           await createRubro(payload);
-          showToast('Rubro agregado');
+          showToast("Rubro agregado");
         } else if (editingRubroId !== null) {
           const updatePayload: UpdateRubroPayload = payload;
           await updateRubro(editingRubroId, updatePayload);
-          showToast('Rubro actualizado');
+          showToast("Rubro actualizado");
         }
         closeRubroModal();
         await loadRubros();
       } catch (error: any) {
         if (error?.status === 409) {
-          showToast('El slug ya existe', 'error');
+          showToast("El slug ya existe", "error");
           return;
         }
-        showToast('No se pudo guardar el rubro', 'error');
+        showToast("No se pudo guardar el rubro", "error");
       }
     }
 
     function askDeactivate(rubro: ProfessionCategory) {
       (window as any).openConfirmModal({
-        title: '¿Desactivar rubro?',
+        title: "¿Desactivar rubro?",
         body: `¿Desactivar el rubro "${rubro.name}"? Debe no tener subrubros activos.`,
-        confirmText: 'Desactivar',
-        cancelText: 'Cancelar',
-        confirmStyle: 'error',
+        confirmText: "Desactivar",
+        cancelText: "Cancelar",
+        confirmStyle: "error",
         onConfirm: async () => {
           try {
             await deleteRubro(rubro.id);
-            showToast('Rubro desactivado correctamente', 'success');
+            showToast("Rubro desactivado correctamente", "success");
             await loadRubros();
           } catch (error: any) {
             if (error?.status === 400) {
-              const message = getErrorMessage(error) || 'No se pudo desactivar el rubro';
-              showToast(message, 'error');
+              const message =
+                getErrorMessage(error) || "No se pudo desactivar el rubro";
+              showToast(message, "error");
               return;
             }
-            showToast('Error al desactivar', 'error');
+            showToast("Error al desactivar", "error");
           }
         },
       });
@@ -453,41 +576,41 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
     function handleGridClick(event: Event) {
       const target = event.target as HTMLElement;
-      const actionButton = target.closest('[data-action]') as HTMLElement | null;
+      const actionButton = target.closest(
+        "[data-action]",
+      ) as HTMLElement | null;
       if (!actionButton) return;
       const action = actionButton.dataset.action;
       const idValue = actionButton.dataset.id;
-      if (action === 'new') {
-        openModal('create');
+      if (action === "new") {
+        openModal("create");
         return;
       }
       if (!idValue) return;
       const rubroId = Number(idValue);
       const rubro = rubros.find((item) => item.id === rubroId);
       if (!rubro) return;
-      if (action === 'edit') {
-        openModal('edit', rubro);
-      } else if (action === 'delete') {
+      if (action === "edit") {
+        openModal("edit", rubro);
+      } else if (action === "delete") {
         askDeactivate(rubro);
       }
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      addButton.addEventListener('click', () => openModal('create'));
-      closeModalButton.addEventListener('click', closeRubroModal);
-      cancelButton.addEventListener('click', closeRubroModal);
-      saveButton.addEventListener('click', () => form.requestSubmit());
-      modalOverlay.addEventListener('click', (event) => {
+    window.addEventListener("DOMContentLoaded", () => {
+      addButton.addEventListener("click", () => openModal("create"));
+      closeModalButton.addEventListener("click", closeRubroModal);
+      cancelButton.addEventListener("click", closeRubroModal);
+      saveButton.addEventListener("click", () => form.requestSubmit());
+      modalOverlay.addEventListener("click", (event) => {
         if (event.target === modalOverlay) closeRubroModal();
       });
-      form.addEventListener('submit', handleSubmit);
-      nameInput.addEventListener('input', () => {
+      form.addEventListener("submit", handleSubmit);
+      nameInput.addEventListener("input", () => {
         slugInput.value = generateSlug(nameInput.value);
       });
-      rubrosGrid.addEventListener('click', handleGridClick);
+      rubrosGrid.addEventListener("click", handleGridClick);
       void loadRubros();
     });
   </script>
 </AdminLayout>
-
-<!-- Traceability: generated by Programmer at 2026-05-20 16:57:01 -->
