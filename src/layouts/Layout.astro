@@ -11,6 +11,7 @@ interface Props {
 const { title, description = 'Red profesional de talento curado en diseño, arquitectura y tecnología.' } = Astro.props;
 const gtmId = import.meta.env.PUBLIC_GTM_ID;
 const gaId = import.meta.env.PUBLIC_GA_ID;
+const gaScriptSrc = gaId ? `https://www.googletagmanager.com/gtag/js?id=${gaId}` : undefined;
 ---
 
 <!doctype html>
@@ -18,19 +19,19 @@ const gaId = import.meta.env.PUBLIC_GA_ID;
   <head>
     {gtmId && (
       <Fragment>
-        <script is:inline>
-          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtmId}');`}
-        </script>
+        <script
+          set:html={`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtmId}');`}
+        ></script>
       </Fragment>
     )}
     {gaId && (
       <Fragment>
-        <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
-        <script is:inline>
-          {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', '${gaId}');`}
+        <script async src={gaScriptSrc}></script>
+        <script define:vars={{ gaId }}>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', gaId);
         </script>
       </Fragment>
     )}
