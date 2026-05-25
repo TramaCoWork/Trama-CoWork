@@ -19,8 +19,7 @@ export interface ApiFeaturedProfessional {
   id: number;
   name: string;
   photo: string | null;
-  priceMin: number | null;
-  priceMax: number | null;
+  pricePerHour?: number;
   services: string[];
   rubro?: { id: number; slug: string; name: string } | null;
   city?: string | null;
@@ -70,7 +69,7 @@ export async function renderFeaturedSection(containerId: string): Promise<void> 
         const category = pro.rubro?.name ?? (pro.services?.[0] ?? '');
         const city = pro.city ?? '';
         const price =
-          pro.priceMin != null ? `$${pro.priceMin.toLocaleString('es-AR')} ARS /hr.` : '';
+          pro.pricePerHour != null ? `$${pro.pricePerHour.toLocaleString('es-AR')} /hr.` : '';
         return `
         <a href="/profesionales/perfil?id=${pro.id}" class="block group-link h-full">
           <article class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 flex flex-col items-center text-center cursor-pointer group h-full">
@@ -126,8 +125,10 @@ export async function renderFeaturedProfessionals(containerId: string): Promise<
               <h3 class="text-xl font-bold text-on-surface">${pro.name}</h3>
             </div>
             <div class="text-right">
-              <span class="text-xs text-outline block font-medium">Desde</span>
-              <span class="text-lg font-black text-on-surface">$${pro.priceMin}<span class="text-sm font-medium text-outline">/hr</span></span>
+              ${pro.pricePerHour != null
+                ? `<span class="text-xs text-outline block font-medium">Precio por hora</span>
+              <span class="text-lg font-black text-on-surface">$${pro.pricePerHour}<span class="text-sm font-medium text-outline">/hr</span></span>`
+                : ''}
             </div>
           </div>
           <div class="flex items-center gap-1 mb-6" role="img" aria-label="${rating} de 5 estrellas">

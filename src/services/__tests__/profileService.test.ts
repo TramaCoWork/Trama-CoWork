@@ -55,7 +55,7 @@ describe('ProfileService', () => {
       const mockResult = { id: 'prof-1', bio: 'New bio', services: ['Diseno'] };
       (api.patch as any).mockResolvedValue(mockResult);
 
-      const payload = { bio: 'New bio', services: ['Diseno'], priceMin: '50' };
+      const payload = { bio: 'New bio', services: ['Diseno'], pricePerHour: 50 };
       const result = await updateGeneralProfile('prof-1', payload);
 
       expect(api.patch).toHaveBeenCalledWith('/professionals/prof-1', payload);

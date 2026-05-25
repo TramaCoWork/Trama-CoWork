@@ -19,8 +19,7 @@ export interface ProfessionalProfile {
   bio: string | null;
   photo: string | null;
   services: string[];
-  priceMin: string | null;
-  priceMax: string | null;
+  pricePerHour?: number;
   city: string;
   whatsapp: string | null;
   emailContact: string | null;
@@ -36,7 +35,6 @@ export interface ProfessionalProfile {
   birthDate: string | null;
   address?: string;
   linkedin: string | null;
-  pricePerHour: string | null;
   workModality: string | null;
   currentOccupation: string | null;
   workType: string | null;
@@ -60,7 +58,7 @@ export interface PersonalDataPayload {
   address?: string;
   whatsapp?: string;
   linkedin?: string;
-  pricePerHour?: string;
+  pricePerHour?: number;
   workModality?: string;
   countryId?: number;
   provinceId?: number;
@@ -71,8 +69,7 @@ export interface GeneralProfilePayload {
   bio?: string;
   photo?: string;
   services?: string[];
-  priceMin?: string;
-  priceMax?: string;
+  pricePerHour?: number;
   city?: string;
   emailContact?: string;
   whatsapp?: string;

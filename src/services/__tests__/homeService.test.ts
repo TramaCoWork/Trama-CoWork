@@ -40,7 +40,7 @@ describe('HomeService', () => {
 
   describe('fetchFeaturedProfessionals', () => {
     it('llama a /professionals/featured y retorna la lista', async () => {
-      const mockPros = [{ id: 1, name: 'Elena', photo: null, priceMin: 50, priceMax: 100, services: ['Diseno'] }];
+      const mockPros = [{ id: 1, name: 'Elena', photo: null, pricePerHour: 50, services: ['Diseno'] }];
       (api.get as any).mockResolvedValue(mockPros);
 
       const result = await fetchFeaturedProfessionals();
@@ -61,8 +61,7 @@ describe('HomeService', () => {
         id: 1,
         name: 'Ana García',
         photo: null,
-        priceMin: 5000,
-        priceMax: 8000,
+        pricePerHour: 5000,
         services: ['Diseño'],
         rubro: { id: 1, slug: 'diseno', name: 'Diseño & Creatividad' },
         city: 'Buenos Aires',
@@ -71,8 +70,7 @@ describe('HomeService', () => {
         id: 2,
         name: 'Carlos López',
         photo: null,
-        priceMin: 6000,
-        priceMax: 9000,
+        pricePerHour: 6000,
         services: ['Dev'],
         rubro: null,
         city: 'Córdoba',

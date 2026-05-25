@@ -15,9 +15,7 @@ export interface AdminProfessional {
   bio: string | null;
   photo: string | null;
   services: string[];
-  priceMin: string | null;
-  priceMax: string | null;
-  pricePerHour: string | null;
+  pricePerHour?: number;
   city: string | null;
   whatsapp: string | null;
   emailContact: string | null;
@@ -180,7 +178,6 @@ export interface AdminUpdateProfessionalPayload {
   professionCategoryIds?: number[] | string[];
   services?: string[];
   pricePerHour?: number | string;
-  priceMin?: number | string;
   bio?: string;
   tramaMotivation?: string;
   isActive?: boolean;

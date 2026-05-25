@@ -135,7 +135,6 @@ describe('adminService', () => {
         professionCategoryIds: [10, 11],
         services: ['Mentoría', 'Consultoría'],
         pricePerHour: 25,
-        priceMin: 15000,
         bio: 'Bio de prueba',
         tramaMotivation: 'Motivación de prueba',
       } satisfies AdminUpdateProfessionalPayload;

@@ -20,8 +20,7 @@ export interface ProfessionalItem {
   bio: string | null;
   photo: string | null;
   services: string[];
-  priceMin: number | null;
-  priceMax: number | null;
+  pricePerHour?: number;
   city: string | null;
   whatsapp: string | null;
   emailContact: string | null;
@@ -148,14 +147,7 @@ function renderCard(pro: ProfessionalItem): string {
   const photo = `${API_BASE}/uploads/photo/${pro.id}`;
   const rubroName = pro.rubro?.name || '';
   const service = pro.services.length > 0 ? pro.services[0] : '';
-  const priceLabel =
-    pro.priceMin != null && pro.priceMax != null
-      ? `$${pro.priceMin} - $${pro.priceMax}`
-      : pro.priceMin != null
-        ? `$${pro.priceMin}`
-        : pro.priceMax != null
-          ? `$${pro.priceMax}`
-          : '';
+  const priceLabel = pro.pricePerHour != null ? `$${pro.pricePerHour} /hr.` : '';
 
   return `
     <article class="group bg-surface-container-lowest hover:bg-surface-container-lowest rounded-3xl p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col md:flex-row gap-8 relative overflow-hidden">
@@ -201,10 +193,10 @@ function renderCard(pro: ProfessionalItem): string {
           <div>
             ${
               priceLabel
-                ? `<span class="text-outline text-xs block font-bold uppercase tracking-widest">Rango</span>
-                   <div class="flex items-baseline gap-1">
-                     <span class="text-3xl font-black text-on-surface">${priceLabel}</span>
-                   </div>`
+                    ? `<span class="text-outline text-xs block font-bold uppercase tracking-widest">Precio por hora</span>
+                       <div class="flex items-baseline gap-1">
+                         <span class="text-3xl font-black text-on-surface">${priceLabel}</span>
+                       </div>`
                 : ''
             }
           </div>

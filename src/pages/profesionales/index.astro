@@ -69,14 +69,7 @@ import SearchHeader from '../../components/SearchHeader.astro';
       const photo = `${API_BASE}/uploads/photo/${pro.id}`;
       const rubroName = pro.rubro?.name || '';
       const service = pro.services?.length > 0 ? pro.services[0] : '';
-      const priceLabel =
-        pro.priceMin != null && pro.priceMax != null
-          ? `$${pro.priceMin} - $${pro.priceMax}`
-          : pro.priceMin != null
-            ? `$${pro.priceMin}`
-            : pro.priceMax != null
-              ? `$${pro.priceMax}`
-              : '';
+      const priceLabel = pro.pricePerHour != null ? `$${pro.pricePerHour} /hr.` : '';
       const locationParts = [];
       if ((pro as any).province?.name) locationParts.push((pro as any).province.name);
       if ((pro as any).country?.name) locationParts.push((pro as any).country.name);
@@ -120,7 +113,7 @@ import SearchHeader from '../../components/SearchHeader.astro';
               <div>
                 ${
                   priceLabel
-                    ? `<span class="text-outline text-xs block font-bold uppercase tracking-widest">Rango</span>
+                    ? `<span class="text-outline text-xs block font-bold uppercase tracking-widest">Precio por hora</span>
                        <div class="flex items-baseline gap-1">
                          <span class="text-3xl font-black text-on-surface">${priceLabel}</span>
                        </div>`

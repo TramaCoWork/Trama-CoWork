@@ -185,16 +185,11 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
             <input id="e-service-input" type="text" placeholder="Escribí un servicio y Enter" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-4 text-sm">
+        <div class="grid grid-cols-1 gap-4 text-sm">
           <div>
-            <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Precio USD/h</span>
+            <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Precio por hora</span>
             <span id="d-price-usd" class="display-field text-on-surface font-medium">—</span>
             <input id="e-price-usd" type="number" min="0" step="0.01" class="edit-input hidden w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
-          </div>
-          <div>
-            <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Precio ARS/h</span>
-            <span id="d-price-ars" class="display-field text-on-surface font-medium">—</span>
-            <input id="e-price-ars" type="number" min="0" step="0.01" class="edit-input hidden w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2 text-on-surface text-sm font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
           </div>
         </div>
         <div>
@@ -539,8 +534,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       // Professional
       document.getElementById('d-rubro')!.textContent = p.rubro?.name || '—';
       document.getElementById('d-bio')!.textContent = p.bio || '—';
-      document.getElementById('d-price-usd')!.textContent = p.pricePerHour ? `U$ ${p.pricePerHour}` : '—';
-      document.getElementById('d-price-ars')!.textContent = p.priceMin ? `$ ${p.priceMin}` : '—';
+      document.getElementById('d-price-usd')!.textContent = p.pricePerHour != null ? `$ ${p.pricePerHour} /hr.` : '—';
       document.getElementById('d-motivation')!.textContent = p.tramaMotivation || '—';
 
       const toggleEl = document.getElementById('is-active-toggle') as HTMLInputElement | null;
@@ -757,7 +751,6 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         (document.getElementById('e-linkedin') as HTMLInputElement).value = profData.linkedin || '';
         (document.getElementById('e-modality') as HTMLSelectElement).value = profData.workModality || '';
         (document.getElementById('e-price-usd') as HTMLInputElement).value = asString(profData.pricePerHour);
-        (document.getElementById('e-price-ars') as HTMLInputElement).value = asString(profData.priceMin);
         (document.getElementById('e-bio') as HTMLTextAreaElement).value = profData.bio || '';
         (document.getElementById('e-motivation') as HTMLTextAreaElement).value = profData.tramaMotivation || '';
         editServices = [...(profData.services || [])];
@@ -796,7 +789,6 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         professionCategoryIds: getCheckedProfessionIds(),
         services: editServices,
         pricePerHour: parseOptionalNumber((document.getElementById('e-price-usd') as HTMLInputElement).value),
-        priceMin: parseOptionalNumber((document.getElementById('e-price-ars') as HTMLInputElement).value),
         bio: normalizeString((document.getElementById('e-bio') as HTMLTextAreaElement).value),
         tramaMotivation: normalizeString((document.getElementById('e-motivation') as HTMLTextAreaElement).value),
       };

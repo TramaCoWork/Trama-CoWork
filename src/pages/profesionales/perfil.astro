@@ -200,8 +200,7 @@ interface ProfessionalData {
     bio: string;
     photo: string;
     services: string[];
-    priceMin: number;
-    priceMax: number;
+    pricePerHour?: number;
     city: string;
     whatsapp: string;
     emailContact: string;
@@ -414,14 +413,12 @@ interface ProfessionalData {
         `);
       }
 
-      if (pro.priceMin != null || pro.priceMax != null) {
-        const priceText = pro.priceMin != null && pro.priceMax != null
-          ? `$${pro.priceMin} - $${pro.priceMax}`
-          : pro.priceMin != null ? `Desde $${pro.priceMin}` : `Hasta $${pro.priceMax}`;
+      if (pro.pricePerHour != null) {
+        const priceText = `$${pro.pricePerHour} /hr.`;
         infoItems.push(`
           <div class="flex items-start gap-4">
             <span class="material-symbols-outlined text-primary" aria-hidden="true">payments</span>
-            <div><p class="text-sm font-bold">Rango de precios</p><p class="text-on-surface-variant text-sm">${priceText}</p></div>
+            <div><p class="text-sm font-bold">Precio por hora</p><p class="text-on-surface-variant text-sm">${priceText}</p></div>
           </div>
         `);
       }

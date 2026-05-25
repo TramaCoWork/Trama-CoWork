@@ -217,6 +217,13 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
       }).filter(Boolean);
     }
 
+    function parseOptionalNumber(value: string): number | undefined {
+      const trimmed = value.trim();
+      if (!trimmed) return undefined;
+      const parsed = Number(trimmed);
+      return Number.isFinite(parsed) ? parsed : undefined;
+    }
+
     // ─── Services chip helper ───────────────────────────────────
     function renderServicesInto(container: HTMLElement, services: string[], onUpdate: (s: string[]) => void) {
       container.innerHTML = services.map((s, i) => `
@@ -578,8 +585,7 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
       wirePhotoUpload(fileInput, preview, spinner, null, (has) => { hasPhoto = has; });
 
       (document.getElementById('w-bio') as HTMLTextAreaElement).value = data.bio || '';
-      (document.getElementById('w-price-hour') as HTMLInputElement).value = data.pricePerHour || '';
-      (document.getElementById('w-price-ars') as HTMLInputElement).value = data.priceMin || '';
+      (document.getElementById('w-price-hour') as HTMLInputElement).value = data.pricePerHour != null ? String(data.pricePerHour) : '';
       (document.getElementById('w-linkedin') as HTMLInputElement).value = data.linkedin || '';
 
       const bioCount = document.getElementById('w-bio-count')!;
@@ -598,18 +604,16 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
       if (!profileId) return;
       try {
         const bio = (document.getElementById('w-bio') as HTMLTextAreaElement).value.trim();
-        const priceArs = (document.getElementById('w-price-ars') as HTMLInputElement).value || undefined;
         await updateProfessionalInfo(profileId, { bio: bio || undefined, services: currentServices });
         const updated = await api.patch<ProfessionalProfile>(`/professionals/${profileId}/personal`, {
-          pricePerHour: (document.getElementById('w-price-hour') as HTMLInputElement).value || undefined,
+          pricePerHour: parseOptionalNumber((document.getElementById('w-price-hour') as HTMLInputElement).value),
           workModality: (document.getElementById('w-modality') as HTMLSelectElement).value || undefined,
           linkedin: (document.getElementById('w-linkedin') as HTMLInputElement).value.trim() || undefined,
         });
         await api.patch(`/professionals/${profileId}`, {
           bio: bio || undefined,
           services: currentServices,
-          priceMin: priceArs,
-          priceMax: priceArs,
+          pricePerHour: parseOptionalNumber((document.getElementById('w-price-hour') as HTMLInputElement).value),
         });
         if (updated?.completionPct !== undefined && profileData) profileData.completionPct = updated.completionPct;
       } catch (err: any) { showToast(err?.message || 'Error al guardar', 'error'); throw err; }
@@ -843,7 +847,7 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
         { label: 'Biografía', ok: Boolean((document.getElementById('w-bio') as HTMLTextAreaElement)?.value.trim()) },
         { label: 'Foto de perfil', ok: hasPhoto },
         { label: 'Herramientas / Servicios', ok: true },
-        { label: 'Precio', ok: Boolean((document.getElementById('w-price-ars') as HTMLInputElement)?.value) || Boolean((document.getElementById('w-price-hour') as HTMLInputElement)?.value) },
+        { label: 'Precio', ok: Boolean((document.getElementById('w-price-hour') as HTMLInputElement)?.value) },
         { label: 'Ciudad', ok: Boolean((document.getElementById('w-city') as HTMLInputElement)?.value.trim()) },
         { label: 'Profesión', ok: Boolean(currentRubroId) },
         { label: 'Especialidades', ok: getCheckedProfIds(document.getElementById('w-profession-groups')!).length > 0 },
@@ -1001,9 +1005,8 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
       }).catch(() => {
         (document.getElementById('n-modality') as HTMLSelectElement).value = data.workModality || '';
       });
-      (document.getElementById('n-price-hour') as HTMLInputElement).value = data.pricePerHour || '';
+      (document.getElementById('n-price-hour') as HTMLInputElement).value = data.pricePerHour != null ? String(data.pricePerHour) : '';
       (document.getElementById('n-bio') as HTMLTextAreaElement).value = data.bio || '';
-      (document.getElementById('n-price-ars') as HTMLInputElement).value = data.priceMin || '';
 
       const nBio = document.getElementById('n-bio') as HTMLTextAreaElement;
       const nBioCount = document.getElementById('n-bio-count')!;
@@ -1057,7 +1060,7 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
             provinceId: Number(nProvince.value) || undefined,
             whatsapp: (document.getElementById('n-whatsapp') as HTMLInputElement).value.trim() || undefined,
             linkedin: (document.getElementById('n-linkedin') as HTMLInputElement).value.trim() || undefined,
-            pricePerHour: (document.getElementById('n-price-hour') as HTMLInputElement).value || undefined,
+            pricePerHour: parseOptionalNumber((document.getElementById('n-price-hour') as HTMLInputElement).value),
             workModality: (document.getElementById('n-modality') as HTMLSelectElement).value || undefined,
           });
 
@@ -1070,8 +1073,7 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
             name: (document.getElementById('n-name') as HTMLInputElement).value.trim() || undefined,
             bio: nBio.value.trim() || undefined,
             services: normalServices,
-            priceMin: (document.getElementById('n-price-ars') as HTMLInputElement).value || undefined,
-            priceMax: (document.getElementById('n-price-ars') as HTMLInputElement).value || undefined,
+            pricePerHour: parseOptionalNumber((document.getElementById('n-price-hour') as HTMLInputElement).value),
             city: (document.getElementById('n-city') as HTMLInputElement).value.trim() || undefined,
             whatsapp: (document.getElementById('n-whatsapp') as HTMLInputElement).value.trim() || undefined,
           });
