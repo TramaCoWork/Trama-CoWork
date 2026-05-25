@@ -354,6 +354,11 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       </div>
 
       <div class="p-6 overflow-y-auto space-y-4 flex-1">
+        <div id="doc-review-context" class="hidden rounded-xl p-4 text-xs text-on-surface space-y-2" style="background-color: var(--color-neutral-100);">
+          <p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">Pertenece a</p>
+          <div id="doc-review-context-items" class="space-y-1"></div>
+        </div>
+
         <div id="doc-review-loading" class="h-[52vh] rounded-xl bg-surface-container flex items-center justify-center">
           <div class="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
         </div>
@@ -952,6 +957,15 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       return `<span class="inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${meta.cls}" data-status="${status}">${meta.label}</span>`;
     }
 
+    function buildDocContextItems(doc: ProfessionalDocument): string[] {
+      const items: string[] = [];
+      if (doc.professionName) items.push(`🏷 Profesión: ${doc.professionName}`);
+      if (doc.educationTitle) items.push(`🎓 Título: ${doc.educationTitle}`);
+      if (doc.educationInstitution) items.push(`🏛 Institución: ${doc.educationInstitution}`);
+      if (doc.educationYear) items.push(`📅 Año: ${doc.educationYear}`);
+      return items;
+    }
+
     function setDocReviewZoom(scale: number) {
       const image = document.getElementById('doc-review-image') as HTMLImageElement | null;
       const zoomValue = document.getElementById('doc-review-zoom-value');
@@ -967,6 +981,8 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       const pdf = document.getElementById('doc-review-pdf') as HTMLIFrameElement | null;
       const openLink = document.getElementById('doc-review-open-link') as HTMLAnchorElement | null;
       const notes = document.getElementById('doc-review-notes') as HTMLTextAreaElement | null;
+      const contextBox = document.getElementById('doc-review-context');
+      const contextItems = document.getElementById('doc-review-context-items');
       if (!modal) return;
 
       modal.classList.add('hidden');
@@ -987,6 +1003,8 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         docReviewBlobUrl = '';
       }
       if (notes) notes.value = '';
+      if (contextBox) contextBox.classList.add('hidden');
+      if (contextItems) contextItems.innerHTML = '';
       currentDocReviewId = null;
       docReviewZoom = 1;
     }
@@ -1005,8 +1023,10 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       const pdf = document.getElementById('doc-review-pdf') as HTMLIFrameElement | null;
       const openLink = document.getElementById('doc-review-open-link') as HTMLAnchorElement | null;
       const zoomControls = document.getElementById('doc-review-zoom-controls');
+      const contextBox = document.getElementById('doc-review-context');
+      const contextItems = document.getElementById('doc-review-context-items');
       const btn = document.querySelector(`.doc-view-btn[data-doc-id="${doc.id}"]`) as HTMLButtonElement | null;
-      if (!modal || !loading || !media || !error || !title || !type || !statusBadge || !notes || !imageWrap || !image || !pdf || !openLink || !zoomControls) return;
+      if (!modal || !loading || !media || !error || !title || !type || !statusBadge || !notes || !imageWrap || !image || !pdf || !openLink || !zoomControls || !contextBox || !contextItems) return;
 
       if (docReviewBlobUrl) {
         URL.revokeObjectURL(docReviewBlobUrl);
@@ -1019,6 +1039,14 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       type.textContent = DOC_TYPE_LABELS[doc.type] || doc.type;
       statusBadge.innerHTML = getDocumentStatusBadge(statusMeta.key);
       notes.value = doc.verificationNotes || '';
+      const docContextItems = buildDocContextItems(doc);
+      if (docContextItems.length) {
+        contextItems.innerHTML = docContextItems.map(item => `<p class="text-xs text-on-surface-variant">${item}</p>`).join('');
+        contextBox.classList.remove('hidden');
+      } else {
+        contextItems.innerHTML = '';
+        contextBox.classList.add('hidden');
+      }
       loading.classList.remove('hidden');
       media.classList.add('hidden');
       error.classList.add('hidden');

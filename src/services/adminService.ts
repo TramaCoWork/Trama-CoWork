@@ -70,6 +70,10 @@ export interface ProfessionalDocument {
   verificationStatus: string | null;
   verificationNotes: string | null;
   createdAt: string;
+  professionName?: string | null;
+  educationTitle?: string | null;
+  educationInstitution?: string | null;
+  educationYear?: number | string | null;
   education?: { id: string; title: string } | null;
   certification?: { id: string; name: string } | null;
 }
