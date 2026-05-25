@@ -85,12 +85,15 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+  max-width: 100%;
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.5;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .badge-primary {
@@ -584,4 +587,4 @@ select {
   text-transform: capitalize;
 }
 
-/* Trazabilidad: editado por Programmer en 2026-05-15 18:10:00 */
+/* Trazabilidad: editado por Programmer en 2026-05-25 18:38:45 */

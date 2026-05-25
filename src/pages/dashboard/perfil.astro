@@ -224,6 +224,11 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
       return Number.isFinite(parsed) ? parsed : undefined;
     }
 
+    function parseOptionalString(value: string): string | undefined {
+      const trimmed = value.trim();
+      return trimmed || undefined;
+    }
+
     // ─── Services chip helper ───────────────────────────────────
     function renderServicesInto(container: HTMLElement, services: string[], onUpdate: (s: string[]) => void) {
       container.innerHTML = services.map((s, i) => `
@@ -606,14 +611,14 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
         const bio = (document.getElementById('w-bio') as HTMLTextAreaElement).value.trim();
         await updateProfessionalInfo(profileId, { bio: bio || undefined, services: currentServices });
         const updated = await api.patch<ProfessionalProfile>(`/professionals/${profileId}/personal`, {
-          pricePerHour: parseOptionalNumber((document.getElementById('w-price-hour') as HTMLInputElement).value),
+          pricePerHour: parseOptionalString((document.getElementById('w-price-hour') as HTMLInputElement).value),
           workModality: (document.getElementById('w-modality') as HTMLSelectElement).value || undefined,
           linkedin: (document.getElementById('w-linkedin') as HTMLInputElement).value.trim() || undefined,
         });
         await api.patch(`/professionals/${profileId}`, {
           bio: bio || undefined,
           services: currentServices,
-          pricePerHour: parseOptionalNumber((document.getElementById('w-price-hour') as HTMLInputElement).value),
+          pricePerHour: parseOptionalString((document.getElementById('w-price-hour') as HTMLInputElement).value),
         });
         if (updated?.completionPct !== undefined && profileData) profileData.completionPct = updated.completionPct;
       } catch (err: any) { showToast(err?.message || 'Error al guardar', 'error'); throw err; }
@@ -1060,7 +1065,7 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
             provinceId: Number(nProvince.value) || undefined,
             whatsapp: (document.getElementById('n-whatsapp') as HTMLInputElement).value.trim() || undefined,
             linkedin: (document.getElementById('n-linkedin') as HTMLInputElement).value.trim() || undefined,
-            pricePerHour: parseOptionalNumber((document.getElementById('n-price-hour') as HTMLInputElement).value),
+            pricePerHour: parseOptionalString((document.getElementById('n-price-hour') as HTMLInputElement).value),
             workModality: (document.getElementById('n-modality') as HTMLSelectElement).value || undefined,
           });
 
@@ -1073,7 +1078,7 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
             name: (document.getElementById('n-name') as HTMLInputElement).value.trim() || undefined,
             bio: nBio.value.trim() || undefined,
             services: normalServices,
-            pricePerHour: parseOptionalNumber((document.getElementById('n-price-hour') as HTMLInputElement).value),
+            pricePerHour: parseOptionalString((document.getElementById('n-price-hour') as HTMLInputElement).value),
             city: (document.getElementById('n-city') as HTMLInputElement).value.trim() || undefined,
             whatsapp: (document.getElementById('n-whatsapp') as HTMLInputElement).value.trim() || undefined,
           });

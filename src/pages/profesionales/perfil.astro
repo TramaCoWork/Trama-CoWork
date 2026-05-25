@@ -51,9 +51,61 @@ import Layout from '../../layouts/Layout.astro';
             >
               Contactar
             </button>
-            <button class="bg-surface-container-highest text-on-surface px-8 py-3 rounded-lg font-bold transition-all hover:bg-surface-variant/30" type="button">
-              Compartir perfil
-            </button>
+            <div id="share-profile-container" class="relative">
+              <button
+                id="share-profile-button"
+                class="bg-surface-container-highest text-on-surface px-8 py-3 rounded-lg font-bold transition-all hover:bg-surface-variant/30"
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded="false"
+              >
+                Compartir perfil
+              </button>
+              <div
+                id="share-profile-menu"
+                class="absolute right-0 top-full z-[120] mt-2 hidden min-w-56 rounded-xl border border-outline-variant/20 bg-white p-1.5 shadow-2xl"
+                role="menu"
+                aria-label="Opciones para compartir perfil"
+              >
+                <button
+                  type="button"
+                  class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-on-surface transition-colors hover:bg-primary/10"
+                  role="menuitem"
+                  data-share-action="linkedin"
+                >
+                  <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#0A66C2] text-xs font-extrabold text-white" aria-hidden="true">in</span>
+                  LinkedIn
+                </button>
+                <button
+                  type="button"
+                  class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-on-surface transition-colors hover:bg-primary/10"
+                  role="menuitem"
+                  data-share-action="facebook"
+                >
+                  <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#1877F2] text-sm font-extrabold text-white" aria-hidden="true">f</span>
+                  Facebook
+                </button>
+                <button
+                  type="button"
+                  class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-on-surface transition-colors hover:bg-primary/10"
+                  role="menuitem"
+                  data-share-action="whatsapp"
+                >
+                  <span class="material-symbols-outlined text-xl text-[#25D366]" aria-hidden="true">chat</span>
+                  WhatsApp
+                </button>
+                <button
+                  id="copy-profile-link-button"
+                  type="button"
+                  class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-on-surface transition-colors hover:bg-primary/10"
+                  role="menuitem"
+                  data-share-action="copy"
+                >
+                  <span aria-hidden="true">📋</span>
+                  <span id="copy-profile-link-text">Copiar link</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -192,6 +244,12 @@ import Layout from '../../layouts/Layout.astro';
   const contactModalMessage = document.getElementById('contact-modal-message') as HTMLTextAreaElement;
   const contactModalSuccess = document.getElementById('contact-modal-success') as HTMLDivElement;
   const contactModalError = document.getElementById('contact-modal-error') as HTMLDivElement;
+  const shareProfileContainer = document.getElementById('share-profile-container') as HTMLDivElement;
+  const shareProfileButton = document.getElementById('share-profile-button') as HTMLButtonElement;
+  const shareProfileMenu = document.getElementById('share-profile-menu') as HTMLDivElement;
+  const copyProfileLinkText = document.getElementById('copy-profile-link-text') as HTMLSpanElement;
+
+  let copyLinkResetTimeout: ReturnType<typeof setTimeout> | null = null;
 
 interface ProfessionalData {
     id: number;
@@ -260,6 +318,88 @@ interface ProfessionalData {
   function setSubmitLoading(isLoading: boolean) {
     submitContactModalBtn.disabled = isLoading;
     submitContactModalBtn.textContent = isLoading ? 'Enviando...' : 'Enviar';
+  }
+
+  function openShareMenu() {
+    shareProfileMenu.classList.remove('hidden');
+    shareProfileButton.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeShareMenu() {
+    shareProfileMenu.classList.add('hidden');
+    shareProfileButton.setAttribute('aria-expanded', 'false');
+  }
+
+  function toggleShareMenu() {
+    if (shareProfileMenu.classList.contains('hidden')) {
+      openShareMenu();
+      return;
+    }
+
+    closeShareMenu();
+  }
+
+  function getShareUrl(action: 'linkedin' | 'facebook' | 'whatsapp'): string {
+    const pageUrl = window.location.href;
+
+    if (action === 'linkedin') {
+      return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`;
+    }
+
+    if (action === 'facebook') {
+      return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`;
+    }
+
+    return `https://wa.me/?text=${encodeURIComponent(`Te comparto este perfil profesional en Trama: ${pageUrl}`)}`;
+  }
+
+  async function copyProfileUrl() {
+    await navigator.clipboard.writeText(window.location.href);
+
+    copyProfileLinkText.textContent = '¡Copiado!';
+    if (copyLinkResetTimeout) {
+      clearTimeout(copyLinkResetTimeout);
+    }
+
+    copyLinkResetTimeout = setTimeout(() => {
+      copyProfileLinkText.textContent = 'Copiar link';
+      copyLinkResetTimeout = null;
+    }, 2000);
+  }
+
+  function setupShareProfileEvents() {
+    shareProfileButton.addEventListener('click', (event) => {
+      event.stopPropagation();
+      toggleShareMenu();
+    });
+
+    shareProfileMenu.addEventListener('click', async (event) => {
+      const target = event.target as HTMLElement;
+      const actionButton = target.closest<HTMLButtonElement>('[data-share-action]');
+      const action = actionButton?.dataset.shareAction;
+
+      if (!actionButton || !action) {
+        return;
+      }
+
+      if (action === 'copy') {
+        await copyProfileUrl();
+        closeShareMenu();
+        return;
+      }
+
+      const shareUrl = getShareUrl(action as 'linkedin' | 'facebook' | 'whatsapp');
+      window.open(shareUrl, '_blank');
+      closeShareMenu();
+    });
+
+    document.addEventListener('click', (event) => {
+      const target = event.target as Node;
+
+      if (!shareProfileContainer.contains(target)) {
+        closeShareMenu();
+      }
+    });
   }
 
   async function submitContactForm(event: SubmitEvent) {
@@ -333,6 +473,10 @@ interface ProfessionalData {
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && !contactModal.classList.contains('hidden')) {
         closeContactModal();
+      }
+
+      if (event.key === 'Escape' && !shareProfileMenu.classList.contains('hidden')) {
+        closeShareMenu();
       }
     });
   }
@@ -520,5 +664,6 @@ interface ProfessionalData {
   }
 
   setupContactModalEvents();
+  setupShareProfileEvents();
   loadProfile();
 </script>

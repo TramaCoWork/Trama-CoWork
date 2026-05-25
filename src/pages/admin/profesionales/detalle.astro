@@ -788,7 +788,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         rubroId: parseOptionalNumber((document.getElementById('e-rubro') as HTMLSelectElement).value),
         professionCategoryIds: getCheckedProfessionIds(),
         services: editServices,
-        pricePerHour: parseOptionalNumber((document.getElementById('e-price-usd') as HTMLInputElement).value),
+        pricePerHour: normalizeString((document.getElementById('e-price-usd') as HTMLInputElement).value),
         bio: normalizeString((document.getElementById('e-bio') as HTMLTextAreaElement).value),
         tramaMotivation: normalizeString((document.getElementById('e-motivation') as HTMLTextAreaElement).value),
       };
