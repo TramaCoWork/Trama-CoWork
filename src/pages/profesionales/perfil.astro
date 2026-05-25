@@ -205,6 +205,7 @@ interface ProfessionalData {
     city: string;
     whatsapp: string;
     emailContact: string;
+    professionCategories: { name: string }[];
   categories: { id: number; slug: string; name: string }[];
 }
 
@@ -421,6 +422,24 @@ interface ProfessionalData {
           <div class="flex items-start gap-4">
             <span class="material-symbols-outlined text-primary" aria-hidden="true">payments</span>
             <div><p class="text-sm font-bold">Rango de precios</p><p class="text-on-surface-variant text-sm">${priceText}</p></div>
+          </div>
+        `);
+      }
+
+      if (pro.professionCategories?.length > 0) {
+        const professionTags = pro.professionCategories
+          .map((cat) =>
+            `<span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium" style="background: color-mix(in srgb, var(--color-primary) 10%, white); color: var(--color-primary);">${cat.name}</span>`
+          )
+          .join('');
+
+        infoItems.push(`
+          <div class="flex items-start gap-4">
+            <span class="material-symbols-outlined text-primary" aria-hidden="true">category</span>
+            <div>
+              <p class="text-sm font-bold">Especialidades</p>
+              <div class="mt-1 flex flex-wrap gap-2">${professionTags}</div>
+            </div>
           </div>
         `);
       }
