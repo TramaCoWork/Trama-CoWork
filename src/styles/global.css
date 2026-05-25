@@ -81,6 +81,87 @@
   font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.badge-primary {
+  background: var(--color-primary);
+  color: white;
+}
+
+.badge-success {
+  background: var(--color-success);
+  color: white;
+}
+
+.badge-warning {
+  background: var(--color-warning);
+  color: #404040;
+}
+
+.badge-error {
+  background: var(--color-error);
+  color: white;
+}
+
+.badge-neutral {
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-900);
+}
+
+.badge-outline-primary {
+  border: 1.5px solid var(--color-primary);
+  color: var(--color-primary);
+  background: transparent;
+}
+
+.badge-outline-success {
+  border: 1.5px solid var(--color-success);
+  color: var(--color-success);
+  background: transparent;
+}
+
+.badge-outline-warning {
+  border: 1.5px solid var(--color-warning);
+  color: var(--color-warning);
+  background: transparent;
+}
+
+.badge-outline-error {
+  border: 1.5px solid var(--color-error);
+  color: var(--color-error);
+  background: transparent;
+}
+
+.badge-soft-primary {
+  background: color-mix(in srgb, var(--color-primary) 12%, white);
+  color: var(--color-primary);
+}
+
+.badge-soft-success {
+  background: color-mix(in srgb, var(--color-success) 12%, white);
+  color: #15803d;
+}
+
+.badge-soft-warning {
+  background: color-mix(in srgb, var(--color-warning) 12%, white);
+  color: #92400e;
+}
+
+.badge-soft-error {
+  background: color-mix(in srgb, var(--color-error) 12%, white);
+  color: #b91c1c;
+}
+
 input[type='text'],
 input[type='email'],
 input[type='password'],
