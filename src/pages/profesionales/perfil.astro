@@ -341,6 +341,18 @@ interface ProfessionalData {
     return value.replace(/\D/g, '');
   }
 
+  function upsertMetaTag(selector: string, attributeName: string, attributeValue: string, content: string) {
+    let tag = document.querySelector(selector) as HTMLMetaElement | null;
+
+    if (!tag) {
+      tag = document.createElement('meta');
+      tag.setAttribute(attributeName, attributeValue);
+      document.head.appendChild(tag);
+    }
+
+    tag.setAttribute('content', content);
+  }
+
   async function loadProfile() {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
@@ -353,8 +365,17 @@ interface ProfessionalData {
     try {
       const pro = await api.get<ProfessionalData>(`/professionals/${id}`);
 
-      // Page title
-      document.title = `${pro.name} | TRAMA`;
+      // SEO
+      const professionalCategory = pro.rubro?.name || pro.categories?.[0]?.name || 'Profesional';
+      const pageTitle = `${pro.name} — ${professionalCategory} | TRAMA`;
+      const description = (pro.bio || '').trim().slice(0, 160);
+
+      document.title = pageTitle;
+      upsertMetaTag('meta[name="description"]', 'name', 'description', description);
+      upsertMetaTag('meta[property="og:title"]', 'property', 'og:title', pageTitle);
+      upsertMetaTag('meta[property="og:description"]', 'property', 'og:description', description);
+      upsertMetaTag('meta[property="og:image"]', 'property', 'og:image', `${API_BASE}/uploads/photo/${pro.id}`);
+      upsertMetaTag('meta[property="og:url"]', 'property', 'og:url', window.location.href);
 
       // Hero image
       const img = document.getElementById('pro-image') as HTMLImageElement;

@@ -326,6 +326,86 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     </div>
   </div>
 
+  <!-- Document review modal -->
+  <div
+    id="doc-review-modal"
+    class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="doc-review-title"
+  >
+    <div class="w-full max-w-5xl max-h-[92vh] bg-surface-container-low rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+      <div class="px-6 py-4 border-b border-outline-variant/15 flex items-start justify-between gap-4">
+        <div>
+          <p id="doc-review-type" class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">Documento</p>
+          <h3 id="doc-review-title" class="text-lg font-extrabold text-on-surface tracking-tight break-all">—</h3>
+        </div>
+        <div class="flex items-center gap-3">
+          <span id="doc-review-status-badge"></span>
+          <button
+            id="doc-review-close"
+            type="button"
+            class="w-9 h-9 rounded-lg bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors"
+            aria-label="Cerrar modal"
+          >
+            <span class="material-symbols-outlined text-base" aria-hidden="true">close</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4 flex-1">
+        <div id="doc-review-loading" class="h-[52vh] rounded-xl bg-surface-container flex items-center justify-center">
+          <div class="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+        </div>
+
+        <div id="doc-review-media" class="hidden space-y-3">
+          <div id="doc-review-image-wrap" class="hidden h-[52vh] rounded-xl border border-outline-variant/15 bg-surface-container-lowest overflow-auto flex items-center justify-center p-4">
+            <img id="doc-review-image" src="" alt="Documento" class="max-h-full w-auto max-w-none select-none transition-transform duration-150" draggable="false" />
+          </div>
+
+          <iframe id="doc-review-pdf" class="hidden w-full h-[52vh] rounded-xl border border-outline-variant/15 bg-white" title="Vista previa PDF"></iframe>
+
+          <a
+            id="doc-review-open-link"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hidden inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+          >
+            <span class="material-symbols-outlined text-sm" aria-hidden="true">open_in_new</span>
+            Abrir documento en una nueva pestaña
+          </a>
+
+          <div id="doc-review-zoom-controls" class="hidden flex items-center gap-2 justify-end">
+            <button id="doc-review-zoom-out" type="button" class="w-8 h-8 rounded-lg bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors" aria-label="Alejar">
+              <span class="material-symbols-outlined text-sm" aria-hidden="true">remove</span>
+            </button>
+            <span id="doc-review-zoom-value" class="text-xs font-bold text-on-surface-variant min-w-12 text-center">100%</span>
+            <button id="doc-review-zoom-in" type="button" class="w-8 h-8 rounded-lg bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors" aria-label="Acercar">
+              <span class="material-symbols-outlined text-sm" aria-hidden="true">add</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="doc-review-error" class="hidden h-[52vh] rounded-xl border border-error/20 bg-error/10 text-error flex items-center justify-center text-sm font-medium">
+          Error al cargar el documento.
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-outline-variant/15 bg-surface-container-lowest space-y-3">
+        <div>
+          <label for="doc-review-notes" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-2">Notas de verificación (opcional)</label>
+          <textarea id="doc-review-notes" rows="3" placeholder="Ej: Documento legible, datos consistentes..." class="w-full bg-surface border border-outline-variant/20 rounded-xl px-4 py-2.5 text-on-surface text-sm font-medium placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-y"></textarea>
+        </div>
+        <div class="flex flex-wrap items-center justify-end gap-2">
+          <button id="doc-review-cancel" type="button" class="px-4 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors">Cerrar</button>
+          <button id="doc-review-reject" type="button" class="px-4 py-2.5 rounded-xl font-bold text-sm text-white hover:opacity-90 transition-opacity" style="background-color: var(--color-error);">Rechazar</button>
+          <button id="doc-review-approve" type="button" class="px-4 py-2.5 rounded-xl font-bold text-sm text-white hover:opacity-90 transition-opacity" style="background-color: var(--color-success);">Aprobar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     import { restoreSession, getToken } from '../../../services/authService';
     import { api } from '../../../services/apiClient';
@@ -355,10 +435,23 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     const DEFAULT_AVATAR = '/images/default-avatar.svg';
     const baseUrl = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
     const MAX_PROFS = 5;
+    const DOC_TYPE_LABELS: Record<string, string> = { cv: 'CV', title: 'Título', certificate: 'Certificado', dni: 'DNI' };
+    const DOC_STATUS_MAP: Record<string, { label: string; cls: string }> = {
+      pending: { label: 'Pendiente', cls: 'bg-warning/15 text-warning' },
+      approved: { label: 'Aprobado', cls: 'bg-success/15 text-success' },
+      rejected: { label: 'Rechazado', cls: 'bg-error/15 text-error' },
+    };
+    const DOC_ZOOM_MIN = 0.5;
+    const DOC_ZOOM_MAX = 3;
+    const DOC_ZOOM_STEP = 0.25;
 
     let profData: AdminProfessional | null = null;
     let isEditMode = false;
     let editServices: string[] = [];
+    let documentsState: ProfessionalDocument[] = [];
+    let docReviewBlobUrl = '';
+    let docReviewZoom = 1;
+    let currentDocReviewId: string | null = null;
 
     const STATUS_MAP: Record<string, { label: string; cls: string }> = {
       incomplete:      { label: 'Incompleto',    cls: 'bg-outline/10 text-outline' },
@@ -848,6 +941,126 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       return { blobUrl: URL.createObjectURL(blob), mimeType: blob.type };
     }
 
+    function getDocumentStatusMeta(doc: ProfessionalDocument): { key: string; label: string; cls: string } {
+      const key = doc.verificationStatus ?? doc.status ?? '';
+      const meta = DOC_STATUS_MAP[key] || { label: 'Sin revisar', cls: 'bg-outline/10 text-outline' };
+      return { key, label: meta.label, cls: meta.cls };
+    }
+
+    function getDocumentStatusBadge(status: string): string {
+      const meta = DOC_STATUS_MAP[status] || { label: 'Sin revisar', cls: 'bg-outline/10 text-outline' };
+      return `<span class="inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${meta.cls}" data-status="${status}">${meta.label}</span>`;
+    }
+
+    function setDocReviewZoom(scale: number) {
+      const image = document.getElementById('doc-review-image') as HTMLImageElement | null;
+      const zoomValue = document.getElementById('doc-review-zoom-value');
+      if (!image || !zoomValue) return;
+      docReviewZoom = Math.min(DOC_ZOOM_MAX, Math.max(DOC_ZOOM_MIN, scale));
+      image.style.transform = `scale(${docReviewZoom})`;
+      zoomValue.textContent = `${Math.round(docReviewZoom * 100)}%`;
+    }
+
+    function closeDocumentReviewModal() {
+      const modal = document.getElementById('doc-review-modal');
+      const image = document.getElementById('doc-review-image') as HTMLImageElement | null;
+      const pdf = document.getElementById('doc-review-pdf') as HTMLIFrameElement | null;
+      const openLink = document.getElementById('doc-review-open-link') as HTMLAnchorElement | null;
+      const notes = document.getElementById('doc-review-notes') as HTMLTextAreaElement | null;
+      if (!modal) return;
+
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.body.style.overflow = '';
+
+      if (image) {
+        image.src = '';
+        image.style.transform = 'scale(1)';
+      }
+      if (pdf) pdf.src = 'about:blank';
+      if (openLink) {
+        openLink.href = '#';
+        openLink.classList.add('hidden');
+      }
+      if (docReviewBlobUrl) {
+        URL.revokeObjectURL(docReviewBlobUrl);
+        docReviewBlobUrl = '';
+      }
+      if (notes) notes.value = '';
+      currentDocReviewId = null;
+      docReviewZoom = 1;
+    }
+
+    async function openDocumentReviewModal(doc: ProfessionalDocument) {
+      const modal = document.getElementById('doc-review-modal');
+      const loading = document.getElementById('doc-review-loading');
+      const media = document.getElementById('doc-review-media');
+      const error = document.getElementById('doc-review-error');
+      const title = document.getElementById('doc-review-title');
+      const type = document.getElementById('doc-review-type');
+      const statusBadge = document.getElementById('doc-review-status-badge');
+      const notes = document.getElementById('doc-review-notes') as HTMLTextAreaElement | null;
+      const imageWrap = document.getElementById('doc-review-image-wrap');
+      const image = document.getElementById('doc-review-image') as HTMLImageElement | null;
+      const pdf = document.getElementById('doc-review-pdf') as HTMLIFrameElement | null;
+      const openLink = document.getElementById('doc-review-open-link') as HTMLAnchorElement | null;
+      const zoomControls = document.getElementById('doc-review-zoom-controls');
+      const btn = document.querySelector(`.doc-view-btn[data-doc-id="${doc.id}"]`) as HTMLButtonElement | null;
+      if (!modal || !loading || !media || !error || !title || !type || !statusBadge || !notes || !imageWrap || !image || !pdf || !openLink || !zoomControls) return;
+
+      if (docReviewBlobUrl) {
+        URL.revokeObjectURL(docReviewBlobUrl);
+        docReviewBlobUrl = '';
+      }
+
+      const statusMeta = getDocumentStatusMeta(doc);
+      currentDocReviewId = doc.id;
+      title.textContent = doc.originalName || DOC_TYPE_LABELS[doc.type] || doc.type;
+      type.textContent = DOC_TYPE_LABELS[doc.type] || doc.type;
+      statusBadge.innerHTML = getDocumentStatusBadge(statusMeta.key);
+      notes.value = doc.verificationNotes || '';
+      loading.classList.remove('hidden');
+      media.classList.add('hidden');
+      error.classList.add('hidden');
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+
+      if (btn) btn.disabled = true;
+      try {
+        const { blobUrl, mimeType } = await fetchAuthBlob(`${baseUrl}/uploads/document/${doc.id}`);
+        docReviewBlobUrl = blobUrl;
+        const fileName = (doc.originalName || '').toLowerCase();
+        const isPdf = mimeType.includes('pdf') || fileName.endsWith('.pdf');
+
+        if (isPdf) {
+          imageWrap.classList.add('hidden');
+          pdf.classList.remove('hidden');
+          zoomControls.classList.add('hidden');
+          pdf.src = blobUrl;
+        } else {
+          pdf.classList.add('hidden');
+          imageWrap.classList.remove('hidden');
+          zoomControls.classList.remove('hidden');
+          image.src = blobUrl;
+          image.alt = title.textContent || 'Documento';
+          setDocReviewZoom(1);
+        }
+
+        openLink.href = blobUrl;
+        openLink.classList.remove('hidden');
+
+        loading.classList.add('hidden');
+        media.classList.remove('hidden');
+      } catch {
+        loading.classList.add('hidden');
+        error.classList.remove('hidden');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
     function populateDocuments(docs: ProfessionalDocument[]) {
       const tbody = document.getElementById('d-documents')!;
       if (!docs.length) {
@@ -855,31 +1068,23 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         return;
       }
 
-      const TYPE_LABELS: Record<string, string> = { cv: 'CV', title: 'Título', certificate: 'Certificado', dni: 'DNI' };
-      const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
-        pending:  { label: 'Pendiente',  cls: 'bg-secondary-container text-on-secondary-container' },
-        approved: { label: 'Aprobado',   cls: 'bg-primary-container text-on-primary-container' },
-        rejected: { label: 'Rechazado',  cls: 'bg-error-container text-on-error-container' },
-      };
+      const docMap = new Map(docs.map(doc => [doc.id, doc]));
 
       tbody.innerHTML = docs.map(doc => {
-        const docStatus = doc.verificationStatus ?? doc.status ?? '';
-        const ds = STATUS_LABELS[docStatus] || { label: 'Sin revisar', cls: 'bg-outline/10 text-outline' };
-        const isCv = doc.type === 'cv';
-        const canVerify = !isCv && docStatus !== 'approved' && docStatus !== 'rejected';
+        const { key: docStatus, label, cls } = getDocumentStatusMeta(doc);
 
         return `
           <tr class="doc-row border-b border-outline-variant/10 hover:bg-surface-container/50 transition-all cursor-pointer" data-doc-row="${doc.id}">
             <td class="px-5 py-3">
               <div class="flex items-center gap-2.5">
                 <span class="material-symbols-outlined text-primary text-lg shrink-0">description</span>
-                <span class="font-bold text-on-surface text-sm truncate max-w-[220px]">${doc.originalName || TYPE_LABELS[doc.type] || doc.type}</span>
+                <span class="font-bold text-on-surface text-sm truncate max-w-[220px]">${doc.originalName || DOC_TYPE_LABELS[doc.type] || doc.type}</span>
               </div>
             </td>
-            <td class="px-5 py-3 text-on-surface-variant text-xs">${TYPE_LABELS[doc.type] || doc.type}</td>
+            <td class="px-5 py-3 text-on-surface-variant text-xs">${DOC_TYPE_LABELS[doc.type] || doc.type}</td>
             <td class="px-5 py-3 text-on-surface-variant text-xs">${formatDate(doc.createdAt)}</td>
             <td class="px-5 py-3">
-              <span class="doc-status-badge inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${ds.cls}" data-status="${docStatus}">${ds.label}</span>
+              <span class="doc-status-badge inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${cls}" data-status="${docStatus}">${label}</span>
             </td>
             <td class="px-5 py-3">
               <div class="flex items-center justify-center gap-1.5">
@@ -889,14 +1094,6 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
                 <button type="button" class="doc-dl-btn w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center hover:bg-surface-container-high transition-colors" data-doc-id="${doc.id}" data-doc-name="${doc.originalName || doc.type}" title="Descargar">
                   <span class="material-symbols-outlined text-on-surface-variant text-sm">download</span>
                 </button>
-                ${canVerify ? `
-                  <button type="button" class="doc-approve-btn w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors" data-doc-id="${doc.id}" title="Aprobar">
-                    <span class="material-symbols-outlined text-primary text-sm">check_circle</span>
-                  </button>
-                  <button type="button" class="doc-reject-btn w-8 h-8 rounded-lg bg-error/10 flex items-center justify-center hover:bg-error/20 transition-colors" data-doc-id="${doc.id}" title="Rechazar">
-                    <span class="material-symbols-outlined text-error text-sm">cancel</span>
-                  </button>
-                ` : ''}
               </div>
             </td>
           </tr>`;
@@ -928,7 +1125,9 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         btn.addEventListener('click', () => {
           const docId = btn.getAttribute('data-doc-id')!;
           highlightRow(docId);
-          handleDocView(docId, btn.getAttribute('data-doc-name')!);
+          const doc = docMap.get(docId);
+          if (!doc) return;
+          openDocumentReviewModal(doc);
         });
       });
 
@@ -941,34 +1140,6 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         });
       });
 
-      // Wire approve/reject buttons
-      tbody.querySelectorAll('.doc-approve-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const docId = btn.getAttribute('data-doc-id')!;
-          highlightRow(docId);
-          handleDocVerify(docId, 'approved');
-        });
-      });
-      tbody.querySelectorAll('.doc-reject-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const docId = btn.getAttribute('data-doc-id')!;
-          highlightRow(docId);
-          handleDocVerify(docId, 'rejected');
-        });
-      });
-    }
-
-    async function handleDocView(docId: string, docName: string) {
-      const btn = document.querySelector(`.doc-view-btn[data-doc-id="${docId}"]`) as HTMLButtonElement;
-      if (btn) btn.disabled = true;
-      try {
-        const { blobUrl, mimeType } = await fetchAuthBlob(`${baseUrl}/uploads/document/${docId}`);
-        (window as any).openImageOverlay(blobUrl, docName, docName, mimeType);
-      } catch {
-        showToast('Error al cargar el documento', 'error');
-      } finally {
-        if (btn) btn.disabled = false;
-      }
     }
 
     async function handleDocDownload(docId: string, docName: string) {
@@ -989,36 +1160,30 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       }
     }
 
-    async function handleDocVerify(docId: string, status: 'approved' | 'rejected') {
-      const row = document.querySelector(`[data-doc-row="${docId}"]`) as HTMLElement;
-      if (!row) return;
-
-      const btns = row.querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
-      btns.forEach(b => b.disabled = true);
-
+    async function handleDocVerify(docId: string, status: 'approved' | 'rejected', verificationNotes: string) {
+      const approveBtn = document.getElementById('doc-review-approve') as HTMLButtonElement | null;
+      const rejectBtn = document.getElementById('doc-review-reject') as HTMLButtonElement | null;
+      const closeBtn = document.getElementById('doc-review-cancel') as HTMLButtonElement | null;
+      if (approveBtn) approveBtn.disabled = true;
+      if (rejectBtn) rejectBtn.disabled = true;
+      if (closeBtn) closeBtn.disabled = true;
       try {
-        await verifyDocument(docId, { status });
-
-        // Update badge
-        const badge = row.querySelector('.doc-status-badge')!;
-        if (status === 'approved') {
-          badge.className = 'doc-status-badge inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-primary-container text-on-primary-container';
-          badge.textContent = 'Aprobado';
-          badge.setAttribute('data-status', 'approved');
-        } else {
-          badge.className = 'doc-status-badge inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-error-container text-on-error-container';
-          badge.textContent = 'Rechazado';
-          badge.setAttribute('data-status', 'rejected');
-        }
-
-        // Remove approve/reject buttons, re-enable view/download
-        row.querySelectorAll('.doc-approve-btn, .doc-reject-btn').forEach(b => b.remove());
-        row.querySelectorAll('.doc-view-btn, .doc-dl-btn').forEach(b => (b as HTMLButtonElement).disabled = false);
-
+        await verifyDocument(docId, {
+          status,
+          verificationNotes: verificationNotes.trim() || undefined,
+        });
+        documentsState = documentsState.map(doc => doc.id === docId
+          ? { ...doc, verificationStatus: status, verificationNotes: verificationNotes.trim() || null }
+          : doc);
+        populateDocuments(documentsState);
+        closeDocumentReviewModal();
         showToast(status === 'approved' ? 'Documento aprobado' : 'Documento rechazado');
       } catch (err: any) {
         showToast(err?.body?.message || err?.message || 'Error al verificar documento', 'error');
-        btns.forEach(b => b.disabled = false);
+      } finally {
+        if (approveBtn) approveBtn.disabled = false;
+        if (rejectBtn) rejectBtn.disabled = false;
+        if (closeBtn) closeBtn.disabled = false;
       }
     }
 
@@ -1119,6 +1284,28 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       saveEditForm();
     });
 
+    document.getElementById('doc-review-close')?.addEventListener('click', closeDocumentReviewModal);
+    document.getElementById('doc-review-cancel')?.addEventListener('click', closeDocumentReviewModal);
+    document.getElementById('doc-review-modal')?.addEventListener('click', (event) => {
+      if (event.target === event.currentTarget) closeDocumentReviewModal();
+    });
+    document.addEventListener('keydown', (event) => {
+      const modal = document.getElementById('doc-review-modal');
+      if (event.key === 'Escape' && modal && !modal.classList.contains('hidden')) closeDocumentReviewModal();
+    });
+    document.getElementById('doc-review-zoom-in')?.addEventListener('click', () => setDocReviewZoom(docReviewZoom + DOC_ZOOM_STEP));
+    document.getElementById('doc-review-zoom-out')?.addEventListener('click', () => setDocReviewZoom(docReviewZoom - DOC_ZOOM_STEP));
+    document.getElementById('doc-review-approve')?.addEventListener('click', () => {
+      if (!currentDocReviewId) return;
+      const notes = (document.getElementById('doc-review-notes') as HTMLTextAreaElement | null)?.value || '';
+      handleDocVerify(currentDocReviewId, 'approved', notes);
+    });
+    document.getElementById('doc-review-reject')?.addEventListener('click', () => {
+      if (!currentDocReviewId) return;
+      const notes = (document.getElementById('doc-review-notes') as HTMLTextAreaElement | null)?.value || '';
+      handleDocVerify(currentDocReviewId, 'rejected', notes);
+    });
+
     document.getElementById('e-country')?.addEventListener('change', () => {
       const countryId = Number((document.getElementById('e-country') as HTMLSelectElement).value);
       loadProvincesInto('#e-province', countryId || undefined, undefined);
@@ -1164,9 +1351,10 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         ]);
 
         profData = profile;
+        documentsState = docs;
         populateProfile(profile);
         populateIdentity(profileId, profile.identityFrontUrl, profile.identityBackUrl);
-        populateDocuments(docs);
+        populateDocuments(documentsState);
         populateHistory(history);
 
         document.getElementById('detail-loading')!.classList.add('hidden');
