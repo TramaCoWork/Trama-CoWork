@@ -580,4 +580,8 @@ select {
   padding: 0.5rem 0.9rem;
 }
 
+.city-name {
+  text-transform: capitalize;
+}
+
 /* Trazabilidad: editado por Programmer en 2026-05-15 18:10:00 */
