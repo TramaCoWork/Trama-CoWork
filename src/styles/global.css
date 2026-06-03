@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 @import "tailwindcss";
 
@@ -65,11 +65,28 @@
   --color-star: #ca8a04;
   --color-star-empty: rgba(110, 121, 122, 0.3);
 
+  --shadow-sm: 0 4px 10px rgb(0 0 0 / 0.06);
+  --shadow-md: 0 10px 24px rgb(0 0 0 / 0.12);
+  --shadow-lg: 0 20px 42px rgb(0 0 0 / 0.16);
+
+  --radius-card: 20px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl-new: 24px;
   --radius-2xl: 2rem;
 
-  --font-family-headline: 'Manrope', sans-serif;
-  --font-family-body: 'Manrope', sans-serif;
-  --font-family-label: 'Manrope', sans-serif;
+  --font-family-headline: 'Inter', sans-serif;
+  --font-family-body: 'Inter', sans-serif;
+  --font-family-label: 'Inter', sans-serif;
+}
+
+@layer base {
+  * {
+    transition-duration: 150ms;
+    transition-timing-function: ease;
+  }
 }
 
 .material-symbols-outlined {
@@ -587,4 +604,4 @@ select {
   text-transform: capitalize;
 }
 
-/* Trazabilidad: editado por Programmer en 2026-05-25 18:38:45 */
+/* Trazabilidad: editado por Programmer en 2026-06-02 15:19:35 */

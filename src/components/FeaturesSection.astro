@@ -1,0 +1,30 @@
+---
+const features = [
+  { title: "Perfiles verificados", description: "Validamos cada perfil para garantizar calidad y confianza.", icon: "shield" },
+  { title: "Conexiones reales", description: "Conectá con profesionales alineados a tus necesidades.", icon: "users" },
+  { title: "Proyectos exitosos", description: "Impulsá tus ideas con talento comprobado.", icon: "briefcase" },
+  { title: "Soporte continuo", description: "Estamos para ayudarte en cada paso del proceso.", icon: "headset" },
+];
+---
+
+<section style="padding:40px 24px 64px; background:white;" aria-label="Ventajas de TRAMA">
+  <div style="max-width:1200px; margin:0 auto;">
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:32px; align-items:start;">
+      {features.map((item) => (
+        <article style="display:flex; align-items:flex-start; gap:16px;">
+          <div style="flex-shrink:0; width:44px; height:44px; border-radius:50%; border:1.5px solid #D9D9D9; display:flex; align-items:center; justify-content:center; color:#087781;" aria-hidden="true">
+            {item.icon === "shield" && <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>}
+            {item.icon === "users" && <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
+            {item.icon === "briefcase" && <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>}
+            {item.icon === "headset" && <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 0 1 18 0"/><path d="M5 11v6a2 2 0 0 0 2 2h1v-8H7a2 2 0 0 0-2 2Z"/><path d="M19 11h-1v8h1a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Z"/><path d="M12 20v1"/></svg>}
+          </div>
+          <div>
+            <h3 style="font-size:14px; font-weight:700; color:#111827; margin:0 0 4px 0;">{item.title}</h3>
+            <p style="font-size:13px; line-height:1.5; color:#5b6472; margin:0;">{item.description}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+<!-- Trazabilidad: editado por Programmer en 2026-06-02 -->

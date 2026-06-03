@@ -23,6 +23,8 @@ export interface ApiFeaturedProfessional {
   services: string[];
   rubro?: { id: number; slug: string; name: string } | null;
   city?: string | null;
+  rating?: number;
+  reviewCount?: number;
 }
 
 const DEFAULT_PHOTO = '/images/default-avatar.svg';
@@ -43,9 +45,7 @@ export async function fetchFeaturedProfessionals(): Promise<ApiFeaturedProfessio
   return api.get<ApiFeaturedProfessional[]>('/professionals/featured');
 }
 
-export async function fetchFeaturedProfessionalsSection(
-  limit: number = 8,
-): Promise<ApiFeaturedProfessional[]> {
+export async function fetchFeaturedProfessionalsSection(limit: number = 8): Promise<ApiFeaturedProfessional[]> {
   const res = await fetch(apiURL('/professionals/featured'));
   if (!res.ok) {
     throw new Error(`Error fetching featured professionals: ${res.status}`);
@@ -55,6 +55,14 @@ export async function fetchFeaturedProfessionalsSection(
 }
 
 export async function renderFeaturedSection(containerId: string): Promise<void> {
+  const escapeHtml = (str: string): string =>
+    str
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+
   const container = document.getElementById(containerId);
   if (!container) return;
   try {
@@ -66,22 +74,35 @@ export async function renderFeaturedSection(containerId: string): Promise<void> 
     container.innerHTML = professionals
       .map((pro) => {
         const photo = `${API_BASE}/uploads/photo/${pro.id}`;
-        const category = pro.rubro?.name ?? (pro.services?.[0] ?? '');
-        const city = pro.city ?? '';
-        const price =
-          pro.pricePerHour != null ? `$${pro.pricePerHour.toLocaleString('es-AR')} /hr.` : '';
+        const category = escapeHtml(pro.rubro?.name ?? pro.services?.[0] ?? '');
+        const city = escapeHtml(pro.city ?? '');
+        const name = escapeHtml(pro.name);
+        const escapedPrice = escapeHtml(String(pro.pricePerHour ?? ''));
+        const priceLabel = pro.pricePerHour ? `Desde $${escapedPrice} / hr` : 'Consultar precio';
+        const rating = pro.rating ?? 4.8;
+        const reviewCount = pro.reviewCount ?? 0;
         return `
-        <a href="/profesionales/perfil?id=${pro.id}" class="block group-link h-full">
-          <article class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 flex flex-col items-center text-center cursor-pointer group h-full">
-            <div class="w-24 h-24 rounded-full overflow-hidden mb-4 ring-2 ring-primary/20 group-hover:ring-primary/60 transition-all duration-300">
-              <img src="${photo}" alt="${pro.name}" class="w-full h-full object-cover" onerror="this.src='${DEFAULT_PHOTO}'" />
+        <article style="background: white; border-radius: 20px; border: 1px solid #EDEDED; padding: 20px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: transform 0.15s ease, box-shadow 0.15s ease;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 28px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.04)'">
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <div style="position: relative; flex-shrink: 0;">
+                <img src="${photo}" alt="${name}" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover;" onerror="this.src='${DEFAULT_PHOTO}'" />
+                <span style="position: absolute; bottom: 0; right: 0; width: 20px; height: 20px; background: #087781; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center;" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10" /></svg>
+                </span>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0;">
+                <h3 style="font-size: 15px; font-weight: 700; color: #404040; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0;">${name}</h3>
+                ${category ? `<span style="display: inline-block; background: #E6F4F5; color: #087781; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${category}</span>` : ''}
+                ${city ? `<p style="font-size: 12px; color: #737373; display: flex; align-items: center; gap: 4px; margin: 0;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#087781" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg><span>${city}</span></p>` : ''}
+                <p style="font-size: 12px; color: #737373; margin: 0;">⭐ ${rating} (${reviewCount} trabajos)</p>
+              </div>
             </div>
-            <h3 class="text-base font-bold text-neutral-900 mb-1 leading-tight">${pro.name}</h3>
-            ${category ? `<span class="text-xs font-bold text-primary tracking-widest uppercase mb-2">${category}</span>` : ''}
-            ${city ? `<p class="text-sm text-neutral-600 flex items-center gap-1 justify-center mb-3"><svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-primary flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-2.079 3.218-4.402 3.218-7.327a7.5 7.5 0 10-15 0c0 2.925 1.274 5.248 3.218 7.327a19.579 19.579 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg><span class="city-name">${city}</span></p>` : '<div class="mb-3"></div>'}
-            ${price ? `<p class="text-[11px] font-black text-primary mt-auto">${price}</p>` : ''}
+
+            <p style="font-size: 15px; font-weight: 700; color: #404040; margin: 4px 0 0 0;">${priceLabel}</p>
+
+            <a href="/profesionales/perfil?id=${pro.id}" style="display: block; width: 100%; text-align: center; padding: 9px; border: 1.5px solid #087781; border-radius: 10px; color: #087781; font-size: 14px; font-weight: 500; text-decoration: none; transition: background 0.15s;" onmouseover="this.style.background='#087781';this.style.color='white'" onmouseout="this.style.background='';this.style.color='#087781'">Ver perfil →</a>
           </article>
-        </a>
       `;
       })
       .join('');
@@ -125,10 +146,12 @@ export async function renderFeaturedProfessionals(containerId: string): Promise<
               <h3 class="text-xl font-bold text-on-surface">${pro.name}</h3>
             </div>
             <div class="text-right">
-              ${pro.pricePerHour != null
-                ? `<span class="text-xs text-outline block font-medium">Precio por hora</span>
+              ${
+                pro.pricePerHour != null
+                  ? `<span class="text-xs text-outline block font-medium">Precio por hora</span>
               <span class="text-lg font-black text-on-surface">$${pro.pricePerHour}<span class="text-sm font-medium text-outline">/hr</span></span>`
-                : ''}
+                  : ''
+              }
             </div>
           </div>
           <div class="flex items-center gap-1 mb-6" role="img" aria-label="${rating} de 5 estrellas">
@@ -153,3 +176,5 @@ export async function renderFeaturedProfessionals(containerId: string): Promise<
     console.error('Error cargando profesionales destacados:', err);
   }
 }
+
+// Trazabilidad: editado por Programmer en 2026-06-02 18:10:00
