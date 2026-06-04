@@ -1,22 +1,29 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-
-const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367P7jELVkpiimAmtwksLf4UQudl-KSgzPY4BleK7el9TLfVR7jK6zX9yd2EQdkRK5-q1UDPmMDkY1NMIcO-N8jyVz4SZwdxvw3O2GMLwPhhCwhuJhClLVrS979Tt7wrK7hdVQTzcai-eW6B3S3bpH4bFpVE3bSqmn-EfSJ6s0ebA7sWPQ6Iq5rVCppr2Is6FMxSdwU9xB1bzHdD0HE31yPOAhzytKfPtphYclP-7YWdUeF-RISdIpXwSAPYFQyi4s7qg';
+import Layout from "../../layouts/Layout.astro";
 ---
 
-<Layout title="Rubros Profesionales | TRAMA" description="Explora los rubros profesionales disponibles en la red TRAMA.">
+<Layout
+  title="Rubros Profesionales | TRAMA"
+  description="Explora los rubros profesionales disponibles en la red TRAMA."
+>
   <section class="pt-12 pb-20">
     <!-- Hero -->
     <header class="max-w-3xl mx-auto px-5 md:px-8 mb-8">
-      <span class="text-xs font-bold tracking-[0.2em] text-secondary uppercase mb-2 block">
+      <span
+        class="text-xs font-bold tracking-[0.2em] text-secondary uppercase mb-2 block"
+      >
         Red Profesional de Élite
       </span>
-      <h1 class="text-4xl md:text-5xl font-extrabold text-on-surface tracking-tight leading-tight mb-6">
-        Explora <span class="text-primary italic">Rubros</span>
+      <h1
+        class="text-4xl md:text-5xl font-extrabold text-on-surface tracking-tight leading-tight mb-6"
+      >
+        Explor&aacute; <span class="text-primary italic">Areas</span>
       </h1>
       <!-- Search -->
       <div class="relative input-icon-wrapper">
-        <span class="material-symbols-outlined text-outline" aria-hidden="true">search</span>
+        <span class="material-symbols-outlined text-outline" aria-hidden="true"
+          >search</span
+        >
         <label for="category-search" class="sr-only">Filtrar rubros</label>
         <input
           id="category-search"
@@ -28,11 +35,17 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
     </header>
 
     <!-- Accordion List -->
-    <section class="max-w-3xl mx-auto px-5 md:px-8" aria-label="Lista de rubros">
+    <section
+      class="max-w-3xl mx-auto px-5 md:px-8"
+      aria-label="Lista de rubros"
+    >
       <!-- Loading -->
       <div id="rubros-loading" class="flex items-center justify-center py-24">
         <div class="flex flex-col items-center gap-3">
-          <span class="material-symbols-outlined text-4xl text-primary animate-spin" aria-hidden="true">schedule</span>
+          <span
+            class="material-symbols-outlined text-4xl text-primary animate-spin"
+            aria-hidden="true">schedule</span
+          >
           <p class="text-sm font-medium text-on-surface-variant">Cargando..</p>
         </div>
       </div>
@@ -40,9 +53,17 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
       <div class="space-y-3 hidden" id="rubros-accordion"></div>
       <!-- Error -->
       <div id="rubros-error" class="hidden text-center py-12">
-        <span class="material-symbols-outlined text-4xl text-outline mb-4 block" aria-hidden="true">error_outline</span>
-        <p class="text-on-surface-variant font-medium">No se pudieron cargar los rubros.</p>
-        <button onclick="location.reload()" class="mt-4 px-6 py-3 bg-primary text-on-primary rounded-xl font-bold text-sm hover:opacity-90 transition-opacity">
+        <span
+          class="material-symbols-outlined text-4xl text-outline mb-4 block"
+          aria-hidden="true">error_outline</span
+        >
+        <p class="text-on-surface-variant font-medium">
+          No se pudieron cargar los rubros.
+        </p>
+        <button
+          onclick="location.reload()"
+          class="mt-4 px-6 py-3 bg-primary text-on-primary rounded-xl font-bold text-sm hover:opacity-90 transition-opacity"
+        >
           Reintentar
         </button>
       </div>
@@ -50,35 +71,21 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
 
     <!-- CTA -->
     <aside class="max-w-3xl mx-auto px-5 md:px-8 mt-20">
-      <div class="bg-surface-container-low rounded-3xl p-8 md:p-12 relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-10">
-        <div class="relative z-10 max-w-xl text-center lg:text-left">
-          <h2 class="text-3xl md:text-4xl font-extrabold text-on-surface tracking-tight mb-4">
+      <div
+        class="bg-surface-container-low rounded-3xl p-8 md:p-12 relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-10"
+      >
+        <div class="relative z-10 max-w-xl text-center lg:text-left mx-auto">
+          <h2
+            class="text-3xl md:text-4xl font-extrabold text-on-surface tracking-tight mb-4"
+          >
             ¿No encontrás lo que buscás?
           </h2>
-          <p class="text-on-surface-variant text-base md:text-lg mb-8 leading-relaxed">
-            Nuestra red cuenta con miles de profesionales especializados. Creá una solicitud personalizada y dejá que ellos te encuentren.
-          </p>
-          <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-            <a
-              href="/registro"
-              class="px-8 py-4 bg-primary text-on-primary rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all text-center"
-            >
-              Solicitar Profesional
-            </a>
-            <a
-              href="/profesionales"
-              class="px-8 py-4 bg-surface-container-lowest text-primary rounded-xl font-bold hover:bg-surface-container-high transition-all text-center"
-            >
-              Ver Directorio General
-            </a>
-          </div>
-        </div>
-        <div class="relative z-10 w-full lg:w-1/3 aspect-video lg:aspect-square bg-surface-container-lowest rounded-2xl shadow-xl overflow-hidden rotate-2 group hover:rotate-0 transition-transform duration-700">
-          <img
-            alt="Planos arquitectónicos sobre mesa de trabajo con herramientas de dibujo"
-            class="w-full h-full object-cover"
-            src={ctaImage}
-          />
+          <a
+            href="/contacto"
+            class="inline-block px-8 py-4 bg-primary text-on-primary rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all text-center"
+          >
+            Contactanos
+          </a>
         </div>
       </div>
     </aside>
@@ -87,20 +94,31 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
   <style>
     .accordion-body {
       overflow: hidden;
-      transition: max-height 0.35s ease-out, opacity 0.25s ease-out;
+      transition:
+        max-height 0.35s ease-out,
+        opacity 0.25s ease-out;
       max-height: 0;
       opacity: 0;
     }
   </style>
 
   <script>
-    import { fetchRubros, fetchFullTree, fetchProfessionsByRubro } from '../../services/professionCategoriesService';
-    import type { Rubro, ProfessionCategory } from '../../services/professionCategoriesService';
+    import {
+      fetchRubros,
+      fetchFullTree,
+      fetchProfessionsByRubro,
+    } from "../../services/professionCategoriesService";
+    import type {
+      Rubro,
+      ProfessionCategory,
+    } from "../../services/professionCategoriesService";
 
-    const accordionEl = document.getElementById('rubros-accordion')!;
-    const loadingEl = document.getElementById('rubros-loading')!;
-    const errorEl = document.getElementById('rubros-error')!;
-    const searchInput = document.getElementById('category-search') as HTMLInputElement;
+    const accordionEl = document.getElementById("rubros-accordion")!;
+    const loadingEl = document.getElementById("rubros-loading")!;
+    const errorEl = document.getElementById("rubros-error")!;
+    const searchInput = document.getElementById(
+      "category-search",
+    ) as HTMLInputElement;
 
     // Cache for loaded sub-rubros per rubro id
     const childrenCache = new Map<number, ProfessionCategory[]>();
@@ -144,10 +162,16 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
 
     // ─── Render children (level 2+3) inside an accordion body ───
     // Si filterQuery es proporcionado, solo muestra sub-rubros y profesiones que coincidan
-    function renderChildren(bodyEl: HTMLElement, rubroSlug: string, children: ProfessionCategory[], filterQuery?: string) {
-      const ul = bodyEl.querySelector('ul')!;
+    function renderChildren(
+      bodyEl: HTMLElement,
+      rubroSlug: string,
+      children: ProfessionCategory[],
+      filterQuery?: string,
+    ) {
+      const ul = bodyEl.querySelector("ul")!;
       if (children.length === 0) {
-        ul.innerHTML = '<li class="p-3 text-on-surface-variant text-sm italic pl-16">Sin sub-rubros disponibles</li>';
+        ul.innerHTML =
+          '<li class="p-3 text-on-surface-variant text-sm italic pl-16">Sin sub-rubros disponibles</li>';
         return;
       }
 
@@ -159,8 +183,8 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
         for (const subRubro of children) {
           const subMatches = q && subRubro.name.toLowerCase().includes(q);
           // Filtrar profesiones (nivel 3) que coincidan
-          const matchingProfessions = (subRubro.children || []).filter(
-            prof => prof.name.toLowerCase().includes(q)
+          const matchingProfessions = (subRubro.children || []).filter((prof) =>
+            prof.name.toLowerCase().includes(q),
           );
           if (subMatches || matchingProfessions.length > 0) {
             // Si el sub-rubro coincide, mostrar todas sus profesiones
@@ -174,12 +198,15 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
       }
 
       if (filteredChildren.length === 0) {
-        ul.innerHTML = '<li class="p-3 text-on-surface-variant text-sm italic pl-16">Sin resultados</li>';
+        ul.innerHTML =
+          '<li class="p-3 text-on-surface-variant text-sm italic pl-16">Sin resultados</li>';
         return;
       }
 
       // Render: cada sub-rubro como link (nivel 3 no se muestra)
-      ul.innerHTML = filteredChildren.map(subRubro => `
+      ul.innerHTML = filteredChildren
+        .map(
+          (subRubro) => `
         <li>
           <a
             href="/profesionales?rubro=${rubroSlug}&sub_rubro=${subRubro.slug}"
@@ -192,52 +219,54 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
             </span>
           </a>
         </li>
-      `).join('');
+      `,
+        )
+        .join("");
     }
 
     // ─── Expand a card (visual only, no data load) ──────────────
     function expandCard(card: HTMLElement) {
-      const trigger = card.querySelector('.accordion-trigger')!;
-      const body = card.querySelector('.accordion-body')! as HTMLElement;
-      const icon = card.querySelector('.accordion-icon')! as HTMLElement;
-      const title = card.querySelector('.accordion-title')! as HTMLElement;
+      const trigger = card.querySelector(".accordion-trigger")!;
+      const body = card.querySelector(".accordion-body")! as HTMLElement;
+      const icon = card.querySelector(".accordion-icon")! as HTMLElement;
+      const title = card.querySelector(".accordion-title")! as HTMLElement;
 
-      icon.style.transform = 'rotate(180deg)';
-      title.classList.add('text-primary');
-      title.classList.remove('text-on-surface');
-      icon.classList.add('text-primary');
-      icon.classList.remove('text-outline');
-      trigger.setAttribute('aria-expanded', 'true');
+      icon.style.transform = "rotate(180deg)";
+      title.classList.add("text-primary");
+      title.classList.remove("text-on-surface");
+      icon.classList.add("text-primary");
+      icon.classList.remove("text-outline");
+      trigger.setAttribute("aria-expanded", "true");
 
       // Need to set max-height after content is rendered
       requestAnimationFrame(() => {
-        body.style.maxHeight = body.scrollHeight + 'px';
-        body.style.opacity = '1';
+        body.style.maxHeight = body.scrollHeight + "px";
+        body.style.opacity = "1";
       });
     }
 
     // ─── Collapse a card (visual only) ──────────────────────────
     function collapseCard(card: HTMLElement) {
-      const trigger = card.querySelector('.accordion-trigger')!;
-      const body = card.querySelector('.accordion-body')! as HTMLElement;
-      const icon = card.querySelector('.accordion-icon')! as HTMLElement;
-      const title = card.querySelector('.accordion-title')! as HTMLElement;
+      const trigger = card.querySelector(".accordion-trigger")!;
+      const body = card.querySelector(".accordion-body")! as HTMLElement;
+      const icon = card.querySelector(".accordion-icon")! as HTMLElement;
+      const title = card.querySelector(".accordion-title")! as HTMLElement;
 
-      body.style.maxHeight = '0';
-      body.style.opacity = '0';
-      icon.style.transform = '';
-      title.classList.remove('text-primary');
-      title.classList.add('text-on-surface');
-      icon.classList.remove('text-primary');
-      icon.classList.add('text-outline');
-      trigger.setAttribute('aria-expanded', 'false');
+      body.style.maxHeight = "0";
+      body.style.opacity = "0";
+      icon.style.transform = "";
+      title.classList.remove("text-primary");
+      title.classList.add("text-on-surface");
+      icon.classList.remove("text-primary");
+      icon.classList.add("text-outline");
+      trigger.setAttribute("aria-expanded", "false");
     }
 
     // ─── Toggle accordion (click handler) ───────────────────────
     async function toggleAccordion(card: HTMLElement) {
-      const trigger = card.querySelector('.accordion-trigger')!;
-      const body = card.querySelector('.accordion-body')! as HTMLElement;
-      const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+      const trigger = card.querySelector(".accordion-trigger")!;
+      const body = card.querySelector(".accordion-body")! as HTMLElement;
+      const isExpanded = trigger.getAttribute("aria-expanded") === "true";
 
       if (isExpanded) {
         collapseCard(card);
@@ -251,8 +280,11 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
             childrenCache.set(rubroId, children);
             renderChildren(body, rubroSlug, children);
           } catch (err) {
-            console.error(`Error cargando sub-rubros para rubro ${rubroId}:`, err);
-            body.querySelector('ul')!.innerHTML =
+            console.error(
+              `Error cargando sub-rubros para rubro ${rubroId}:`,
+              err,
+            );
+            body.querySelector("ul")!.innerHTML =
               '<li class="p-3 text-error text-sm pl-16">Error al cargar sub-rubros</li>';
           }
         } else {
@@ -264,7 +296,10 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
     }
 
     // ─── Search: check if a rubro tree matches the query ────────
-    function findMatchesInRubro(rubro: ProfessionCategory, query: string): boolean {
+    function findMatchesInRubro(
+      rubro: ProfessionCategory,
+      query: string,
+    ): boolean {
       const q = query.toLowerCase();
       // Check rubro name (level 1)
       if (rubro.name.toLowerCase().includes(q)) return true;
@@ -279,7 +314,10 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
     }
 
     // Does a rubro match only at level 1 (name itself)?
-    function matchesAtLevel1Only(rubro: ProfessionCategory, query: string): boolean {
+    function matchesAtLevel1Only(
+      rubro: ProfessionCategory,
+      query: string,
+    ): boolean {
       return rubro.name.toLowerCase().includes(query.toLowerCase());
     }
 
@@ -287,47 +325,50 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
     function bindSearch() {
       let debounceTimer: ReturnType<typeof setTimeout>;
 
-      searchInput?.addEventListener('input', () => {
+      searchInput?.addEventListener("input", () => {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
           const query = searchInput.value.trim();
 
-          accordionEl.querySelectorAll('.rubro-card').forEach((el) => {
+          accordionEl.querySelectorAll(".rubro-card").forEach((el) => {
             const card = el as HTMLElement;
             const rubroId = Number(card.dataset.rubroId);
             const rubroSlug = card.dataset.rubroSlug!;
 
             if (!query) {
               // Empty query: show all, collapse all
-              card.style.display = '';
+              card.style.display = "";
               collapseCard(card);
               return;
             }
 
             // Find matching rubro in fullTree
-            const treeRubro = fullTree.find(r => r.id === rubroId);
+            const treeRubro = fullTree.find((r) => r.id === rubroId);
             if (!treeRubro) {
-              card.style.display = 'none';
+              card.style.display = "none";
               return;
             }
 
             const hasMatch = findMatchesInRubro(treeRubro, query);
             if (!hasMatch) {
-              card.style.display = 'none';
+              card.style.display = "none";
               collapseCard(card);
               return;
             }
 
             // Show the card
-            card.style.display = '';
+            card.style.display = "";
 
             // If match is only at level 1 (rubro name), show card but don't expand
             if (matchesAtLevel1Only(treeRubro, query)) {
               // Don't auto-expand, just show the card
               // But if there are also deeper matches, expand
-              const hasDeepMatch = (treeRubro.children || []).some(sub =>
-                sub.name.toLowerCase().includes(query.toLowerCase()) ||
-                (sub.children || []).some(prof => prof.name.toLowerCase().includes(query.toLowerCase()))
+              const hasDeepMatch = (treeRubro.children || []).some(
+                (sub) =>
+                  sub.name.toLowerCase().includes(query.toLowerCase()) ||
+                  (sub.children || []).some((prof) =>
+                    prof.name.toLowerCase().includes(query.toLowerCase()),
+                  ),
               );
               if (!hasDeepMatch) {
                 collapseCard(card);
@@ -336,7 +377,7 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
             }
 
             // Has match at level 2 or 3: expand and render filtered children
-            const body = card.querySelector('.accordion-body')! as HTMLElement;
+            const body = card.querySelector(".accordion-body")! as HTMLElement;
 
             // Use fullTree data (already has children)
             const treeChildren = treeRubro.children || [];
@@ -370,29 +411,31 @@ const ctaImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBaYuV60367
           }
         }
 
-        loadingEl.classList.add('hidden');
+        loadingEl.classList.add("hidden");
 
         if (rubros.length === 0) {
-          errorEl.classList.remove('hidden');
+          errorEl.classList.remove("hidden");
           return;
         }
 
-        accordionEl.innerHTML = rubros.map(renderRubroCard).join('');
-        accordionEl.classList.remove('hidden');
+        accordionEl.innerHTML = rubros.map(renderRubroCard).join("");
+        accordionEl.classList.remove("hidden");
 
         // Bind click handlers
-        accordionEl.querySelectorAll('.accordion-trigger').forEach((trigger) => {
-          trigger.addEventListener('click', () => {
-            const card = trigger.closest('.rubro-card') as HTMLElement;
-            toggleAccordion(card);
+        accordionEl
+          .querySelectorAll(".accordion-trigger")
+          .forEach((trigger) => {
+            trigger.addEventListener("click", () => {
+              const card = trigger.closest(".rubro-card") as HTMLElement;
+              toggleAccordion(card);
+            });
           });
-        });
 
         bindSearch();
       } catch (err) {
-        console.error('Error cargando rubros:', err);
-        loadingEl.classList.add('hidden');
-        errorEl.classList.remove('hidden');
+        console.error("Error cargando rubros:", err);
+        loadingEl.classList.add("hidden");
+        errorEl.classList.remove("hidden");
       }
     }
 
