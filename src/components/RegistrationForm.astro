@@ -1,45 +1,28 @@
 ---
+import logoWhite from '../assets/images/logo-trama-apaisado-white.png';
 ---
 
-<section class="w-full md:w-1/2 lg:w-2/5 bg-surface-container-lowest p-5 sm:p-8 lg:p-16 flex flex-col justify-center relative min-h-screen">
-  <!-- Back Link -->
-  <a
-    href="/"
-    class="flex items-center gap-2 text-primary font-semibold hover:opacity-80 transition-opacity mb-8 self-start"
-  >
-    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+<section style="padding: 48px 50px; max-width: 640px;">
+  <img src={logoWhite.src} alt="Trama CoWork" style="width:200px; height:auto; margin-bottom:52px;" />
+
+  <a href="/" class="flex items-center gap-2" style="font-size:15px; font-weight:500; color:#0C7A82; margin-bottom:36px;">
+    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
     </svg>
     Volver al inicio
   </a>
 
-  <div class="w-full max-w-lg mx-auto">
-    <!-- Logo mobile -->
-    <div class="md:hidden mb-8 flex items-center gap-3">
-      <svg class="w-8 h-8 shrink-0" fill="none" viewBox="0 0 100 100" aria-hidden="true">
-        <path d="M30 20L50 40L70 20" stroke="#00AFB9" stroke-linecap="round" stroke-width="8"/>
-        <path d="M30 80L50 60L70 80" stroke="#F9C74F" stroke-linecap="round" stroke-width="8"/>
-        <path d="M20 30L40 50L20 70" stroke="#F94144" stroke-linecap="round" stroke-width="8"/>
-        <path d="M80 30L60 50L80 70" stroke="#90BE6D" stroke-linecap="round" stroke-width="8"/>
-      </svg>
-      <span class="text-xl font-extrabold tracking-widest uppercase text-on-surface">Trama</span>
-    </div>
+  <h2 style="font-size:64px; font-weight:700; line-height:1.05; letter-spacing:-2px; color:#111827;">Unite a <span style="color:#0C7A82;">TRAMA</span></h2>
+  <p style="font-size:18px; line-height:30px; color:#4B5563; margin-top:12px; margin-bottom:48px;">Crea tu perfil y empezá a conectar.</p>
 
-    <!-- Header -->
-    <div class="mb-8">
-      <h2 class="text-3xl sm:text-4xl font-extrabold text-on-surface tracking-tight">Unite a <span class="text-primary">TRAMA</span></h2>
-      <p class="text-on-surface-variant mt-2 font-medium">Creá tu perfil profesional en minutos.</p>
-    </div>
-
-    <!-- Form -->
-    <form id="registration-form" class="space-y-4 sm:space-y-5" novalidate>
-      <!-- Nombre Completo -->
-      <div>
-        <label class="block text-xs font-bold text-on-surface uppercase tracking-wider mb-2" for="name">Nombre Completo</label>
-        <div class="input-icon-wrapper">
+  <form id="registration-form" novalidate>
+    <div class="flex flex-col gap-[22px]">
+      <div class="flex flex-col">
+        <label for="name" style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:#6B7280; text-transform:uppercase; margin-bottom:6px;">NOMBRE COMPLETO</label>
+        <div class="input-icon-wrapper w-full">
           <span class="material-symbols-outlined" aria-hidden="true">person</span>
           <input
-            class="input-icon w-full pr-4 py-3.5 sm:py-4 border border-outline-variant/30 rounded-xl bg-surface-container-lowest text-on-surface placeholder:text-outline/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+            class="reg-input input-icon"
             id="name"
             name="name"
             placeholder="Ej. Alejandro Martínez"
@@ -50,13 +33,12 @@
         </div>
       </div>
 
-      <!-- Correo Electrónico -->
-      <div>
-        <label class="block text-xs font-bold text-on-surface uppercase tracking-wider mb-2" for="email">Correo Electrónico</label>
-        <div class="input-icon-wrapper">
+      <div class="flex flex-col">
+        <label for="email" style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:#6B7280; text-transform:uppercase; margin-bottom:6px;">CORREO ELECTRÓNICO</label>
+        <div class="input-icon-wrapper w-full">
           <span class="material-symbols-outlined" aria-hidden="true">mail</span>
           <input
-            class="input-icon w-full pr-4 py-3.5 sm:py-4 border border-outline-variant/30 rounded-xl bg-surface-container-lowest text-on-surface placeholder:text-outline/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+            class="reg-input input-icon"
             id="email"
             name="email"
             placeholder="ejemplo@correo.com"
@@ -67,13 +49,12 @@
         </div>
       </div>
 
-      <!-- Contraseña -->
-      <div>
-        <label class="block text-xs font-bold text-on-surface uppercase tracking-wider mb-2" for="password">Contraseña</label>
-        <div class="input-icon-wrapper">
+      <div class="flex flex-col">
+        <label for="password" style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:#6B7280; text-transform:uppercase; margin-bottom:6px;">CONTRASEÑA</label>
+        <div class="input-icon-wrapper w-full">
           <span class="material-symbols-outlined" aria-hidden="true">lock</span>
           <input
-            class="input-icon input-icon-right w-full py-3.5 sm:py-4 border border-outline-variant/30 rounded-xl bg-surface-container-lowest text-on-surface placeholder:text-outline/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+            class="reg-input input-icon input-icon-right"
             id="password"
             name="password"
             placeholder="Mínimo 8 caracteres"
@@ -94,13 +75,12 @@
         </div>
       </div>
 
-      <!-- Confirmar Contraseña -->
-      <div>
-        <label class="block text-xs font-bold text-on-surface uppercase tracking-wider mb-2" for="confirm-password">Confirmar Contraseña</label>
-        <div class="input-icon-wrapper">
+      <div class="flex flex-col">
+        <label for="confirm-password" style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:#6B7280; text-transform:uppercase; margin-bottom:6px;">CONFIRMAR CONTRASEÑA</label>
+        <div class="input-icon-wrapper w-full">
           <span class="material-symbols-outlined" aria-hidden="true">lock</span>
           <input
-            class="input-icon input-icon-right w-full py-3.5 sm:py-4 border border-outline-variant/30 rounded-xl bg-surface-container-lowest text-on-surface placeholder:text-outline/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+            class="reg-input input-icon input-icon-right"
             id="confirm-password"
             name="confirmPassword"
             placeholder="Repetí tu contraseña"
@@ -119,42 +99,40 @@
             <span class="material-symbols-outlined input-icon-right-icon hidden" id="icon-confirm-eye-closed" aria-hidden="true">visibility_off</span>
           </button>
         </div>
-        <p id="confirm-password-error" class="hidden text-xs text-error font-medium mt-1.5">Las contraseñas no coinciden.</p>
       </div>
+      <p id="confirm-password-error" class="hidden text-xs text-error font-medium mt-1.5">Las contraseñas no coinciden.</p>
+    </div>
 
-      <!-- Términos y Privacidad -->
-      <div class="flex items-start gap-3 pt-1">
-        <input
-          class="mt-0.5 h-5 w-5 rounded border-outline-variant text-primary focus:ring-primary/20 shrink-0"
-          id="terms"
-          name="terms"
-          required
-          type="checkbox"
-        />
-        <label for="terms" class="text-xs text-on-surface-variant leading-relaxed">
-          Acepto los <a class="text-primary font-semibold hover:underline" href="/terminos">Términos de Servicio</a> y la
-          <a class="text-primary font-semibold hover:underline" href="/privacidad">Política de Privacidad</a> de TRAMA.
-        </label>
-      </div>
+    <div class="flex items-start gap-3 pt-1" style="margin-top:22px;">
+      <input
+        class="mt-0.5 h-5 w-5 rounded border-outline-variant text-primary focus:ring-primary/20 shrink-0"
+        id="terms"
+        name="terms"
+        required
+        type="checkbox"
+      />
+      <label for="terms" style="font-size:14px; line-height:22px; color:#4B5563;">
+        Acepto los <a href="/terminos" style="color:#0C7A82; font-weight:500;">Términos de Servicio</a> y la
+        <a href="/privacidad" style="color:#0C7A82; font-weight:500;">Política de Privacidad</a> de TRAMA.
+      </label>
+    </div>
 
-      <!-- Submit Button -->
-      <button
-        class="w-full py-3.5 sm:py-4 px-6 bg-primary text-on-primary font-bold rounded-xl shadow-lg shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:brightness-100 disabled:active:scale-100"
-        type="submit"
-        disabled
-      >
-        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-        </svg>
-        Crear cuenta profesional
-      </button>
+    <button
+      class="btn-cta w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+      type="submit"
+      style="height:60px; border-radius:12px; background:linear-gradient(90deg,#006D75 0%,#0C7A82 100%); font-size:18px; font-weight:600; color:#FFF; box-shadow:0 8px 24px rgba(0,109,117,.16); cursor:pointer; margin-top:22px;"
+      disabled
+    >
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </svg>
+      Crear cuenta profesional
+    </button>
 
-      <!-- Login Link -->
-      <p class="text-center text-sm font-medium text-on-surface-variant pt-6">
-        ¿Ya tenés una cuenta? <a class="text-primary font-bold hover:underline" href="/login">Iniciá sesión</a>
-      </p>
-    </form>
-  </div>
+    <p class="text-center" style="font-size:14px; font-weight:500; color:#4B5563; padding-top:24px;">
+      ¿Ya tenés una cuenta? <a class="font-bold hover:underline" href="/login" style="color:#0C7A82;">Iniciá sesión</a>
+    </p>
+  </form>
 </section>
 
 <script>
@@ -253,3 +231,58 @@
     }
   });
 </script>
+
+<style>
+  .reg-input {
+    width: 100%;
+    height: 56px;
+    border: 1px solid #D7DEE4;
+    border-radius: 12px;
+    padding: 0 18px 0 54px !important;
+    font-size: 16px;
+    color: #374151;
+    background: #FFF;
+  }
+
+  .reg-input::placeholder {
+    color: #9CA3AF;
+  }
+
+  .reg-input:hover {
+    border-color: #C2CCD3;
+  }
+
+  .reg-input:focus {
+    outline: none;
+    border-color: #0C7A82;
+    box-shadow: 0 0 0 3px rgba(12, 122, 130, .10);
+  }
+
+  .input-icon-wrapper .material-symbols-outlined:not(.input-icon-right-icon) {
+    font-size: 20px;
+    color: #6B7280;
+  }
+
+  .btn-cta {
+    transition: transform .15s, box-shadow .15s;
+  }
+
+  .btn-cta:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(0, 109, 117, .20);
+  }
+
+  @media (max-width: 768px) {
+    section {
+      padding: 24px !important;
+    }
+
+    h2 {
+      font-size: 44px !important;
+    }
+
+    .btn-cta {
+      height: 56px !important;
+    }
+  }
+</style>

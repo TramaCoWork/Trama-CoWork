@@ -1,94 +1,67 @@
 ---
 ---
 
-<section class="hidden md:flex md:w-1/2 lg:w-3/5 relative overflow-hidden bg-on-surface flex-col p-8 lg:p-16 text-on-primary min-h-screen">
-  <!-- Background Image -->
-  <img
-    alt="Espacio de coworking con profesionales colaborando"
-    class="absolute inset-0 w-full h-full object-cover opacity-50"
-    src="/images/registro-hero.jpg"
-    loading="eager"
-  />
-  <!-- Dark overlay gradient -->
-  <div class="absolute inset-0 bg-gradient-to-b from-on-surface/85 to-on-surface/60"></div>
+<section style="position:relative; overflow:hidden; min-height:100vh; padding:48px 64px; background:linear-gradient(135deg,#06363A 0%,#08444A 55%,#063036 100%);">
+  <div class="absolute pointer-events-none trama-texture" style="right:-180px; top:-40px; width:100%; height:100%; opacity:0.08; mix-blend-mode:soft-light; transform:scale(1.5);"></div>
+  <div class="absolute pointer-events-none" style="left:-120px; bottom:-120px; width:620px; height:620px; background:radial-gradient(circle,rgba(12,122,130,.22) 0%,transparent 70%); border-radius:50%;"></div>
 
-  <div class="relative z-10 flex flex-col h-full">
-    <!-- Logo -->
-    <div class="mb-16">
-      <div class="flex items-center gap-3">
-        <svg class="w-10 h-10 shrink-0" fill="none" viewBox="0 0 100 100" aria-hidden="true">
-          <path d="M30 20L50 40L70 20" stroke="#00AFB9" stroke-linecap="round" stroke-width="8"/>
-          <path d="M30 80L50 60L70 80" stroke="#F9C74F" stroke-linecap="round" stroke-width="8"/>
-          <path d="M20 30L40 50L20 70" stroke="#F94144" stroke-linecap="round" stroke-width="8"/>
-          <path d="M80 30L60 50L80 70" stroke="#90BE6D" stroke-linecap="round" stroke-width="8"/>
+  <div class="relative z-10">
+    <h1 style="max-width:420px; margin-top:110px; font-size:72px; font-weight:700; line-height:0.95; letter-spacing:-2px; color:#FFF;">Donde el talento<br/>se vuelve <span style="color:#0C7A82;">trama.</span></h1>
+    <p style="font-size:18px; line-height:30px; color:rgba(255,255,255,.88); margin-top:28px;">En TRAMA conectas con profesionales,<br/>proyectos y oportunidades reales.</p>
+  </div>
+
+  <div class="absolute" style="left:64px; right:64px; bottom:96px; height:250px; border-radius:22px; padding:40px; background:linear-gradient(135deg,#006D75 0%,#0C7A82 100%); box-shadow:0 24px 48px rgba(0,0,0,.20);">
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:32px; height:100%;">
+      <div style="padding-right:32px; border-right:1px solid rgba(255,255,255,.18); text-align:center;">
+        <svg width="56" height="56" style="display:block; margin:0 auto 12px;" fill="none" stroke="white" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true">
+          <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
         </svg>
-        <div>
-          <span class="text-2xl font-extrabold tracking-widest uppercase block leading-none">Trama</span>
-          <span class="text-sm font-light tracking-[0.25em] uppercase opacity-80">Cowork</span>
-        </div>
+        <p style="font-size:18px; font-weight:600; color:#FFF; margin-top:12px;">Conectá con profesionales</p>
+        <p style="font-size:15px; color:rgba(255,255,255,.88); margin-top:6px;">Expandí tu red y generá oportunidades reales.</p>
       </div>
-    </div>
-
-    <!-- Main Slogan -->
-    <div class="mt-auto mb-12">
-      <h1 class="text-5xl lg:text-7xl font-black leading-[1.05] uppercase tracking-tight">
-        Donde<br/>el talento<br/><span class="text-primary">conecta.</span>
-      </h1>
-      <!-- Decorative gradient line -->
-      <div class="w-24 h-1.5 bg-gradient-to-r from-error via-tertiary to-primary mt-6 mb-8 rounded-full"></div>
-      <p class="text-lg lg:text-xl font-light max-w-md opacity-90 leading-relaxed">
-        Una nueva forma de conectar, colaborar y crecer profesionalmente.
-      </p>
-    </div>
-
-    <!-- Value Propositions Grid -->
-    <div class="grid grid-cols-2 gap-8 mt-auto border-t border-on-primary/20 pt-10">
-      <!-- Item 1 -->
-      <div class="flex flex-col gap-4">
-        <div class="w-10 h-10 border border-on-primary/30 rounded-lg flex items-center justify-center">
-          <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-          </svg>
-        </div>
-        <p class="text-sm font-medium leading-tight">Conectá con profesionales y organizaciones.</p>
+      <div style="padding-right:32px; border-right:1px solid rgba(255,255,255,.18); text-align:center;">
+        <svg width="56" height="56" style="display:block; margin:0 auto 12px;" fill="none" stroke="white" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true">
+          <path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+        </svg>
+        <p style="font-size:18px; font-weight:600; color:#FFF; margin-top:12px;">Colaborá en proyectos</p>
+        <p style="font-size:15px; color:rgba(255,255,255,.88); margin-top:6px;">Encontrá aliados y trabajá en equipo.</p>
       </div>
-      <!-- Item 2 -->
-      <div class="flex flex-col gap-4">
-        <div class="w-10 h-10 border border-on-primary/30 rounded-lg flex items-center justify-center">
-          <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-          </svg>
-        </div>
-        <p class="text-sm font-medium leading-tight">Colaborá en proyectos con impacto real.</p>
+      <div style="padding-right:32px; border-right:1px solid rgba(255,255,255,.18); text-align:center;">
+        <svg width="56" height="56" style="display:block; margin:0 auto 12px;" fill="none" stroke="white" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true">
+          <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+        </svg>
+        <p style="font-size:18px; font-weight:600; color:#FFF; margin-top:12px;">Mostrá tu talento</p>
+        <p style="font-size:15px; color:rgba(255,255,255,.88); margin-top:6px;">Destacá tus habilidades y experiencia.</p>
       </div>
-      <!-- Item 3 -->
-      <div class="flex flex-col gap-4">
-        <div class="w-10 h-10 border border-on-primary/30 rounded-lg flex items-center justify-center">
-          <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-          </svg>
-        </div>
-        <p class="text-sm font-medium leading-tight">Accedé a nuevas oportunidades de trabajo.</p>
+      <div style="text-align:center;">
+        <svg width="56" height="56" style="display:block; margin:0 auto 12px;" fill="none" stroke="white" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true">
+          <path d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+        </svg>
+        <p style="font-size:18px; font-weight:600; color:#FFF; margin-top:12px;">Crecé profesionalmente</p>
+        <p style="font-size:15px; color:rgba(255,255,255,.88); margin-top:6px;">Accedé a recursos y oportunidades únicas.</p>
       </div>
-      <!-- Item 4 -->
-      <div class="flex flex-col gap-4">
-        <div class="w-10 h-10 border border-on-primary/30 rounded-lg flex items-center justify-center">
-          <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9.663 17h4.674a1 1 0 00.922-.617l2.108-5.271A1 1 0 0016.446 10h-2.112l1.373-3.433A1 1 0 0014.782 5H9.663a1 1 0 00-.922.617L6.633 10.89a1 1 0 00.922 1.383h2.112l-1.373 3.433A1 1 0 009.337 17z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-          </svg>
-        </div>
-        <p class="text-sm font-medium leading-tight">Aprendé, compartí y crecé en comunidad.</p>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="mt-8 pt-6 border-t border-on-primary/10 flex flex-col lg:flex-row justify-between items-center gap-4 text-xs uppercase tracking-widest opacity-60">
-      <p>&copy; 2025 TRAMA. Todos los derechos reservados.</p>
-      <nav class="flex gap-6" aria-label="Enlaces legales">
-        <a class="hover:text-primary transition-colors" href="/privacidad">Privacidad</a>
-        <a class="hover:text-primary transition-colors" href="/terminos">Términos</a>
-        <a class="hover:text-primary transition-colors" href="/ayuda">Ayuda</a>
-      </nav>
     </div>
   </div>
+
+  <div class="absolute flex items-center gap-9" style="bottom:32px; left:64px; right:64px; font-size:13px; color:rgba(255,255,255,.65);">
+    <span>© 2025 TRAMA. Todos los derechos reservados.</span>
+    <nav class="flex gap-9" aria-label="Enlaces legales">
+      <a href="/privacidad">Privacidad</a>
+      <a href="/terminos">Términos</a>
+      <a href="/ayuda">Ayuda</a>
+    </nav>
+  </div>
 </section>
+
+<style>
+  .trama-texture {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M14 10L24 19L34 10 M14 38L24 29L34 38 M10 14L19 24L10 34 M38 14L29 24L38 34' stroke='white' stroke-width='1.5' stroke-linecap='round' fill='none'/%3E%3C/svg%3E");
+    background-size: 48px 48px;
+  }
+
+  @media (max-width: 1024px) {
+    section {
+      display: none;
+    }
+  }
+</style>

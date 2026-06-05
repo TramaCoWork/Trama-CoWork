@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
-import RegistrationHero from '../components/RegistrationHero.astro';
 import RegistrationForm from '../components/RegistrationForm.astro';
+import RegistrationHero from '../components/RegistrationHero.astro';
 ---
 
 <!doctype html>
@@ -14,9 +14,17 @@ import RegistrationForm from '../components/RegistrationForm.astro';
     <meta name="description" content="Crea tu cuenta profesional en TRAMA y accede a una red exclusiva de talento." />
   </head>
   <body class="bg-surface font-body text-on-surface antialiased overflow-x-hidden">
-    <main class="min-h-screen flex flex-col md:flex-row overflow-hidden">
-      <RegistrationHero />
+    <main style="display:grid; grid-template-columns:auto 1fr; min-height:100vh; background:#FFFFFF;">
       <RegistrationForm />
+      <RegistrationHero />
     </main>
+
+    <style>
+      @media (max-width: 1024px) {
+        main {
+          grid-template-columns: 1fr !important;
+        }
+      }
+    </style>
   </body>
 </html>
