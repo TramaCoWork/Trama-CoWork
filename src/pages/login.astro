@@ -10,13 +10,28 @@ import LoginForm from '../components/LoginForm.astro';
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Iniciar Sesion | TRAMA</title>
+    <title>TRAMA | Iniciar sesión</title>
     <meta name="description" content="Inicia sesion en TRAMA y accede a tu panel profesional." />
   </head>
   <body class="bg-surface font-body text-on-surface antialiased overflow-x-hidden">
-    <main class="min-h-screen flex flex-col md:flex-row overflow-hidden">
+    <div class="login-layout">
       <LoginHero />
       <LoginForm />
-    </main>
+    </div>
   </body>
 </html>
+
+<style>
+  .login-layout {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    min-height: 100vh;
+    background: #ffffff;
+  }
+
+  @media (max-width: 1024px) {
+    .login-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

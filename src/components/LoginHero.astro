@@ -1,66 +1,65 @@
 ---
-import logoTrama from '../assets/images/logo-trama-apaisado.png';
+import logoWhite from "../assets/images/logo-transparent.png";
 ---
 
-<section class="hidden md:flex md:w-1/2 lg:w-3/5 relative overflow-hidden flex-col justify-between p-16" style="background-color: #1a3a3a;">
-  <!-- Patron de lineas diagonales decorativas -->
-  <div class="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-    <!-- Lineas diagonales con opacidad baja -->
-    <div class="absolute -top-20 -right-20 w-[600px] h-[600px] opacity-[0.07]"
-      style="background: repeating-linear-gradient(
-        -45deg,
-        transparent,
-        transparent 40px,
-        rgba(255,255,255,0.5) 40px,
-        rgba(255,255,255,0.5) 80px
-      );"
-    ></div>
-    <div class="absolute top-1/4 right-0 w-[500px] h-[500px] opacity-[0.05]"
-      style="background: repeating-linear-gradient(
-        -45deg,
-        transparent,
-        transparent 50px,
-        rgba(255,255,255,0.4) 50px,
-        rgba(255,255,255,0.4) 100px
-      );"
-    ></div>
-    <!-- Elementos geometricos sutiles -->
-    <div class="absolute top-[15%] right-[10%] w-72 h-72 rounded-full opacity-[0.04]" style="background: radial-gradient(circle, rgba(255,255,255,0.3), transparent 70%);"></div>
-    <div class="absolute bottom-[20%] right-[20%] w-96 h-96 rounded-full opacity-[0.03]" style="background: radial-gradient(circle, rgba(255,255,255,0.3), transparent 70%);"></div>
+<aside
+  style="position:relative; overflow:hidden; padding:48px 64px; background:linear-gradient(135deg,#06363A 0%,#08444A 55%,#062F35 100%);"
+>
+  <div
+    class="brand-pattern"
+    style="position:absolute; right:-160px; top:-40px; width:900px; height:900px; opacity:0.06; mix-blend-mode:soft-light; filter:blur(.5px); transform:scale(1.6); pointer-events:none;"
+    aria-hidden="true"
+  >
+  </div>
+  <div
+    style="position:absolute; left:-140px; bottom:-140px; width:620px; height:620px; background:radial-gradient(circle,rgba(12,122,130,.18) 0%,transparent 70%); border-radius:50%; pointer-events:none;"
+    aria-hidden="true"
+  >
   </div>
 
-  <!-- Logo arriba a la izquierda -->
-  <div class="relative z-10">
-    <img src={logoTrama.src} alt="TRAMA COWORK" class="h-14 w-auto" loading="eager" />
-  </div>
-
-  <!-- Contenido central -->
-  <div class="relative z-10 max-w-lg">
-    <h1 class="text-4xl lg:text-5xl font-bold text-white leading-tight mb-4">
-      Donde el talento se vuelve <span class="text-amber-400">Trama.</span>
+  <div style="position:relative; z-index:2;">
+    <img
+      src={logoWhite.src}
+      alt="TRAMA Cowork"
+      style="width:240px; height:auto; margin-bottom:120px;"
+      loading="eager"
+    />
+    <h1
+      style="max-width:420px; font-size:72px; font-weight:700; line-height:0.95; letter-spacing:-2px; color:#FFF;"
+    >
+      Donde el talento<br />se vuelve<br /><span style="color:#0C7A82"
+        >Trama.</span
+      >
     </h1>
-
-    <!-- Linea decorativa bicolor -->
-    <div class="flex gap-1 mb-8">
-      <div class="w-12 h-1 rounded-full bg-teal-400"></div>
-      <div class="w-6 h-1 rounded-full bg-pink-500"></div>
-    </div>
-
-    <p class="text-lg text-white/70 leading-relaxed max-w-md">
-      En <span class="text-teal-300 font-medium">TRAMA</span> conectas con profesionales,<br/>
-      proyectos y oportunidades reales.
+    <p
+      style="margin-top:32px; max-width:500px; font-size:18px; line-height:30px; color:rgba(255,255,255,.88);"
+    >
+      En TRAMA conectás con profesionales,<br />proyectos y oportunidades
+      reales.
     </p>
   </div>
 
-  <!-- Footer -->
-  <div class="relative z-10">
-    <div class="flex justify-between items-center text-xs uppercase tracking-widest text-white/40">
-      <p>&copy; 2025 TRAMA. TODOS LOS DERECHOS RESERVADOS.</p>
-      <nav class="flex gap-6" aria-label="Enlaces legales">
-        <a class="hover:text-white/70 transition-colors" href="/privacidad">Privacidad</a>
-        <a class="hover:text-white/70 transition-colors" href="/terminos">Terminos</a>
-        <a class="hover:text-white/70 transition-colors" href="/ayuda">Ayuda</a>
-      </nav>
-    </div>
+  <div
+    style="position:absolute; bottom:32px; left:64px; right:64px; z-index:2; display:flex; justify-content:space-between; align-items:center; font-size:13px; color:rgba(255,255,255,.65);"
+  >
+    <span>© 2025 TRAMA Cowork</span>
+    <nav style="display:flex; gap:24px;" aria-label="Enlaces legales">
+      <a href="/privacidad">Privacidad</a>
+      <a href="/terminos">Términos</a>
+      <a href="/ayuda">Contacto</a>
+    </nav>
   </div>
-</section>
+</aside>
+
+<style>
+  .brand-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cpath d='M14 10L24 19L34 10 M14 38L24 29L34 38 M10 14L19 24L10 34 M38 14L29 24L38 34' stroke='white' stroke-width='1.5' stroke-linecap='round' fill='none'/%3E%3C/svg%3E");
+    background-size: 48px 48px;
+  }
+
+  @media (max-width: 1024px) {
+    aside {
+      display: none;
+    }
+  }
+</style>

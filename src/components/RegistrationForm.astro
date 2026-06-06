@@ -1,26 +1,59 @@
 ---
-import logoWhite from '../assets/images/logo-trama-apaisado-white.png';
+import logoWhite from "../assets/images/logo-transparent.png";
 ---
 
 <section style="padding: 48px 50px; max-width: 640px;">
-  <img src={logoWhite.src} alt="Trama CoWork" style="width:200px; height:auto; margin-bottom:52px;" />
+  <img
+    src={logoWhite.src}
+    alt="Trama CoWork"
+    style="width:200px; height:auto; margin-bottom:52px;"
+  />
 
-  <a href="/" class="flex items-center gap-2" style="font-size:15px; font-weight:500; color:#0C7A82; margin-bottom:36px;">
-    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M10 19l-7-7m0 0l7-7m-7 7h18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+  <a
+    href="/"
+    class="flex items-center gap-2"
+    style="font-size:15px; font-weight:500; color:#0C7A82; margin-bottom:36px;"
+  >
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path
+        d="M10 19l-7-7m0 0l7-7m-7 7h18"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"></path>
     </svg>
     Volver al inicio
   </a>
 
-  <h2 style="font-size:64px; font-weight:700; line-height:1.05; letter-spacing:-2px; color:#111827;">Unite a <span style="color:#0C7A82;">TRAMA</span></h2>
-  <p style="font-size:18px; line-height:30px; color:#4B5563; margin-top:12px; margin-bottom:48px;">Crea tu perfil y empezá a conectar.</p>
+  <h2
+    style="font-size:64px; font-weight:700; line-height:1.05; letter-spacing:-2px; color:#111827;"
+  >
+    Unite a <span style="color:#0C7A82;">TRAMA</span>
+  </h2>
+  <p
+    style="font-size:18px; line-height:30px; color:#4B5563; margin-top:12px; margin-bottom:48px;"
+  >
+    Crea tu perfil y empezá a conectar.
+  </p>
 
   <form id="registration-form" novalidate>
     <div class="flex flex-col gap-[22px]">
       <div class="flex flex-col">
-        <label for="name" style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:#6B7280; text-transform:uppercase; margin-bottom:6px;">NOMBRE COMPLETO</label>
+        <label
+          for="name"
+          style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:#6B7280; text-transform:uppercase; margin-bottom:6px;"
+          >NOMBRE COMPLETO</label
+        >
         <div class="input-icon-wrapper w-full">
-          <span class="material-symbols-outlined" aria-hidden="true">person</span>
+          <span class="material-symbols-outlined" aria-hidden="true"
+            >person</span
+          >
           <input
             class="reg-input input-icon"
             id="name"
@@ -34,7 +67,11 @@ import logoWhite from '../assets/images/logo-trama-apaisado-white.png';
       </div>
 
       <div class="flex flex-col">
-        <label for="email" style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:#6B7280; text-transform:uppercase; margin-bottom:6px;">CORREO ELECTRÓNICO</label>
+        <label
+          for="email"
+          style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:#6B7280; text-transform:uppercase; margin-bottom:6px;"
+          >CORREO ELECTRÓNICO</label
+        >
         <div class="input-icon-wrapper w-full">
           <span class="material-symbols-outlined" aria-hidden="true">mail</span>
           <input
@@ -50,7 +87,11 @@ import logoWhite from '../assets/images/logo-trama-apaisado-white.png';
       </div>
 
       <div class="flex flex-col">
-        <label for="password" style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:#6B7280; text-transform:uppercase; margin-bottom:6px;">CONTRASEÑA</label>
+        <label
+          for="password"
+          style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:#6B7280; text-transform:uppercase; margin-bottom:6px;"
+          >CONTRASEÑA</label
+        >
         <div class="input-icon-wrapper w-full">
           <span class="material-symbols-outlined" aria-hidden="true">lock</span>
           <input
@@ -69,14 +110,26 @@ import logoWhite from '../assets/images/logo-trama-apaisado-white.png';
             class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-outline hover:text-primary transition-colors"
             aria-label="Mostrar contraseña"
           >
-            <span class="material-symbols-outlined input-icon-right-icon" id="icon-eye-open" aria-hidden="true">visibility</span>
-            <span class="material-symbols-outlined input-icon-right-icon hidden" id="icon-eye-closed" aria-hidden="true">visibility_off</span>
+            <span
+              class="material-symbols-outlined input-icon-right-icon"
+              id="icon-eye-open"
+              aria-hidden="true">visibility</span
+            >
+            <span
+              class="material-symbols-outlined input-icon-right-icon hidden"
+              id="icon-eye-closed"
+              aria-hidden="true">visibility_off</span
+            >
           </button>
         </div>
       </div>
 
       <div class="flex flex-col">
-        <label for="confirm-password" style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:#6B7280; text-transform:uppercase; margin-bottom:6px;">CONFIRMAR CONTRASEÑA</label>
+        <label
+          for="confirm-password"
+          style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:#6B7280; text-transform:uppercase; margin-bottom:6px;"
+          >CONFIRMAR CONTRASEÑA</label
+        >
         <div class="input-icon-wrapper w-full">
           <span class="material-symbols-outlined" aria-hidden="true">lock</span>
           <input
@@ -95,12 +148,25 @@ import logoWhite from '../assets/images/logo-trama-apaisado-white.png';
             class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-outline hover:text-primary transition-colors"
             aria-label="Mostrar contraseña"
           >
-            <span class="material-symbols-outlined input-icon-right-icon" id="icon-confirm-eye-open" aria-hidden="true">visibility</span>
-            <span class="material-symbols-outlined input-icon-right-icon hidden" id="icon-confirm-eye-closed" aria-hidden="true">visibility_off</span>
+            <span
+              class="material-symbols-outlined input-icon-right-icon"
+              id="icon-confirm-eye-open"
+              aria-hidden="true">visibility</span
+            >
+            <span
+              class="material-symbols-outlined input-icon-right-icon hidden"
+              id="icon-confirm-eye-closed"
+              aria-hidden="true">visibility_off</span
+            >
           </button>
         </div>
       </div>
-      <p id="confirm-password-error" class="hidden text-xs text-error font-medium mt-1.5">Las contraseñas no coinciden.</p>
+      <p
+        id="confirm-password-error"
+        class="hidden text-xs text-error font-medium mt-1.5"
+      >
+        Las contraseñas no coinciden.
+      </p>
     </div>
 
     <div class="flex items-start gap-3 pt-1" style="margin-top:22px;">
@@ -111,9 +177,16 @@ import logoWhite from '../assets/images/logo-trama-apaisado-white.png';
         required
         type="checkbox"
       />
-      <label for="terms" style="font-size:14px; line-height:22px; color:#4B5563;">
-        Acepto los <a href="/terminos" style="color:#0C7A82; font-weight:500;">Términos de Servicio</a> y la
-        <a href="/privacidad" style="color:#0C7A82; font-weight:500;">Política de Privacidad</a> de TRAMA.
+      <label
+        for="terms"
+        style="font-size:14px; line-height:22px; color:#4B5563;"
+      >
+        Acepto los <a href="/terminos" style="color:#0C7A82; font-weight:500;"
+          >Términos de Servicio</a
+        > y la
+        <a href="/privacidad" style="color:#0C7A82; font-weight:500;"
+          >Política de Privacidad</a
+        > de TRAMA.
       </label>
     </div>
 
@@ -123,47 +196,88 @@ import logoWhite from '../assets/images/logo-trama-apaisado-white.png';
       style="height:60px; border-radius:12px; background:linear-gradient(90deg,#006D75 0%,#0C7A82 100%); font-size:18px; font-weight:600; color:#FFF; box-shadow:0 8px 24px rgba(0,109,117,.16); cursor:pointer; margin-top:22px;"
       disabled
     >
-      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      <svg
+        class="h-5 w-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path
+          d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"></path>
       </svg>
       Crear cuenta profesional
     </button>
 
-    <p class="text-center" style="font-size:14px; font-weight:500; color:#4B5563; padding-top:24px;">
-      ¿Ya tenés una cuenta? <a class="font-bold hover:underline" href="/login" style="color:#0C7A82;">Iniciá sesión</a>
+    <p
+      class="text-center"
+      style="font-size:14px; font-weight:500; color:#4B5563; padding-top:24px;"
+    >
+      ¿Ya tenés una cuenta? <a
+        class="font-bold hover:underline"
+        href="/login"
+        style="color:#0C7A82;">Iniciá sesión</a
+      >
     </p>
   </form>
 </section>
 
 <script>
-  import { professionalRegister } from '../services/authService';
+  import { professionalRegister } from "../services/authService";
 
   // ─── Referencias ──────────────────────────────────────────────
-  const form = document.getElementById('registration-form') as HTMLFormElement;
-  const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
-  const nameInput = document.getElementById('name') as HTMLInputElement;
-  const emailInput = document.getElementById('email') as HTMLInputElement;
-  const passwordInput = document.getElementById('password') as HTMLInputElement;
-  const confirmPasswordInput = document.getElementById('confirm-password') as HTMLInputElement;
-  const confirmPasswordError = document.getElementById('confirm-password-error')!;
-  const termsCheck = document.getElementById('terms') as HTMLInputElement;
+  const form = document.getElementById("registration-form") as HTMLFormElement;
+  const submitBtn = form.querySelector(
+    'button[type="submit"]',
+  ) as HTMLButtonElement;
+  const nameInput = document.getElementById("name") as HTMLInputElement;
+  const emailInput = document.getElementById("email") as HTMLInputElement;
+  const passwordInput = document.getElementById("password") as HTMLInputElement;
+  const confirmPasswordInput = document.getElementById(
+    "confirm-password",
+  ) as HTMLInputElement;
+  const confirmPasswordError = document.getElementById(
+    "confirm-password-error",
+  )!;
+  const termsCheck = document.getElementById("terms") as HTMLInputElement;
 
   // ─── Toggle password visibility ───────────────────────────────
-  function setupToggle(btnId: string, inputEl: HTMLInputElement, openId: string, closedId: string) {
+  function setupToggle(
+    btnId: string,
+    inputEl: HTMLInputElement,
+    openId: string,
+    closedId: string,
+  ) {
     const btn = document.getElementById(btnId)!;
     const iconOpen = document.getElementById(openId)!;
     const iconClosed = document.getElementById(closedId)!;
-    btn.addEventListener('click', () => {
-      const isPassword = inputEl.type === 'password';
-      inputEl.type = isPassword ? 'text' : 'password';
-      iconOpen.classList.toggle('hidden', !isPassword);
-      iconClosed.classList.toggle('hidden', isPassword);
-      btn.setAttribute('aria-label', isPassword ? 'Ocultar contraseña' : 'Mostrar contraseña');
+    btn.addEventListener("click", () => {
+      const isPassword = inputEl.type === "password";
+      inputEl.type = isPassword ? "text" : "password";
+      iconOpen.classList.toggle("hidden", !isPassword);
+      iconClosed.classList.toggle("hidden", isPassword);
+      btn.setAttribute(
+        "aria-label",
+        isPassword ? "Ocultar contraseña" : "Mostrar contraseña",
+      );
     });
   }
 
-  setupToggle('btn-toggle-password', passwordInput, 'icon-eye-open', 'icon-eye-closed');
-  setupToggle('btn-toggle-confirm-password', confirmPasswordInput, 'icon-confirm-eye-open', 'icon-confirm-eye-closed');
+  setupToggle(
+    "btn-toggle-password",
+    passwordInput,
+    "icon-eye-open",
+    "icon-eye-closed",
+  );
+  setupToggle(
+    "btn-toggle-confirm-password",
+    confirmPasswordInput,
+    "icon-confirm-eye-open",
+    "icon-confirm-eye-closed",
+  );
 
   // ─── Validación en tiempo real ────────────────────────────────
   function validateForm() {
@@ -172,14 +286,14 @@ import logoWhite from '../assets/images/logo-trama-apaisado-white.png';
 
     // Mostrar error de contraseñas solo si el campo fue tocado
     if (confirmTouched && !passwordsMatch) {
-      confirmPasswordError.classList.remove('hidden');
+      confirmPasswordError.classList.remove("hidden");
     } else {
-      confirmPasswordError.classList.add('hidden');
+      confirmPasswordError.classList.add("hidden");
     }
 
     const valid =
-      nameInput.value.trim() !== '' &&
-      emailInput.value.trim() !== '' &&
+      nameInput.value.trim() !== "" &&
+      emailInput.value.trim() !== "" &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim()) &&
       passwordInput.value.length >= 8 &&
       passwordsMatch &&
@@ -189,29 +303,31 @@ import logoWhite from '../assets/images/logo-trama-apaisado-white.png';
     submitBtn.disabled = !valid;
   }
 
-  nameInput.addEventListener('input', validateForm);
-  emailInput.addEventListener('input', validateForm);
-  passwordInput.addEventListener('input', validateForm);
-  confirmPasswordInput.addEventListener('input', validateForm);
-  termsCheck.addEventListener('change', validateForm);
+  nameInput.addEventListener("input", validateForm);
+  emailInput.addEventListener("input", validateForm);
+  passwordInput.addEventListener("input", validateForm);
+  confirmPasswordInput.addEventListener("input", validateForm);
+  termsCheck.addEventListener("change", validateForm);
 
   // ─── Submit ───────────────────────────────────────────────────
-  const errorDiv = document.createElement('div');
-  errorDiv.className = 'hidden bg-error-container text-on-error-container rounded-xl px-4 py-3 text-sm font-medium';
+  const errorDiv = document.createElement("div");
+  errorDiv.className =
+    "hidden bg-error-container text-on-error-container rounded-xl px-4 py-3 text-sm font-medium";
   form.insertBefore(errorDiv, submitBtn);
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    errorDiv.classList.add('hidden');
+    errorDiv.classList.add("hidden");
 
     if (passwordInput.value !== confirmPasswordInput.value) {
-      errorDiv.textContent = 'Las contraseñas no coinciden.';
-      errorDiv.classList.remove('hidden');
+      errorDiv.textContent = "Las contraseñas no coinciden.";
+      errorDiv.classList.remove("hidden");
       return;
     }
 
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<div class="w-5 h-5 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin"></div> <span>Creando cuenta...</span>';
+    submitBtn.innerHTML =
+      '<div class="w-5 h-5 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin"></div> <span>Creando cuenta...</span>';
 
     try {
       await professionalRegister({
@@ -219,14 +335,16 @@ import logoWhite from '../assets/images/logo-trama-apaisado-white.png';
         email: emailInput.value.trim(),
         password: passwordInput.value,
       });
-      window.location.href = '/dashboard';
+      window.location.href = "/dashboard";
     } catch (err: any) {
-      console.error('Error en registro:', err);
-      const msg = err.body?.message || 'Error al crear la cuenta. Intenta de nuevo.';
-      errorDiv.textContent = Array.isArray(msg) ? msg.join('. ') : msg;
-      errorDiv.classList.remove('hidden');
+      console.error("Error en registro:", err);
+      const msg =
+        err.body?.message || "Error al crear la cuenta. Intenta de nuevo.";
+      errorDiv.textContent = Array.isArray(msg) ? msg.join(". ") : msg;
+      errorDiv.classList.remove("hidden");
       submitBtn.disabled = false;
-      submitBtn.innerHTML = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg> Crear cuenta profesional';
+      submitBtn.innerHTML =
+        '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg> Crear cuenta profesional';
       validateForm();
     }
   });
@@ -236,40 +354,42 @@ import logoWhite from '../assets/images/logo-trama-apaisado-white.png';
   .reg-input {
     width: 100%;
     height: 56px;
-    border: 1px solid #D7DEE4;
+    border: 1px solid #d7dee4;
     border-radius: 12px;
     padding: 0 18px 0 54px !important;
     font-size: 16px;
     color: #374151;
-    background: #FFF;
+    background: #fff;
   }
 
   .reg-input::placeholder {
-    color: #9CA3AF;
+    color: #9ca3af;
   }
 
   .reg-input:hover {
-    border-color: #C2CCD3;
+    border-color: #c2ccd3;
   }
 
   .reg-input:focus {
     outline: none;
-    border-color: #0C7A82;
-    box-shadow: 0 0 0 3px rgba(12, 122, 130, .10);
+    border-color: #0c7a82;
+    box-shadow: 0 0 0 3px rgba(12, 122, 130, 0.1);
   }
 
   .input-icon-wrapper .material-symbols-outlined:not(.input-icon-right-icon) {
     font-size: 20px;
-    color: #6B7280;
+    color: #6b7280;
   }
 
   .btn-cta {
-    transition: transform .15s, box-shadow .15s;
+    transition:
+      transform 0.15s,
+      box-shadow 0.15s;
   }
 
   .btn-cta:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 12px 28px rgba(0, 109, 117, .20);
+    box-shadow: 0 12px 28px rgba(0, 109, 117, 0.2);
   }
 
   @media (max-width: 768px) {
