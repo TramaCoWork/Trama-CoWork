@@ -7,39 +7,39 @@ import CTASection from "../components/CTASection.astro";
 const categories = [
   {
     icon: "design",
-    title: "Diseño & Creatividad",
+    title: "Profesionales de servicios estratégicos",
     count: 320,
-    href: "/profesionales?rubro=diseno-creatividad",
+    href: "/profesionales?rubro=servicios-estrategicos",
   },
   {
     icon: "architecture",
-    title: "Arquitectura & Construcción",
+    title: "Profesionales creativos",
     count: 280,
-    href: "/profesionales?rubro=arquitectura-construccion",
+    href: "/profesionales?rubro=profesionales-creativos",
   },
   {
     icon: "technology",
-    title: "Tecnología & Desarrollo",
+    title: "Perfiles tech",
     count: 420,
-    href: "/profesionales?rubro=tecnologia-desarrollo",
+    href: "/profesionales?rubro=perfiles-tech",
   },
   {
     icon: "marketing",
-    title: "Marketing & Comunicación",
+    title: "Marketing y ventas",
     count: 380,
-    href: "/profesionales?rubro=marketing-comunicacion",
+    href: "/profesionales?rubro=marketing-ventas",
   },
   {
     icon: "writing",
-    title: "Redacción & Traducción",
+    title: "Bienestar y salud",
     count: 250,
-    href: "/profesionales?rubro=redaccion-traduccion",
+    href: "/profesionales?rubro=bienestar-salud",
   },
   {
     icon: "other",
-    title: "Otras áreas",
+    title: "Profesores",
     count: 180,
-    href: "/rubros",
+    href: "/profesionales?rubro=profesores",
   },
 ];
 ---
@@ -49,11 +49,23 @@ const categories = [
 
   <section style="padding:48px 0 32px; background:white;">
     <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
-      <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:16px;">
-        <h2 style="font-size:22px; font-weight:700; color:#111827; border-bottom:3px solid #087781; padding-bottom:6px; display:inline-block;">Explorá por categoría</h2>
-        <a href="/rubros" style="color:#087781; font-size:14px; font-weight:500; text-decoration:none;">Ver todas las categorías →</a>
+      <div
+        style="display:flex; justify-content:space-between; align-items:flex-end; gap:16px;"
+      >
+        <h2
+          style="font-size:22px; font-weight:700; color:#111827; border-bottom:3px solid #087781; padding-bottom:6px; display:inline-block;"
+        >
+          Explorá por categoría
+        </h2>
+        <a
+          href="/rubros"
+          style="color:#087781; font-size:14px; font-weight:500; text-decoration:none;"
+          >Ver todas las categorías →</a
+        >
       </div>
-      <div style="display:grid; grid-template-columns:repeat(6,1fr); gap:16px; margin-top:24px;">
+      <div
+        style="display:grid; grid-template-columns:repeat(6,1fr); gap:16px; margin-top:24px;"
+      >
         {
           categories.map((cat) => (
             <a
@@ -64,27 +76,130 @@ const categories = [
             >
               <div style="width:40px; height:40px; border-radius:8px; background:#E6F4F5; display:flex; align-items:center; justify-content:center; color:#087781; flex-shrink:0;">
                 {cat.icon === "design" && (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="6.5" r="2.5" /><circle cx="19" cy="12" r="2" /><circle cx="6" cy="12" r="2" /><circle cx="9" cy="18" r="2" /><path d="M13.5 9v4" /><path d="M15 15.5 11 17" /></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="13.5" cy="6.5" r="2.5" />
+                    <circle cx="19" cy="12" r="2" />
+                    <circle cx="6" cy="12" r="2" />
+                    <circle cx="9" cy="18" r="2" />
+                    <path d="M13.5 9v4" />
+                    <path d="M15 15.5 11 17" />
+                  </svg>
                 )}
                 {cat.icon === "architecture" && (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18" /><path d="M6 21V7l6-4 6 4v14" /><path d="M9 11h6" /><path d="M9 15h6" /></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M3 21h18" />
+                    <path d="M6 21V7l6-4 6 4v14" />
+                    <path d="M9 11h6" />
+                    <path d="M9 15h6" />
+                  </svg>
                 )}
                 {cat.icon === "technology" && (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 9-4 3 4 3" /><path d="m16 9 4 3-4 3" /><path d="m14 4-4 16" /></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m8 9-4 3 4 3" />
+                    <path d="m16 9 4 3-4 3" />
+                    <path d="m14 4-4 16" />
+                  </svg>
                 )}
                 {cat.icon === "marketing" && (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11h3l7-4v10l-7-4H3z" /><path d="M13 9h1a5 5 0 0 1 5 5v0" /><path d="M6 15v4" /></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M3 11h3l7-4v10l-7-4H3z" />
+                    <path d="M13 9h1a5 5 0 0 1 5 5v0" />
+                    <path d="M6 15v4" />
+                  </svg>
                 )}
                 {cat.icon === "writing" && (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18" /><path d="M7 17V5a2 2 0 0 1 2-2h8v14" /><path d="M7 17h10a2 2 0 0 1 2 2v2" /><path d="M11 7h4" /><path d="M11 11h4" /></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M3 21h18" />
+                    <path d="M7 17V5a2 2 0 0 1 2-2h8v14" />
+                    <path d="M7 17h10a2 2 0 0 1 2 2v2" />
+                    <path d="M11 7h4" />
+                    <path d="M11 11h4" />
+                  </svg>
                 )}
                 {cat.icon === "other" && (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M8 12h.01" /><path d="M12 12h.01" /><path d="M16 12h.01" /></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M8 12h.01" />
+                    <path d="M12 12h.01" />
+                    <path d="M16 12h.01" />
+                  </svg>
                 )}
               </div>
               <div style="min-width:0;">
-                <div style="font-size:14px; font-weight:600; color:#111827;">{cat.title}</div>
-                <div style="font-size:12px; color:#737373; white-space:nowrap;">{cat.icon === "other" ? "Descubrí más disciplinas" : `+${cat.count} profesionales`}</div>
+                <div style="font-size:14px; font-weight:600; color:#111827;">
+                  {cat.title}
+                </div>
+                <div style="font-size:12px; color:#737373; white-space:nowrap;">
+                  {cat.icon === "other"
+                    ? "Descubrí más disciplinas"
+                    : `+${cat.count} profesionales`}
+                </div>
               </div>
             </a>
           ))
@@ -95,9 +210,19 @@ const categories = [
 
   <section style="padding:48px 0; background:white;">
     <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
-      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px;">
-        <h2 style="font-size:22px; font-weight:700; color:#111827; border-bottom:3px solid #087781; padding-bottom:6px; display:inline-block;">Profesionales destacados</h2>
-        <a href="/profesionales" style="color:#087781; font-size:14px; font-weight:500; text-decoration:none;">Ver todos los profesionales →</a>
+      <div
+        style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px;"
+      >
+        <h2
+          style="font-size:22px; font-weight:700; color:#111827; border-bottom:3px solid #087781; padding-bottom:6px; display:inline-block;"
+        >
+          Profesionales destacados
+        </h2>
+        <a
+          href="/profesionales"
+          style="color:#087781; font-size:14px; font-weight:500; text-decoration:none;"
+          >Ver todos los profesionales →</a
+        >
       </div>
       <div
         id="featured-profesionales"
