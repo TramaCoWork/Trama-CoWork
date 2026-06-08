@@ -1,23 +1,44 @@
 ---
+
 ---
 
 <header class="bg-surface-container-low py-12 px-6">
   <div class="max-w-5xl mx-auto space-y-8">
     <div class="space-y-2">
-      <h1 class="text-4xl font-extrabold tracking-tight text-on-surface">Encontrá la experiencia indicada.</h1>
-      <p class="text-on-surface-variant font-medium">Explorá profesionales verificados en tu zona o especializados globalmente.</p>
+      <h1 class="text-4xl font-extrabold tracking-tight text-on-surface">
+        Encontrá la experiencia
+        <span class="text-primary italic">indicada</span>.
+      </h1>
+      <p class="text-on-surface-variant font-medium">
+        Explorá profesionales verificados en tu zona o especializados
+        globalmente.
+      </p>
     </div>
 
     <!-- Filtros -->
     <form id="search-form" role="search" aria-label="Buscar profesionales">
       <div class="relative group">
-        <div class="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-2xl blur opacity-25 group-focus-within:opacity-100 transition duration-1000" aria-hidden="true"></div>
-        <div class="relative bg-surface-container-lowest p-4 md:p-5 rounded-2xl shadow-sm">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <div
+          class="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-2xl blur opacity-25 group-focus-within:opacity-100 transition duration-1000"
+          aria-hidden="true"
+        >
+        </div>
+        <div
+          class="relative bg-surface-container-lowest p-4 md:p-5 rounded-2xl shadow-sm"
+        >
+          <div
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4"
+          >
             <!-- Rubro -->
             <div class="space-y-1.5">
-              <label for="filter-rubro" class="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-primary text-sm" aria-hidden="true">work</span>
+              <label
+                for="filter-rubro"
+                class="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5"
+              >
+                <span
+                  class="material-symbols-outlined text-primary text-sm"
+                  aria-hidden="true">work</span
+                >
                 Rubro
               </label>
               <select
@@ -31,8 +52,14 @@
 
             <!-- Sub-rubro -->
             <div class="space-y-1.5">
-              <label for="filter-subrubro" class="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-primary text-sm" aria-hidden="true">category</span>
+              <label
+                for="filter-subrubro"
+                class="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5"
+              >
+                <span
+                  class="material-symbols-outlined text-primary text-sm"
+                  aria-hidden="true">category</span
+                >
                 Sub-rubro
               </label>
               <select
@@ -47,8 +74,14 @@
 
             <!-- País -->
             <div class="space-y-1.5">
-              <label for="filter-country" class="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-primary text-sm" aria-hidden="true">public</span>
+              <label
+                for="filter-country"
+                class="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5"
+              >
+                <span
+                  class="material-symbols-outlined text-primary text-sm"
+                  aria-hidden="true">public</span
+                >
                 País
               </label>
               <select
@@ -62,8 +95,14 @@
 
             <!-- Provincia -->
             <div class="space-y-1.5">
-              <label for="filter-province" class="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-primary text-sm" aria-hidden="true">location_on</span>
+              <label
+                for="filter-province"
+                class="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5"
+              >
+                <span
+                  class="material-symbols-outlined text-primary text-sm"
+                  aria-hidden="true">location_on</span
+                >
                 Provincia
               </label>
               <select
@@ -83,7 +122,9 @@
               type="submit"
               class="bg-primary hover:bg-primary-container text-on-primary font-bold px-8 py-3 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
             >
-              <span class="material-symbols-outlined text-xl" aria-hidden="true">search</span>
+              <span class="material-symbols-outlined text-xl" aria-hidden="true"
+                >search</span
+              >
               Buscar
             </button>
           </div>
@@ -94,27 +135,38 @@
 </header>
 
 <script>
-  import { fetchRubros, fetchProfessionsByRubro } from '../services/professionCategoriesService';
-  import { fetchCountries, fetchProvinces } from '../services/locationService';
+  import {
+    fetchRubros,
+    fetchProfessionsByRubro,
+  } from "../services/professionCategoriesService";
+  import { fetchCountries, fetchProvinces } from "../services/locationService";
 
-  const rubroSelect = document.getElementById('filter-rubro') as HTMLSelectElement;
-  const subRubroSelect = document.getElementById('filter-subrubro') as HTMLSelectElement;
-  const countrySelect = document.getElementById('filter-country') as HTMLSelectElement;
-  const provinceSelect = document.getElementById('filter-province') as HTMLSelectElement;
+  const rubroSelect = document.getElementById(
+    "filter-rubro",
+  ) as HTMLSelectElement;
+  const subRubroSelect = document.getElementById(
+    "filter-subrubro",
+  ) as HTMLSelectElement;
+  const countrySelect = document.getElementById(
+    "filter-country",
+  ) as HTMLSelectElement;
+  const provinceSelect = document.getElementById(
+    "filter-province",
+  ) as HTMLSelectElement;
 
   // ─── Leer query params de la URL ──────────────────────────────
   const urlParams = new URLSearchParams(window.location.search);
-  const preRubro = urlParams.get('rubro') || '';
-  const preSubRubro = urlParams.get('sub_rubro') || '';
-  const preCountryId = urlParams.get('countryId') || '';
-  const preProvinceId = urlParams.get('provinceId') || '';
+  const preRubro = urlParams.get("rubro") || "";
+  const preSubRubro = urlParams.get("sub_rubro") || "";
+  const preCountryId = urlParams.get("countryId") || "";
+  const preProvinceId = urlParams.get("provinceId") || "";
 
   // ─── Cargar rubros ────────────────────────────────────────────
   async function loadRubros() {
     try {
       const rubros = await fetchRubros();
-      rubros.forEach(r => {
-        const opt = document.createElement('option');
+      rubros.forEach((r) => {
+        const opt = document.createElement("option");
         opt.value = r.slug;
         opt.textContent = r.name;
         opt.dataset.rubroId = String(r.id);
@@ -126,7 +178,7 @@
         await loadSubRubros();
       }
     } catch (err) {
-      console.error('Error cargando rubros:', err);
+      console.error("Error cargando rubros:", err);
     }
   }
 
@@ -140,7 +192,8 @@
 
     if (!rubroId) {
       subRubroSelect.disabled = true;
-      subRubroSelect.innerHTML = '<option value="">Selecciona un rubro primero</option>';
+      subRubroSelect.innerHTML =
+        '<option value="">Selecciona un rubro primero</option>';
       return;
     }
 
@@ -148,15 +201,15 @@
 
     try {
       const children = await fetchProfessionsByRubro(Number(rubroId));
-      children.forEach(sub => {
-        const opt = document.createElement('option');
+      children.forEach((sub) => {
+        const opt = document.createElement("option");
         opt.value = sub.slug;
         opt.textContent = sub.name;
         if (sub.slug === preSubRubro) opt.selected = true;
         subRubroSelect.appendChild(opt);
       });
     } catch (err) {
-      console.error('Error cargando sub-rubros:', err);
+      console.error("Error cargando sub-rubros:", err);
     }
   }
 
@@ -164,8 +217,8 @@
   async function loadCountries() {
     try {
       const countries = await fetchCountries();
-      countries.forEach(c => {
-        const opt = document.createElement('option');
+      countries.forEach((c) => {
+        const opt = document.createElement("option");
         opt.value = String(c.id);
         opt.textContent = c.name;
         if (String(c.id) === preCountryId) opt.selected = true;
@@ -176,7 +229,7 @@
         await loadProvinces();
       }
     } catch (err) {
-      console.error('Error cargando países:', err);
+      console.error("Error cargando países:", err);
     }
   }
 
@@ -189,7 +242,8 @@
 
     if (!countryId) {
       provinceSelect.disabled = true;
-      provinceSelect.innerHTML = '<option value="">Selecciona un país primero</option>';
+      provinceSelect.innerHTML =
+        '<option value="">Selecciona un país primero</option>';
       return;
     }
 
@@ -197,24 +251,24 @@
 
     try {
       const provinces = await fetchProvinces(Number(countryId));
-      provinces.forEach(p => {
-        const opt = document.createElement('option');
+      provinces.forEach((p) => {
+        const opt = document.createElement("option");
         opt.value = String(p.id);
         opt.textContent = p.name;
         if (String(p.id) === preProvinceId) opt.selected = true;
         provinceSelect.appendChild(opt);
       });
     } catch (err) {
-      console.error('Error cargando provincias:', err);
+      console.error("Error cargando provincias:", err);
     }
   }
 
   // ─── Eventos de cascada ───────────────────────────────────────
-  rubroSelect.addEventListener('change', () => {
+  rubroSelect.addEventListener("change", () => {
     loadSubRubros();
   });
 
-  countrySelect.addEventListener('change', () => {
+  countrySelect.addEventListener("change", () => {
     loadProvinces();
   });
 
