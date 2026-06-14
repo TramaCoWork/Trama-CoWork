@@ -17,7 +17,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
           <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-4xl" aria-hidden="true">check_circle</span>
         </div>
         <h1 class="text-2xl font-black text-on-surface tracking-tight mb-2">Pago aprobado</h1>
-        <p class="text-sm text-on-surface-variant leading-relaxed">Tu suscripcion fue activada correctamente. Ya podes disfrutar de todos los beneficios de tu plan.</p>
+        <p id="approved-message" class="text-sm text-on-surface-variant leading-relaxed">Tu suscripcion fue activada correctamente. Ya podes disfrutar de todos los beneficios de tu plan.</p>
         <div id="approved-details" class="mt-6 bg-surface-container-lowest rounded-2xl p-5 space-y-2 text-left"></div>
       </div>
 
@@ -27,7 +27,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
           <span class="material-symbols-outlined text-yellow-600 dark:text-yellow-400 text-4xl" aria-hidden="true">schedule</span>
         </div>
         <h1 class="text-2xl font-black text-on-surface tracking-tight mb-2">Pago pendiente</h1>
-        <p class="text-sm text-on-surface-variant leading-relaxed">Tu pago esta siendo procesado. Te notificaremos cuando se confirme. Esto puede demorar unos minutos.</p>
+        <p id="pending-message" class="text-sm text-on-surface-variant leading-relaxed">Tu pago esta siendo procesado. Te notificaremos cuando se confirme. Esto puede demorar unos minutos.</p>
         <div id="pending-details" class="mt-6 bg-surface-container-lowest rounded-2xl p-5 space-y-2 text-left"></div>
       </div>
 
@@ -37,7 +37,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
           <span class="material-symbols-outlined text-red-600 dark:text-red-400 text-4xl" aria-hidden="true">cancel</span>
         </div>
         <h1 class="text-2xl font-black text-on-surface tracking-tight mb-2">Pago rechazado</h1>
-        <p class="text-sm text-on-surface-variant leading-relaxed">No se pudo procesar tu pago. Podes intentar nuevamente con otro medio de pago.</p>
+        <p id="rejected-message" class="text-sm text-on-surface-variant leading-relaxed">No se pudo procesar tu pago. Podes intentar nuevamente con otro medio de pago.</p>
         <div id="rejected-details" class="mt-6 bg-surface-container-lowest rounded-2xl p-5 space-y-2 text-left"></div>
       </div>
 
@@ -67,11 +67,22 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
       </div>`;
     }
 
+    function formatDate(iso: string): string {
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return iso;
+      return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
     function init() {
       const params = new URLSearchParams(window.location.search);
 
-      // MP may send: status, payment_id, external_reference, preference_id, etc.
+      // Checkout Bricks (synchronous) sends: status, detail, msg, end_date.
+      // Legacy redirect flow may send: collection_status, payment_id, preference_id, external_reference.
       const status = params.get('status') || params.get('collection_status') || '';
+      const detail = params.get('detail') || '';
+      const message = params.get('msg') || '';
+      const endDate = params.get('end_date') || '';
+      const nextPayment = params.get('next_payment') || '';
       const paymentId = params.get('payment_id') || params.get('collection_id') || '';
       const preferenceId = params.get('preference_id') || params.get('preapproval_id') || '';
       const externalRef = params.get('external_reference') || '';
@@ -81,28 +92,41 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 
       // Build details HTML
       let detailsHtml = '';
+      if (nextPayment) detailsHtml += detailRow('Proximo cobro', formatDate(nextPayment));
+      if (endDate) detailsHtml += detailRow('Vence', formatDate(endDate));
       if (paymentId) detailsHtml += detailRow('ID Pago', paymentId);
       if (preferenceId) detailsHtml += detailRow('ID Preferencia', preferenceId);
       if (externalRef) detailsHtml += detailRow('Referencia', externalRef);
       if (status) detailsHtml += detailRow('Estado', status);
+      if (detail) detailsHtml += detailRow('Detalle', detail);
 
       const normalizedStatus = status.toLowerCase();
 
+      let detailsTarget: string | null = null;
+      let messageTarget: string | null = null;
       if (normalizedStatus === 'approved' || normalizedStatus === 'authorized') {
-        const el = document.getElementById('result-approved')!;
-        el.classList.remove('hidden');
-        if (detailsHtml) document.getElementById('approved-details')!.innerHTML = detailsHtml;
+        document.getElementById('result-approved')!.classList.remove('hidden');
+        detailsTarget = 'approved-details';
+        messageTarget = 'approved-message';
       } else if (normalizedStatus === 'pending' || normalizedStatus === 'in_process') {
-        const el = document.getElementById('result-pending')!;
-        el.classList.remove('hidden');
-        if (detailsHtml) document.getElementById('pending-details')!.innerHTML = detailsHtml;
+        document.getElementById('result-pending')!.classList.remove('hidden');
+        detailsTarget = 'pending-details';
+        messageTarget = 'pending-message';
       } else if (normalizedStatus === 'rejected' || normalizedStatus === 'failure' || normalizedStatus === 'null') {
-        const el = document.getElementById('result-rejected')!;
-        el.classList.remove('hidden');
-        if (detailsHtml) document.getElementById('rejected-details')!.innerHTML = detailsHtml;
+        document.getElementById('result-rejected')!.classList.remove('hidden');
+        detailsTarget = 'rejected-details';
+        messageTarget = 'rejected-message';
       } else {
         // Unknown or empty status
         document.getElementById('result-unknown')!.classList.remove('hidden');
+      }
+
+      // Prefer the backend message when present
+      if (message && messageTarget) {
+        document.getElementById(messageTarget)!.textContent = message;
+      }
+      if (detailsHtml && detailsTarget) {
+        document.getElementById(detailsTarget)!.innerHTML = detailsHtml;
       }
     }
 
