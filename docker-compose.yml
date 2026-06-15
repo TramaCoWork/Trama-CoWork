@@ -2,6 +2,7 @@ services:
   app:
     build: .
     ports:
+      # HOST_PORT:CONTAINER_PORT — must match vite.server.hmr.clientPort in astro.config.mjs when overriding PORT
       - "${PORT:-4321}:4321"
     env_file:
       - .env

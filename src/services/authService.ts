@@ -146,3 +146,19 @@ export async function resetPassword(
 ): Promise<void> {
   await api.post('/auth/reset-password', { userId, token, newPassword });
 }
+
+// ─── Email Verification ────────────────────────────────────────
+
+export interface VerifyEmailResponse {
+  message: string;
+}
+
+/** Marca el email como verificado. El token (JWT) viaja en el query, sin auth. */
+export async function verifyEmail(token: string): Promise<VerifyEmailResponse> {
+  return api.get<VerifyEmailResponse>('/auth/verify-email', { token });
+}
+
+/** Reenvía el email de verificación (público, rate-limited). */
+export async function resendVerification(email: string): Promise<void> {
+  await api.post('/auth/resend-verification', { email });
+}
