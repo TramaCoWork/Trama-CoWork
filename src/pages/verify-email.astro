@@ -1,0 +1,202 @@
+---
+import '../styles/global.css';
+import LoginHero from '../components/LoginHero.astro';
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Verificar email | TRAMA</title>
+    <meta name="description" content="Verificá tu email en TRAMA." />
+  </head>
+  <body class="bg-surface font-body text-on-surface antialiased overflow-x-hidden">
+    <main class="min-h-screen flex flex-col md:flex-row overflow-hidden">
+      <LoginHero />
+
+      <section class="w-full md:w-1/2 lg:w-2/5 flex items-center justify-center p-6 sm:p-12 md:p-20 bg-surface relative">
+        <!-- Link para volver -->
+        <a
+          href="/"
+          class="absolute top-6 left-6 md:top-8 md:left-8 flex items-center gap-1.5 text-sm font-medium text-on-surface-variant hover:text-primary transition-colors"
+        >
+          <span class="material-symbols-outlined text-lg" aria-hidden="true">arrow_back</span>
+          Volver al inicio
+        </a>
+
+        <div class="w-full max-w-md space-y-10">
+          <!-- Logo -->
+          <div class="flex flex-col items-center md:items-start">
+            <span class="font-headline text-3xl font-extrabold tracking-tighter text-primary">TRAMA</span>
+          </div>
+
+          <!-- Loading -->
+          <div id="verify-loading" class="flex flex-col items-center text-center space-y-4 py-8">
+            <div class="w-12 h-12 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+            <p class="text-on-surface-variant text-sm font-medium">Verificando tu email...</p>
+          </div>
+
+          <!-- Success -->
+          <div id="verify-success" class="hidden space-y-6">
+            <div class="flex flex-col items-center text-center space-y-4 py-4">
+              <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-3xl text-primary" aria-hidden="true">mark_email_read</span>
+              </div>
+              <h2 class="text-2xl font-bold tracking-tight text-on-surface">¡Confirmamos tu email!</h2>
+              <p id="verify-success-msg" class="text-on-surface-variant text-sm max-w-sm">
+                Tu email fue verificado correctamente. Ya podés iniciar sesión en TRAMA.
+              </p>
+              <a
+                href="/login"
+                class="mt-2 inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold text-sm tracking-widest uppercase rounded-xl shadow-lg hover:opacity-90 active:scale-[0.98] transition-all"
+              >
+                Ir a iniciar sesión
+                <span class="material-symbols-outlined text-lg" aria-hidden="true">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Error -->
+          <div id="verify-error" class="hidden space-y-6">
+            <div class="flex flex-col items-center text-center space-y-4 py-4">
+              <div class="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-3xl text-error" aria-hidden="true">link_off</span>
+              </div>
+              <h2 class="text-2xl font-bold tracking-tight text-on-surface">No pudimos verificar tu email</h2>
+              <p id="verify-error-msg" class="text-on-surface-variant text-sm max-w-sm">
+                El enlace de verificación es inválido o ha expirado.
+              </p>
+            </div>
+
+            <!-- Resend section (solo si el link expiró/es inválido) -->
+            <div id="resend-section" class="hidden space-y-4">
+              <div class="border-t border-outline-variant/15 pt-6">
+                <p class="text-sm text-on-surface-variant text-center mb-4">
+                  Ingresá tu correo y te enviamos un nuevo enlace de verificación.
+                </p>
+                <form id="resend-form" class="space-y-4" novalidate>
+                  <div class="group relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-outline">
+                      <span class="material-symbols-outlined text-xl" aria-hidden="true">mail</span>
+                    </div>
+                    <input
+                      autocomplete="email"
+                      class="block w-full pl-12 pr-4 py-4 bg-surface-container-low border border-outline-variant/30 focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all rounded-xl text-on-surface placeholder:text-outline/50"
+                      id="resend-email"
+                      name="email"
+                      placeholder="nombre@ejemplo.com"
+                      required
+                      type="email"
+                    />
+                  </div>
+                  <button
+                    id="btn-resend"
+                    class="w-full py-4 px-6 bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold text-sm tracking-widest uppercase rounded-xl shadow-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    type="submit"
+                  >
+                    <span id="btn-resend-text">Reenviar verificación</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Resend success -->
+            <div id="resend-success" class="hidden border-t border-outline-variant/15 pt-6">
+              <div class="flex flex-col items-center text-center space-y-2">
+                <span class="material-symbols-outlined text-2xl text-primary" aria-hidden="true">mark_email_read</span>
+                <p class="text-sm text-on-surface-variant max-w-sm">
+                  Si el correo está registrado, te enviamos un nuevo enlace de verificación. Revisá también la carpeta de spam.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Link a login -->
+          <div class="pt-2">
+            <p class="text-center text-sm text-on-surface-variant">
+              <a class="font-bold text-secondary hover:underline" href="/login">Volver a iniciar sesión</a>
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
+
+<script>
+  import { verifyEmail, resendVerification } from '../services/authService';
+
+  const loadingEl = document.getElementById('verify-loading')!;
+  const successEl = document.getElementById('verify-success')!;
+  const successMsg = document.getElementById('verify-success-msg')!;
+  const errorEl = document.getElementById('verify-error')!;
+  const errorMsg = document.getElementById('verify-error-msg')!;
+  const resendSection = document.getElementById('resend-section')!;
+  const resendSuccess = document.getElementById('resend-success')!;
+  const resendForm = document.getElementById('resend-form') as HTMLFormElement | null;
+  const resendBtn = document.getElementById('btn-resend') as HTMLButtonElement | null;
+  const resendBtnText = document.getElementById('btn-resend-text');
+
+  function showSuccess(message?: string) {
+    loadingEl.classList.add('hidden');
+    if (message) successMsg.textContent = message;
+    successEl.classList.remove('hidden');
+  }
+
+  function showError(message: string, allowResend: boolean) {
+    loadingEl.classList.add('hidden');
+    errorMsg.textContent = message;
+    errorEl.classList.remove('hidden');
+    if (allowResend) resendSection.classList.remove('hidden');
+  }
+
+  async function init() {
+    const token = new URLSearchParams(window.location.search).get('token');
+
+    if (!token) {
+      showError('El enlace de verificación es inválido: falta el token.', false);
+      return;
+    }
+
+    try {
+      const res = await verifyEmail(token);
+      showSuccess(res?.message);
+    } catch (err: any) {
+      const status = err?.status;
+      const message = err?.body?.message;
+      if (status === 400) {
+        // Token inválido o expirado → permitir reenviar
+        showError(message || 'El enlace de verificación es inválido o ha expirado.', true);
+      } else if (status === 404) {
+        showError(message || 'No encontramos el usuario asociado a este enlace.', false);
+      } else {
+        showError(message || 'No pudimos verificar tu email. Intentá nuevamente más tarde.', false);
+      }
+    }
+  }
+
+  resendForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = (new FormData(resendForm).get('email') as string)?.trim();
+    if (!email) return;
+
+    if (resendBtn) resendBtn.disabled = true;
+    if (resendBtnText) resendBtnText.textContent = 'Enviando...';
+
+    try {
+      await resendVerification(email);
+    } catch {
+      // El endpoint devuelve un mensaje genérico por seguridad; mostramos lo mismo igual.
+    } finally {
+      // Mensaje genérico (no revela si el email existe)
+      resendSection.classList.add('hidden');
+      resendSuccess.classList.remove('hidden');
+      if (resendBtn) resendBtn.disabled = false;
+      if (resendBtnText) resendBtnText.textContent = 'Reenviar verificación';
+    }
+  });
+
+  init();
+</script>

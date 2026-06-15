@@ -4,7 +4,7 @@ RUN corepack enable && corepack prepare pnpm@11.1.1 --activate
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 RUN pnpm install --no-frozen-lockfile --config.dangerouslyAllowAllBuilds=true
 
@@ -12,4 +12,4 @@ COPY . .
 
 EXPOSE 4321
 
-CMD ["pnpm", "dev", "--host", "0.0.0.0"]
+CMD ["pnpm", "dev"]
