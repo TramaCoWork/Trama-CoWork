@@ -55,7 +55,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
           id="dashboard-error-message"
           class="mt-1 text-sm text-on-surface-variant"
         >
-          IntentÃ¡ de nuevo en unos minutos.
+          Intentá de nuevo en unos minutos.
         </p>
       </div>
     </div>
@@ -403,7 +403,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         const token = getToken();
         if (!token) {
           showErrorMessage(
-            "SesiÃ³n expirada. VolvÃ© a iniciar sesiÃ³n para ver tu panel.",
+            "Sesión expirada. Volvé a iniciar sesión para ver tu panel.",
           );
           return;
         }
@@ -432,12 +432,12 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         );
         if (err?.status === 401) {
           showErrorMessage(
-            "SesiÃ³n expirada. VolvÃ© a iniciar sesiÃ³n para ver tu panel.",
+            "Sesión expirada. Volvé a iniciar sesión para ver tu panel.",
           );
           return;
         }
         showErrorMessage(
-          "No se pudieron obtener tus mÃ©tricas. IntentÃ¡ nuevamente.",
+          "No se pudieron obtener tus métricas. Intentá nuevamente.",
         );
       }
     }
