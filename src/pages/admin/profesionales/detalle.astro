@@ -1361,10 +1361,11 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
 
     const resendBtn = document.getElementById('btn-resend-verification') as HTMLButtonElement | null;
     const resendBtnText = document.getElementById('btn-resend-verification-text');
-    resendBtn?.addEventListener('click', async () => {
+
+    async function doResendVerification() {
       if (!profileId) return;
       const email = profData?.user?.email || profData?.emailContact || 'el profesional';
-      resendBtn.disabled = true;
+      if (resendBtn) resendBtn.disabled = true;
       if (resendBtnText) resendBtnText.textContent = 'Enviando...';
       try {
         await resendVerificationEmail(profileId);
@@ -1379,9 +1380,22 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
           showToast(err?.body?.message || err?.message || 'No se pudo reenviar el email', 'error');
         }
       } finally {
-        resendBtn.disabled = false;
+        if (resendBtn) resendBtn.disabled = false;
         if (resendBtnText) resendBtnText.textContent = 'Enviar email de confirmación';
       }
+    }
+
+    resendBtn?.addEventListener('click', () => {
+      if (!profileId) return;
+      const email = profData?.user?.email || profData?.emailContact || 'el profesional';
+      (window as any).openConfirmModal({
+        title: 'Reenviar email de confirmación',
+        body: `¿Querés reenviar el email de confirmación a ${email}?`,
+        confirmText: 'Sí, reenviar',
+        cancelText: 'No',
+        confirmStyle: 'primary',
+        onConfirm: () => doResendVerification(),
+      });
     });
 
     document.getElementById('e-country')?.addEventListener('change', () => {

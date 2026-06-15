@@ -18,7 +18,7 @@
 </div>
 
 <script>
-  type ConfirmButtonVariant = 'danger' | 'outline' | 'ghost';
+  type ConfirmButtonVariant = 'danger' | 'primary' | 'outline' | 'ghost';
 
   interface ConfirmModalButton {
     text: string;
@@ -54,6 +54,7 @@
 
   const variantClassMap: Record<ConfirmButtonVariant, string> = {
     danger: 'bg-red-500 text-white hover:bg-red-600 w-full py-3 rounded-xl font-semibold',
+    primary: 'bg-primary text-on-primary hover:opacity-90 w-full py-3 rounded-xl font-semibold',
     outline: 'border border-gray-200 text-gray-700 hover:bg-gray-100 w-full py-3 rounded-xl font-medium',
     ghost: 'text-gray-500 hover:bg-gray-50 w-full py-3 rounded-xl font-medium',
   };

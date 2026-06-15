@@ -79,8 +79,6 @@ export async function renderFeaturedSection(containerId: string): Promise<void> 
         const name = escapeHtml(pro.name);
         const escapedPrice = escapeHtml(String(pro.pricePerHour ?? ''));
         const priceLabel = pro.pricePerHour ? `Desde $${escapedPrice} / hr` : 'Consultar precio';
-        const rating = pro.rating ?? 4.8;
-        const reviewCount = pro.reviewCount ?? 0;
         return `
         <article style="background: white; border-radius: 20px; border: 1px solid #EDEDED; padding: 20px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: transform 0.15s ease, box-shadow 0.15s ease;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 28px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.04)'">
             <div style="display: flex; gap: 12px; align-items: flex-start;">
@@ -95,11 +93,10 @@ export async function renderFeaturedSection(containerId: string): Promise<void> 
                 <h3 style="font-size: 15px; font-weight: 700; color: #404040; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0;">${name}</h3>
                 ${category ? `<span style="display: inline-block; background: #E6F4F5; color: #087781; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${category}</span>` : ''}
                 ${city ? `<p style="font-size: 12px; color: #737373; display: flex; align-items: center; gap: 4px; margin: 0;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#087781" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg><span>${city}</span></p>` : ''}
-                <p style="font-size: 12px; color: #737373; margin: 0;">⭐ ${rating} (${reviewCount} trabajos)</p>
               </div>
             </div>
 
-            <p style="font-size: 15px; font-weight: 700; color: #404040; margin: 4px 0 0 0;">${priceLabel}</p>
+            <p style="font-size: 15px; font-weight: 700; color: #404040; margin: 4px 0 0 0; text-align: center;">${priceLabel}</p>
 
             <a href="/profesionales/perfil?id=${pro.id}" style="display: block; width: 100%; text-align: center; padding: 9px; border: 1.5px solid #087781; border-radius: 10px; color: #087781; font-size: 14px; font-weight: 500; text-decoration: none; transition: background 0.15s;" onmouseover="this.style.background='#087781';this.style.color='white'" onmouseout="this.style.background='';this.style.color='#087781'">Ver perfil →</a>
           </article>
