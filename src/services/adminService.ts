@@ -38,7 +38,7 @@ export interface AdminProfessional {
   country?: { id: number; name: string; code: string } | null;
   province?: { id: number; name: string } | null;
   professionCategories?: { id: number; slug: string; name: string; level: number }[];
-  user?: { id: string; email: string; role: string };
+  user?: { id: string; email: string; role: string; emailVerified?: boolean };
 }
 
 export interface PaginatedResponse<T> {
@@ -237,6 +237,18 @@ export async function updateProfessional(
     return await api.patch(`/admin/professionals/${id}`, payload);
   } catch (error) {
     throw toAdminError(error, 'Error al actualizar profesional');
+  }
+}
+
+export interface ResendVerificationResponse {
+  message: string;
+}
+
+export async function resendVerificationEmail(id: string): Promise<ResendVerificationResponse> {
+  try {
+    return await api.post<ResendVerificationResponse>(`/admin/professionals/${id}/resend-verification`);
+  } catch (error) {
+    throw toAdminError(error, 'Error al reenviar el email de verificación');
   }
 }
 

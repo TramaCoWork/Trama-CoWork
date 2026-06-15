@@ -37,9 +37,21 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       </a>
       <div class="flex-1">
         <h1 id="prof-name" class="text-3xl font-black text-on-surface tracking-tighter">—</h1>
-        <div class="flex items-center gap-3 mt-1">
+        <div class="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1">
           <span id="prof-status-badge"></span>
           <span id="prof-email" class="text-sm text-on-surface-variant">—</span>
+          <span id="prof-email-verified" class="hidden items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
+            <span class="material-symbols-outlined text-sm" aria-hidden="true">verified</span>
+            Verificado
+          </span>
+          <button
+            id="btn-resend-verification"
+            type="button"
+            class="hidden items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-tertiary-fixed text-on-tertiary-fixed-variant hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span class="material-symbols-outlined text-sm" aria-hidden="true">mail</span>
+            <span id="btn-resend-verification-text">Enviar email de confirmación</span>
+          </button>
         </div>
       </div>
       <div id="prof-photo-wrap" class="shrink-0">
@@ -413,6 +425,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       fetchProfessionalDetail,
       fetchProfessionalDocuments,
       fetchValidationHistory,
+      resendVerificationEmail,
       updateProfessional,
       uploadProfessionalPhoto,
       validateProfile,
@@ -500,11 +513,31 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       }, 4000);
     }
 
+    // ─── Email verification UI ───────────────────────────────────
+    function renderEmailVerification(verified: boolean) {
+      const verifiedBadge = document.getElementById('prof-email-verified')!;
+      const resendBtn = document.getElementById('btn-resend-verification')!;
+      if (verified) {
+        verifiedBadge.classList.remove('hidden');
+        verifiedBadge.classList.add('inline-flex');
+        resendBtn.classList.add('hidden');
+        resendBtn.classList.remove('inline-flex');
+      } else {
+        verifiedBadge.classList.add('hidden');
+        verifiedBadge.classList.remove('inline-flex');
+        resendBtn.classList.remove('hidden');
+        resendBtn.classList.add('inline-flex');
+      }
+    }
+
     // ─── Populate detail ─────────────────────────────────────────
     function populateProfile(p: AdminProfessional) {
       document.getElementById('prof-name')!.textContent = p.name || '—';
       document.getElementById('prof-status-badge')!.innerHTML = statusBadge(p.profileStatus);
       document.getElementById('prof-email')!.textContent = p.user?.email || p.emailContact || '—';
+
+      // Email verification state
+      renderEmailVerification(p.user?.emailVerified === true);
 
       // Photo
       const photo = document.getElementById('prof-photo') as HTMLImageElement;
@@ -1324,6 +1357,31 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       if (!currentDocReviewId) return;
       const notes = (document.getElementById('doc-review-notes') as HTMLTextAreaElement | null)?.value || '';
       handleDocVerify(currentDocReviewId, 'rejected', notes);
+    });
+
+    const resendBtn = document.getElementById('btn-resend-verification') as HTMLButtonElement | null;
+    const resendBtnText = document.getElementById('btn-resend-verification-text');
+    resendBtn?.addEventListener('click', async () => {
+      if (!profileId) return;
+      const email = profData?.user?.email || profData?.emailContact || 'el profesional';
+      resendBtn.disabled = true;
+      if (resendBtnText) resendBtnText.textContent = 'Enviando...';
+      try {
+        await resendVerificationEmail(profileId);
+        showToast(`Email de confirmación reenviado a ${email}`, 'success');
+      } catch (err: any) {
+        // 400 = el email ya estaba verificado: reflejarlo y ocultar el botón.
+        if (err?.status === 400) {
+          if (profData?.user) profData.user.emailVerified = true;
+          renderEmailVerification(true);
+          showToast('El email ya estaba verificado', 'success');
+        } else {
+          showToast(err?.body?.message || err?.message || 'No se pudo reenviar el email', 'error');
+        }
+      } finally {
+        resendBtn.disabled = false;
+        if (resendBtnText) resendBtnText.textContent = 'Enviar email de confirmación';
+      }
     });
 
     document.getElementById('e-country')?.addEventListener('change', () => {
