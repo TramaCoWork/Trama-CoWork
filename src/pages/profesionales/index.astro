@@ -178,10 +178,11 @@ import SearchHeader from '../../components/SearchHeader.astro';
 
   // ─── Init: si hay query params, buscar; sino cargar todos ─────
   const urlParams = new URLSearchParams(window.location.search);
-  const hasFilters = urlParams.has('rubro') || urlParams.has('sub_rubro') || urlParams.has('countryId') || urlParams.has('provinceId');
+  const hasFilters = urlParams.has('q') || urlParams.has('rubro') || urlParams.has('sub_rubro') || urlParams.has('countryId') || urlParams.has('provinceId');
 
   if (hasFilters) {
     const filters: SearchFilters = {};
+    if (urlParams.get('q')) filters.q = urlParams.get('q')!;
     if (urlParams.get('rubro')) filters.rubro = urlParams.get('rubro')!;
     if (urlParams.get('sub_rubro')) filters.sub_rubro = urlParams.get('sub_rubro')!;
     if (urlParams.get('countryId')) filters.countryId = Number(urlParams.get('countryId'));

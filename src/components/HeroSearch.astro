@@ -28,46 +28,28 @@
   <div style="display:flex; justify-content:center; margin-top:-28px; position:relative; z-index:10; padding:0 24px;">
     <div style="max-width:800px; width:100%; background:white; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.12); padding:12px 16px; display:flex; align-items:center; gap:12px;">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#087781" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      <select id="hero-rubro" style="flex:1; border:1px solid #D9D9D9; border-radius:8px; padding:10px 14px; font-size:15px; color:#404040; background:white; cursor:pointer;">
-        <option value="">Todas las áreas</option>
-      </select>
-      <input id="hero-search-text" type="text" placeholder="Buscar por especialidad, habilidad o nombre" style="flex:2; border:1px solid #D9D9D9; border-radius:8px; padding:10px 14px; font-size:15px; color:#404040; outline:none;" />
+      <input id="hero-search-text" type="text" placeholder="Buscar por especialidad, habilidad o nombre" style="flex:1; border:1px solid #D9D9D9; border-radius:8px; padding:10px 14px; font-size:15px; color:#404040; outline:none;" />
       <button id="btn-buscar" type="button" style="background:#087781; color:white; border:none; border-radius:10px; padding:10px 28px; font-size:15px; font-weight:600; cursor:pointer; white-space:nowrap;">Buscar</button>
     </div>
   </div>
 </section>
 
 <script>
-  import { fetchRubros } from "../services/professionCategoriesService";
-
-  const rubroSelect = document.getElementById(
-    "hero-rubro",
-  ) as HTMLSelectElement;
+  const searchInput = document.getElementById(
+    "hero-search-text",
+  ) as HTMLInputElement;
   const btnBuscar = document.getElementById("btn-buscar");
 
-  // Cargar rubros
-  async function loadRubros() {
-    try {
-      const rubros = await fetchRubros();
-      rubros.forEach((r) => {
-        const opt = document.createElement("option");
-        opt.value = r.slug;
-        opt.textContent = r.name;
-        rubroSelect.appendChild(opt);
-      });
-    } catch (err) {
-      console.error("Error cargando rubros:", err);
-    }
-  }
-
-  loadRubros();
-
-  // Buscar
-  btnBuscar?.addEventListener("click", () => {
-    const rubro = rubroSelect.value;
+  function goToSearch() {
+    const q = searchInput.value.trim();
     const params = new URLSearchParams();
-    if (rubro) params.set("rubro", rubro);
+    if (q) params.set("q", q);
     const url = `/profesionales${params.toString() ? "?" + params.toString() : ""}`;
     window.location.href = url;
+  }
+
+  btnBuscar?.addEventListener("click", goToSearch);
+  searchInput?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") goToSearch();
   });
 </script>

@@ -43,6 +43,7 @@ export interface PaginatedProfessionals {
 // ─── Filtros de búsqueda ───────────────────────────────────────
 
 export interface SearchFilters {
+  q?: string;
   rubro?: string;
   sub_rubro?: string;
   countryId?: number;
@@ -133,6 +134,7 @@ export async function searchProfessionalsByName(query: string): Promise<Professi
 /** Buscar profesionales con filtros avanzados (GET /search) */
 export async function searchProfessionals(filters: SearchFilters): Promise<ProfessionalItem[]> {
   const params: Record<string, string | number> = {};
+  if (filters.q) params.q = filters.q;
   if (filters.rubro) params.rubro = filters.rubro;
   if (filters.sub_rubro) params.sub_rubro = filters.sub_rubro;
   if (filters.countryId) params.countryId = filters.countryId;
