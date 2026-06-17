@@ -22,6 +22,7 @@ export interface ApiFeaturedProfessional {
   pricePerHour?: number;
   services: string[];
   rubro?: { id: number; slug: string; name: string } | null;
+  professionCategories?: { id: number; slug: string; name: string }[];
   city?: string | null;
   rating?: number;
   reviewCount?: number;
@@ -74,7 +75,22 @@ export async function renderFeaturedSection(containerId: string): Promise<void> 
     container.innerHTML = professionals
       .map((pro) => {
         const photo = `${API_BASE}/uploads/photo/${pro.id}`;
-        const category = escapeHtml(pro.rubro?.name ?? pro.services?.[0] ?? '');
+        // Hasta 3 categorías de profesión; si no hay, usar el rubro o el primer servicio.
+        const categoryNames = (pro.professionCategories ?? [])
+          .map((c) => c.name)
+          .filter(Boolean)
+          .slice(0, 3);
+        if (categoryNames.length === 0) {
+          const fallback = pro.rubro?.name ?? pro.services?.[0] ?? '';
+          if (fallback) categoryNames.push(fallback);
+        }
+        const chipStyle =
+          'display: inline-block; background: #E6F4F5; color: #087781; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+        const categoriesHtml = categoryNames.length
+          ? `<div style="display: flex; flex-wrap: wrap; gap: 4px;">${categoryNames
+              .map((c) => `<span style="${chipStyle}">${escapeHtml(c)}</span>`)
+              .join('')}</div>`
+          : '';
         const city = escapeHtml(pro.city ?? '');
         const name = escapeHtml(pro.name);
         const escapedPrice = escapeHtml(String(pro.pricePerHour ?? ''));
@@ -91,7 +107,7 @@ export async function renderFeaturedSection(containerId: string): Promise<void> 
 
               <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0;">
                 <h3 style="font-size: 15px; font-weight: 700; color: #404040; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0;">${name}</h3>
-                ${category ? `<span style="display: inline-block; background: #E6F4F5; color: #087781; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${category}</span>` : ''}
+                ${categoriesHtml}
                 ${city ? `<p style="font-size: 12px; color: #737373; display: flex; align-items: center; gap: 4px; margin: 0;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#087781" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg><span>${city}</span></p>` : ''}
               </div>
             </div>
