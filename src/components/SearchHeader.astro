@@ -27,49 +27,27 @@
           class="relative bg-surface-container-lowest p-4 md:p-5 rounded-2xl shadow-sm"
         >
           <div
-            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4"
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4"
           >
-            <!-- Rubro -->
+            <!-- Búsqueda -->
             <div class="space-y-1.5">
               <label
-                for="filter-rubro"
+                for="filter-q"
                 class="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5"
               >
                 <span
                   class="material-symbols-outlined text-primary text-sm"
-                  aria-hidden="true">work</span
+                  aria-hidden="true">search</span
                 >
-                Rubro
+                Búsqueda
               </label>
-              <select
-                id="filter-rubro"
-                name="rubro"
-                class="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm font-medium text-on-surface focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
-              >
-                <option value="">Todos los rubros</option>
-              </select>
-            </div>
-
-            <!-- Sub-rubro -->
-            <div class="space-y-1.5">
-              <label
-                for="filter-subrubro"
-                class="text-xs font-bold text-on-surface-variant uppercase tracking-widest flex items-center gap-1.5"
-              >
-                <span
-                  class="material-symbols-outlined text-primary text-sm"
-                  aria-hidden="true">category</span
-                >
-                Sub-rubro
-              </label>
-              <select
-                id="filter-subrubro"
-                name="sub_rubro"
-                disabled
-                class="w-full bg-surface-container-low border-none rounded-xl py-3 px-4 text-sm font-medium text-on-surface focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <option value="">Selecciona un rubro primero</option>
-              </select>
+              <input
+                id="filter-q"
+                type="text"
+                name="q"
+                placeholder="Buscar por especialidad, habilidad o nombre"
+                style="flex:1; border:1px solid #D9D9D9; border-radius:8px; padding:10px 14px; font-size:15px; color:#404040; outline:none;"
+              />
             </div>
 
             <!-- País -->
@@ -135,18 +113,9 @@
 </header>
 
 <script>
-  import {
-    fetchRubros,
-    fetchProfessionsByRubro,
-  } from "../services/professionCategoriesService";
   import { fetchCountries, fetchProvinces } from "../services/locationService";
 
-  const rubroSelect = document.getElementById(
-    "filter-rubro",
-  ) as HTMLSelectElement;
-  const subRubroSelect = document.getElementById(
-    "filter-subrubro",
-  ) as HTMLSelectElement;
+  const queryInput = document.getElementById("filter-q") as HTMLInputElement;
   const countrySelect = document.getElementById(
     "filter-country",
   ) as HTMLSelectElement;
@@ -156,62 +125,9 @@
 
   // ─── Leer query params de la URL ──────────────────────────────
   const urlParams = new URLSearchParams(window.location.search);
-  const preRubro = urlParams.get("rubro") || "";
-  const preSubRubro = urlParams.get("sub_rubro") || "";
+  const preQ = urlParams.get("q") || "";
   const preCountryId = urlParams.get("countryId") || "";
   const preProvinceId = urlParams.get("provinceId") || "";
-
-  // ─── Cargar rubros ────────────────────────────────────────────
-  async function loadRubros() {
-    try {
-      const rubros = await fetchRubros();
-      rubros.forEach((r) => {
-        const opt = document.createElement("option");
-        opt.value = r.slug;
-        opt.textContent = r.name;
-        opt.dataset.rubroId = String(r.id);
-        if (r.slug === preRubro) opt.selected = true;
-        rubroSelect.appendChild(opt);
-      });
-      // Si hay rubro preseleccionado, cargar sub-rubros
-      if (preRubro) {
-        await loadSubRubros();
-      }
-    } catch (err) {
-      console.error("Error cargando rubros:", err);
-    }
-  }
-
-  // ─── Cargar sub-rubros (cascada desde rubro) ──────────────────
-  async function loadSubRubros() {
-    const selectedOption = rubroSelect.selectedOptions[0];
-    const rubroId = selectedOption?.dataset?.rubroId;
-
-    // Reset
-    subRubroSelect.innerHTML = '<option value="">Todos los sub-rubros</option>';
-
-    if (!rubroId) {
-      subRubroSelect.disabled = true;
-      subRubroSelect.innerHTML =
-        '<option value="">Selecciona un rubro primero</option>';
-      return;
-    }
-
-    subRubroSelect.disabled = false;
-
-    try {
-      const children = await fetchProfessionsByRubro(Number(rubroId));
-      children.forEach((sub) => {
-        const opt = document.createElement("option");
-        opt.value = sub.slug;
-        opt.textContent = sub.name;
-        if (sub.slug === preSubRubro) opt.selected = true;
-        subRubroSelect.appendChild(opt);
-      });
-    } catch (err) {
-      console.error("Error cargando sub-rubros:", err);
-    }
-  }
 
   // ─── Cargar países ────────────────────────────────────────────
   async function loadCountries() {
@@ -263,15 +179,16 @@
     }
   }
 
-  // ─── Eventos de cascada ───────────────────────────────────────
-  rubroSelect.addEventListener("change", () => {
-    loadSubRubros();
-  });
-
   countrySelect.addEventListener("change", () => {
     loadProvinces();
   });
 
-  // ─── Init: cargar rubros y países en paralelo ─────────────────
-  Promise.all([loadRubros(), loadCountries()]);
+  document.addEventListener("DOMContentLoaded", () => {
+    queryInput.value = preQ;
+  });
+
+  // ─── Init: cargar países ──────────────────────────────────────
+  loadCountries();
 </script>
+
+<!-- Traceability: edited by Programmer at 2026-06-17 20:30:26 -->

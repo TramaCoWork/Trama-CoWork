@@ -154,20 +154,17 @@ import SearchHeader from '../../components/SearchHeader.astro';
     const formData = new FormData(searchForm);
     const filters: SearchFilters = {};
 
-    const rubro = formData.get('rubro')?.toString().trim();
-    const subRubro = formData.get('sub_rubro')?.toString().trim();
+    const q = formData.get('q')?.toString().trim();
     const countryId = formData.get('countryId')?.toString().trim();
     const provinceId = formData.get('provinceId')?.toString().trim();
 
-    if (rubro) filters.rubro = rubro;
-    if (subRubro) filters.sub_rubro = subRubro;
+    if (q) filters.q = q;
     if (countryId) filters.countryId = Number(countryId);
     if (provinceId) filters.provinceId = Number(provinceId);
 
     // Actualizar URL sin recargar
     const params = new URLSearchParams();
-    if (rubro) params.set('rubro', rubro);
-    if (subRubro) params.set('sub_rubro', subRubro);
+    if (q) params.set('q', q);
     if (countryId) params.set('countryId', countryId);
     if (provinceId) params.set('provinceId', provinceId);
     const newUrl = params.toString() ? `${window.location.pathname}?${params}` : window.location.pathname;
@@ -178,13 +175,11 @@ import SearchHeader from '../../components/SearchHeader.astro';
 
   // ─── Init: si hay query params, buscar; sino cargar todos ─────
   const urlParams = new URLSearchParams(window.location.search);
-  const hasFilters = urlParams.has('q') || urlParams.has('rubro') || urlParams.has('sub_rubro') || urlParams.has('countryId') || urlParams.has('provinceId');
+  const hasFilters = urlParams.has('q') || urlParams.has('countryId') || urlParams.has('provinceId');
 
   if (hasFilters) {
     const filters: SearchFilters = {};
     if (urlParams.get('q')) filters.q = urlParams.get('q')!;
-    if (urlParams.get('rubro')) filters.rubro = urlParams.get('rubro')!;
-    if (urlParams.get('sub_rubro')) filters.sub_rubro = urlParams.get('sub_rubro')!;
     if (urlParams.get('countryId')) filters.countryId = Number(urlParams.get('countryId'));
     if (urlParams.get('provinceId')) filters.provinceId = Number(urlParams.get('provinceId'));
     doSearch(filters);
@@ -192,3 +187,5 @@ import SearchHeader from '../../components/SearchHeader.astro';
     renderProfessionalsList('pro-list', 'pro-count', 'pro-pagination', 'pro-loading', 'pro-error');
   }
 </script>
+
+<!-- Traceability: edited by Programmer at 2026-06-17 20:30:26 -->
