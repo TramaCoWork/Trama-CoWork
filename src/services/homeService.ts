@@ -85,10 +85,11 @@ export async function renderFeaturedSection(containerId: string): Promise<void> 
           if (fallback) categoryNames.push(fallback);
         }
         const chipStyle =
-          'display: inline-block; background: #E6F4F5; color: #087781; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+          'display: inline-block; background: #E6F4F5; color: #087781; font-size: 11px; font-weight: 500; line-height: 16px; padding: 2px 8px; border-radius: 20px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+        // Reservar el alto de 3 chips (3 × 20px + 2 × gap 4px) para que las cards queden parejas.
         const categoriesHtml = categoryNames.length
-          ? `<div style="display: flex; flex-wrap: wrap; gap: 4px;">${categoryNames
-              .map((c) => `<span style="${chipStyle}">${escapeHtml(c)}</span>`)
+          ? `<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 68px;">${categoryNames
+              .map((c) => `<span style="${chipStyle}" title="${escapeHtml(c)}">${escapeHtml(c)}</span>`)
               .join('')}</div>`
           : '';
         const city = escapeHtml(pro.city ?? '');
