@@ -4,7 +4,7 @@
  * Llamadas a la API para planes de suscripción, suscripciones y pagos.
  */
 
-import { api } from './apiClient';
+import { api, apiURL } from './apiClient';
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -21,6 +21,8 @@ export interface SubscriptionPlan {
   createdAt: string;
   updatedAt: string;
 }
+
+export type BricksCheckoutPlan = SubscriptionPlan;
 
 export interface Subscription {
   id: string;
@@ -117,6 +119,11 @@ export interface BricksSubscribeResponse {
   message: string;
 }
 
+export interface InitLinkResponse {
+  subscriptionId: string;
+  initPoint: string;
+}
+
 // ─── Plans ──────────────────────────────────────────────────
 
 export function fetchPlans(): Promise<SubscriptionPlan[]> {
@@ -160,3 +167,9 @@ export function payWithBricks(body: BricksPayBody): Promise<BricksPayResponse> {
 export function subscribeWithBricks(body: BricksSubscribeBody): Promise<BricksSubscribeResponse> {
   return api.post<BricksSubscribeResponse>('/subscriptions/bricks/subscribe', body);
 }
+
+export function getInitLink(planId: string): Promise<InitLinkResponse> {
+  return api.get<InitLinkResponse>(apiURL('/subscriptions/init-link'), { planId });
+}
+
+// Traceability: implementation by Programmer at 2026-06-22 09:33:21

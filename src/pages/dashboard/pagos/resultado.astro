@@ -60,6 +60,13 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
   </div>
 
   <script>
+    import { logout } from '../../../services/authService';
+    import { getMySubscription } from '../../../services/subscriptionService';
+
+    const PENDING_SUBSCRIPTION_KEY = 'trama_subscription_pending';
+    const POLL_INTERVAL_MS = 3000;
+    const MAX_POLL_ATTEMPTS = 20;
+
     function detailRow(label: string, value: string): string {
       return `<div class="flex items-baseline gap-3">
         <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant w-28 shrink-0">${label}</span>
@@ -67,69 +74,138 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
       </div>`;
     }
 
-    function formatDate(iso: string): string {
-      const d = new Date(iso);
-      if (isNaN(d.getTime())) return iso;
-      return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    function showSection(sectionId: 'result-approved' | 'result-pending' | 'result-rejected' | 'result-unknown') {
+      const sections = ['result-approved', 'result-pending', 'result-rejected', 'result-unknown'];
+      for (const id of sections) {
+        document.getElementById(id)!.classList.add('hidden');
+      }
+      document.getElementById(sectionId)!.classList.remove('hidden');
     }
 
-    function init() {
-      const params = new URLSearchParams(window.location.search);
+    function clearPendingSubscription() {
+      localStorage.removeItem(PENDING_SUBSCRIPTION_KEY);
+    }
 
-      // Checkout Bricks (synchronous) sends: status, detail, msg, end_date.
-      // Legacy redirect flow may send: collection_status, payment_id, preference_id, external_reference.
-      const status = params.get('status') || params.get('collection_status') || '';
-      const detail = params.get('detail') || '';
+    function navigateToPayments(delayMs = 0) {
+      if (delayMs <= 0) {
+        window.location.href = '/dashboard/pagos';
+        return;
+      }
+      setTimeout(() => {
+        window.location.href = '/dashboard/pagos';
+      }, delayMs);
+    }
+
+    function sleep(ms: number): Promise<void> {
+      return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+      });
+    }
+
+    async function pollUntilActive(initialStatus: string) {
+      const pendingMessage = document.getElementById('pending-message')!;
+      const pendingDetails = document.getElementById('pending-details')!;
+
+      pendingMessage.textContent = 'Estamos activando tu suscripción. Esto puede demorar unos segundos.';
+      pendingDetails.innerHTML = detailRow('Estado MP', initialStatus || 'pendiente');
+
+      showSection('result-pending');
+
+      for (let attempt = 1; attempt <= MAX_POLL_ATTEMPTS; attempt++) {
+        pendingDetails.innerHTML = `${detailRow('Estado MP', initialStatus || 'pendiente')}${detailRow('Intento', `${attempt}/${MAX_POLL_ATTEMPTS}`)}`;
+
+        try {
+          const subscription = await getMySubscription();
+          if (subscription.status === 'active') {
+            clearPendingSubscription();
+            const approvedMessage = document.getElementById('approved-message')!;
+            const approvedDetails = document.getElementById('approved-details')!;
+            approvedMessage.textContent = 'Tu suscripción fue activada correctamente. Te redirigimos a Pagos.';
+            approvedDetails.innerHTML = detailRow('Suscripción', 'Activa');
+            showSection('result-approved');
+            navigateToPayments(1500);
+            return;
+          }
+        } catch (err: unknown) {
+          const error = err as Error & { status?: number };
+          if (error?.status === 401) {
+            clearPendingSubscription();
+            logout();
+            return;
+          }
+        }
+
+        if (attempt < MAX_POLL_ATTEMPTS) {
+          await sleep(POLL_INTERVAL_MS);
+        }
+      }
+
+      clearPendingSubscription();
+      const rejectedMessage = document.getElementById('rejected-message')!;
+      const rejectedDetails = document.getElementById('rejected-details')!;
+      rejectedMessage.textContent = 'No pudimos confirmar la activación a tiempo. Te redirigimos para que revises tu estado.';
+      rejectedDetails.innerHTML = detailRow('Resultado', 'Tiempo de espera agotado');
+      showSection('result-rejected');
+      navigateToPayments(2000);
+    }
+
+    async function init() {
+      const params = new URLSearchParams(window.location.search);
+      const pendingSubscription = localStorage.getItem(PENDING_SUBSCRIPTION_KEY);
+
+      if (!pendingSubscription) {
+        navigateToPayments();
+        return;
+      }
+
+      const status = (params.get('status') || '').toLowerCase();
+      const detail = params.get('detail') || params.get('status_detail') || '';
       const message = params.get('msg') || '';
-      const endDate = params.get('end_date') || '';
-      const nextPayment = params.get('next_payment') || '';
-      const paymentId = params.get('payment_id') || params.get('collection_id') || '';
-      const preferenceId = params.get('preference_id') || params.get('preapproval_id') || '';
-      const externalRef = params.get('external_reference') || '';
+      const preapprovalId = params.get('preapproval_id') || '';
 
       const loadingEl = document.getElementById('result-loading')!;
       loadingEl.classList.add('hidden');
 
-      // Build details HTML
-      let detailsHtml = '';
-      if (nextPayment) detailsHtml += detailRow('Proximo cobro', formatDate(nextPayment));
-      if (endDate) detailsHtml += detailRow('Vence', formatDate(endDate));
-      if (paymentId) detailsHtml += detailRow('ID Pago', paymentId);
-      if (preferenceId) detailsHtml += detailRow('ID Preferencia', preferenceId);
-      if (externalRef) detailsHtml += detailRow('Referencia', externalRef);
-      if (status) detailsHtml += detailRow('Estado', status);
-      if (detail) detailsHtml += detailRow('Detalle', detail);
-
-      const normalizedStatus = status.toLowerCase();
-
-      let detailsTarget: string | null = null;
-      let messageTarget: string | null = null;
-      if (normalizedStatus === 'approved' || normalizedStatus === 'authorized') {
-        document.getElementById('result-approved')!.classList.remove('hidden');
-        detailsTarget = 'approved-details';
-        messageTarget = 'approved-message';
-      } else if (normalizedStatus === 'pending' || normalizedStatus === 'in_process') {
-        document.getElementById('result-pending')!.classList.remove('hidden');
-        detailsTarget = 'pending-details';
-        messageTarget = 'pending-message';
-      } else if (normalizedStatus === 'rejected' || normalizedStatus === 'failure' || normalizedStatus === 'null') {
-        document.getElementById('result-rejected')!.classList.remove('hidden');
-        detailsTarget = 'rejected-details';
-        messageTarget = 'rejected-message';
-      } else {
-        // Unknown or empty status
-        document.getElementById('result-unknown')!.classList.remove('hidden');
+      if (status === 'failure' || status === 'rejected') {
+        clearPendingSubscription();
+        const rejectedMessage = document.getElementById('rejected-message')!;
+        const rejectedDetails = document.getElementById('rejected-details')!;
+        rejectedMessage.textContent = message || 'Hubo un problema con el pago.';
+        rejectedDetails.innerHTML = detail ? detailRow('Detalle', detail) : '';
+        showSection('result-rejected');
+        return;
       }
 
-      // Prefer the backend message when present
-      if (message && messageTarget) {
-        document.getElementById(messageTarget)!.textContent = message;
+      if (status === 'cancelled') {
+        clearPendingSubscription();
+        const rejectedMessage = document.getElementById('rejected-message')!;
+        const rejectedDetails = document.getElementById('rejected-details')!;
+        rejectedMessage.textContent = 'Cancelaste el proceso de pago.';
+        rejectedDetails.innerHTML = detail ? detailRow('Detalle', detail) : '';
+        showSection('result-rejected');
+        return;
       }
-      if (detailsHtml && detailsTarget) {
-        document.getElementById(detailsTarget)!.innerHTML = detailsHtml;
+
+      if (!['approved', 'pending', 'in_process'].includes(status)) {
+        clearPendingSubscription();
+        const rejectedMessage = document.getElementById('rejected-message')!;
+        const rejectedDetails = document.getElementById('rejected-details')!;
+        rejectedMessage.textContent = 'Hubo un problema con el pago.';
+        rejectedDetails.innerHTML = status ? detailRow('Estado', status) : '';
+        showSection('result-rejected');
+        return;
       }
+
+      if (preapprovalId) {
+        const pendingDetails = document.getElementById('pending-details')!;
+        pendingDetails.innerHTML = detailRow('Preapproval', preapprovalId);
+      }
+
+      await pollUntilActive(status);
     }
 
     init();
   </script>
 </DashboardLayout>
+
+<!-- Traceability: implementation by Programmer at 2026-06-22 09:33:21 -->

@@ -1,0 +1,478 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import AdminTable from '../../../components/admin/AdminTable.astro';
+import ConfirmModal from '../../../components/ConfirmModal.astro';
+
+const columns = [
+  { key: 'email', label: 'Email' },
+  { key: 'role', label: 'Rol' },
+  { key: 'createdAt', label: 'Fecha alta' },
+  { key: 'actions', label: 'Acciones' },
+];
+---
+
+<AdminLayout title="TRAMA Admin - Usuarios">
+  <ConfirmModal />
+
+  <header class="mb-8 flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-black text-on-surface tracking-tighter">Usuarios admin</h1>
+      <p class="text-on-surface-variant font-medium mt-1 text-sm">Gestión de cuentas administrativas.</p>
+    </div>
+    <button
+      id="btn-open-create"
+      type="button"
+      class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all"
+    >
+      Crear usuario
+    </button>
+  </header>
+
+  <p id="inline-delete-error" class="hidden mb-4 rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></p>
+
+  <AdminTable title="Listado de usuarios" columns={columns} showExportButtons={false} />
+
+  <div
+    id="user-modal"
+    class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/30 backdrop-blur-sm p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="user-modal-title"
+  >
+    <div class="w-full max-w-lg rounded-2xl bg-surface-container-low border border-outline-variant/15 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-outline-variant/15 px-6 py-4">
+        <h2 id="user-modal-title" class="text-lg font-extrabold text-on-surface tracking-tight">Crear usuario</h2>
+        <button id="btn-close-modal" type="button" class="text-on-surface-variant hover:text-on-surface" aria-label="Cerrar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="user-form" class="p-6 space-y-4">
+        <div>
+          <label for="user-email" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Email</label>
+          <input
+            id="user-email"
+            name="email"
+            type="email"
+            required
+            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+          />
+        </div>
+
+        <label id="change-password-row" class="hidden items-center gap-2 text-sm font-medium text-on-surface">
+          <input id="change-password" type="checkbox" class="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20" />
+          Cambiar contraseña
+        </label>
+
+        <div id="password-row">
+          <label for="user-password" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Contraseña</label>
+          <input
+            id="user-password"
+            name="password"
+            type="password"
+            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+          />
+          <p id="password-hint" class="mt-1 text-xs text-on-surface-variant">Mínimo 8 caracteres.</p>
+        </div>
+
+        <p id="modal-inline-error" class="hidden rounded-lg border border-error/20 bg-error/10 px-3 py-2 text-sm font-medium text-error"></p>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button id="btn-cancel-modal" type="button" class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors">Cancelar</button>
+          <button id="btn-submit-modal" type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    import { getRoleFromToken, getUserIdFromToken, isAuthenticated, restoreSession } from '../../../services/authService';
+    import {
+      createAdminUser,
+      deleteAdminUser,
+      fetchAdminUsers,
+      updateAdminUser,
+      type AdminUser,
+      type CreateAdminUserPayload,
+      type UpdateAdminUserPayload,
+    } from '../../../services/adminUsersService';
+
+    type ModalMode = 'create' | 'edit';
+
+    restoreSession();
+
+    if (!isAuthenticated()) {
+      window.location.href = '/admin/login';
+    } else if (getRoleFromToken() !== 'admin') {
+      window.location.href = '/dashboard';
+    }
+
+    const PAGE_SIZE = 15;
+    let currentPage = 1;
+    let totalPages = 1;
+    let currentUsers: AdminUser[] = [];
+    let modalMode: ModalMode = 'create';
+    let editingUserId: string | null = null;
+    const currentUserId = getUserIdFromToken();
+
+    const tbody = document.getElementById('table-body') as HTMLTableSectionElement;
+    const paginationContainer = document.getElementById('pagination-container') as HTMLDivElement;
+    const deleteError = document.getElementById('inline-delete-error') as HTMLParagraphElement;
+
+    const modal = document.getElementById('user-modal') as HTMLDivElement;
+    const modalTitle = document.getElementById('user-modal-title') as HTMLHeadingElement;
+    const form = document.getElementById('user-form') as HTMLFormElement;
+    const emailInput = document.getElementById('user-email') as HTMLInputElement;
+    const passwordInput = document.getElementById('user-password') as HTMLInputElement;
+    const passwordRow = document.getElementById('password-row') as HTMLDivElement;
+    const passwordHint = document.getElementById('password-hint') as HTMLParagraphElement;
+    const changePasswordRow = document.getElementById('change-password-row') as HTMLLabelElement;
+    const changePasswordInput = document.getElementById('change-password') as HTMLInputElement;
+    const modalInlineError = document.getElementById('modal-inline-error') as HTMLParagraphElement;
+    const submitButton = document.getElementById('btn-submit-modal') as HTMLButtonElement;
+
+    function formatDate(value: string): string {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return date.toLocaleDateString('es-AR');
+    }
+
+    function showLoadingRow(): void {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="text-center py-12 text-on-surface-variant">
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+              <span class="text-sm font-medium">Cargando...</span>
+            </div>
+          </td>
+        </tr>`;
+    }
+
+    function showEmptyRow(): void {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="text-center py-16 text-on-surface-variant">
+            <span class="material-symbols-outlined text-4xl mb-3 block text-outline" aria-hidden="true">group_off</span>
+            <p class="text-sm font-medium">No hay usuarios registrados.</p>
+          </td>
+        </tr>`;
+    }
+
+    function showLoadErrorRow(): void {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="text-center py-12 text-error">
+            <span class="material-symbols-outlined text-3xl mb-2 block" aria-hidden="true">error</span>
+            <p class="text-sm font-bold">Error al cargar los usuarios. Intentá de nuevo.</p>
+          </td>
+        </tr>`;
+    }
+
+    function renderPagination(totalItems: number): void {
+      if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
+      }
+
+      const start = totalItems === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+      const end = Math.min(currentPage * PAGE_SIZE, totalItems);
+
+      paginationContainer.innerHTML = `
+        <span class="text-xs text-on-surface-variant">Mostrando ${start}–${end} de ${totalItems} usuarios</span>
+        <div class="flex items-center gap-2">
+          <button data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}
+            class="px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+            Anterior
+          </button>
+          <span class="text-xs font-bold text-on-surface-variant px-1">${currentPage} / ${totalPages}</span>
+          <button data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}
+            class="px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+            Siguiente
+          </button>
+        </div>`;
+
+      paginationContainer.querySelectorAll<HTMLButtonElement>('button[data-page]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const nextPage = Number(button.dataset.page);
+          if (Number.isNaN(nextPage) || nextPage < 1 || nextPage > totalPages) return;
+          currentPage = nextPage;
+          loadUsers();
+        });
+      });
+    }
+
+    function renderRows(users: AdminUser[]): void {
+      if (users.length === 0) {
+        showEmptyRow();
+        return;
+      }
+
+      tbody.innerHTML = users
+        .map((user) => {
+          const isSelf = user.id === currentUserId;
+          const actions = isSelf
+            ? '<span class="text-xs text-on-surface-variant">Tu usuario</span>'
+            : `<div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  data-action="edit"
+                  data-id="${user.id}"
+                  data-email="${user.email}"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors"
+                >
+                  <span class="material-symbols-outlined text-sm">edit</span>
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  data-action="delete"
+                  data-id="${user.id}"
+                  data-email="${user.email}"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-error-container text-on-error-container hover:opacity-90 transition-opacity"
+                >
+                  <span class="material-symbols-outlined text-sm">delete</span>
+                  Eliminar
+                </button>
+              </div>`;
+
+          return `
+            <tr class="border-b border-outline-variant/10 hover:bg-surface-container/50 transition-colors">
+              <td class="px-5 py-3.5 text-sm text-on-surface font-medium">${user.email}</td>
+              <td class="px-5 py-3.5">
+                <span class="inline-block px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-primary-container text-on-primary-container">${user.role}</span>
+              </td>
+              <td class="px-5 py-3.5 text-sm text-on-surface-variant">${formatDate(user.createdAt)}</td>
+              <td class="px-5 py-3.5">${actions}</td>
+            </tr>`;
+        })
+        .join('');
+    }
+
+    function hideDeleteError(): void {
+      deleteError.classList.add('hidden');
+      deleteError.textContent = '';
+    }
+
+    function showDeleteError(message: string): void {
+      deleteError.textContent = message;
+      deleteError.classList.remove('hidden');
+    }
+
+    async function loadUsers(): Promise<void> {
+      hideDeleteError();
+      showLoadingRow();
+
+      try {
+        const response = await fetchAdminUsers(currentPage, PAGE_SIZE);
+        currentUsers = response.data;
+        totalPages = Math.max(1, Math.ceil(response.total / response.sizePage));
+        renderRows(currentUsers);
+        renderPagination(response.total);
+      } catch {
+        showLoadErrorRow();
+        paginationContainer.innerHTML = '';
+      }
+    }
+
+    function closeModal(): void {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.body.style.overflow = '';
+      form.reset();
+      editingUserId = null;
+      modalMode = 'create';
+      modalInlineError.classList.add('hidden');
+      modalInlineError.textContent = '';
+      changePasswordInput.checked = false;
+      changePasswordRow.classList.add('hidden');
+      changePasswordRow.classList.remove('flex');
+      passwordRow.classList.remove('hidden');
+      passwordInput.required = true;
+      passwordHint.textContent = 'Mínimo 8 caracteres.';
+      submitButton.textContent = 'Guardar';
+    }
+
+    function openCreateModal(): void {
+      modalMode = 'create';
+      editingUserId = null;
+      modalTitle.textContent = 'Crear usuario';
+      submitButton.textContent = 'Crear';
+      emailInput.value = '';
+      passwordInput.value = '';
+      passwordInput.required = true;
+      changePasswordInput.checked = false;
+      changePasswordRow.classList.add('hidden');
+      changePasswordRow.classList.remove('flex');
+      passwordRow.classList.remove('hidden');
+      passwordHint.textContent = 'Mínimo 8 caracteres.';
+      modalInlineError.classList.add('hidden');
+      hideDeleteError();
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function openEditModal(id: string, email: string): void {
+      modalMode = 'edit';
+      editingUserId = id;
+      modalTitle.textContent = 'Editar usuario';
+      submitButton.textContent = 'Guardar cambios';
+      emailInput.value = email;
+      passwordInput.value = '';
+      passwordInput.required = false;
+      changePasswordInput.checked = false;
+      changePasswordRow.classList.remove('hidden');
+      changePasswordRow.classList.add('flex');
+      passwordRow.classList.add('hidden');
+      passwordHint.textContent = 'Completá este campo solo si querés cambiarla.';
+      modalInlineError.classList.add('hidden');
+      hideDeleteError();
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function getModalErrorMessage(error: unknown): string {
+      const err = error as Error & { body?: { message?: string }; message?: string; status?: number };
+      if (err.status === 409) {
+        return 'El email ya está registrado.';
+      }
+      return err.body?.message || err.message || 'No se pudo guardar el usuario.';
+    }
+
+    async function onSubmit(event: Event): Promise<void> {
+      event.preventDefault();
+      hideDeleteError();
+      modalInlineError.classList.add('hidden');
+      modalInlineError.textContent = '';
+
+      const email = emailInput.value.trim();
+
+      if (modalMode === 'create') {
+        const password = passwordInput.value;
+        if (password.length < 8) {
+          modalInlineError.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+          modalInlineError.classList.remove('hidden');
+          return;
+        }
+
+        submitButton.disabled = true;
+        try {
+          const payload: CreateAdminUserPayload = { email, password, role: 'admin' };
+          await createAdminUser(payload);
+          closeModal();
+          await loadUsers();
+        } catch (error) {
+          modalInlineError.textContent = getModalErrorMessage(error);
+          modalInlineError.classList.remove('hidden');
+        } finally {
+          submitButton.disabled = false;
+        }
+        return;
+      }
+
+      if (!editingUserId) {
+        return;
+      }
+
+      const payload: UpdateAdminUserPayload = { email };
+      if (changePasswordInput.checked) {
+        if (passwordInput.value.length < 8) {
+          modalInlineError.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+          modalInlineError.classList.remove('hidden');
+          return;
+        }
+        payload.password = passwordInput.value;
+      }
+
+      submitButton.disabled = true;
+      try {
+        await updateAdminUser(editingUserId, payload);
+        closeModal();
+        await loadUsers();
+      } catch (error) {
+        modalInlineError.textContent = getModalErrorMessage(error);
+        modalInlineError.classList.remove('hidden');
+      } finally {
+        submitButton.disabled = false;
+      }
+    }
+
+    function askDelete(id: string, email: string): void {
+      hideDeleteError();
+
+      (window as any).openConfirmModal({
+        title: 'Eliminar usuario',
+        body: `¿Querés eliminar al usuario ${email}?`,
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        confirmStyle: 'error',
+        onConfirm: async () => {
+          try {
+            await deleteAdminUser(id);
+            await loadUsers();
+          } catch (error: unknown) {
+            const err = error as Error & { status?: number; body?: { message?: string } };
+            if (err.status === 403) {
+              showDeleteError('No podés eliminar tu propio usuario.');
+              return;
+            }
+            if (err.status === 404) {
+              showDeleteError('Usuario no encontrado.');
+              return;
+            }
+            showDeleteError(err.body?.message || err.message || 'No se pudo eliminar el usuario.');
+          }
+        },
+      });
+    }
+
+    document.getElementById('btn-open-create')?.addEventListener('click', openCreateModal);
+    document.getElementById('btn-close-modal')?.addEventListener('click', closeModal);
+    document.getElementById('btn-cancel-modal')?.addEventListener('click', closeModal);
+    form.addEventListener('submit', onSubmit);
+
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        closeModal();
+      }
+    });
+
+    changePasswordInput.addEventListener('change', () => {
+      if (changePasswordInput.checked) {
+        passwordRow.classList.remove('hidden');
+        passwordInput.required = true;
+      } else {
+        passwordRow.classList.add('hidden');
+        passwordInput.required = false;
+        passwordInput.value = '';
+      }
+    });
+
+    tbody.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const button = target.closest<HTMLButtonElement>('button[data-action]');
+      if (!button) return;
+
+      const id = button.dataset.id;
+      const email = button.dataset.email;
+      if (!id || !email) return;
+
+      if (button.dataset.action === 'edit') {
+        openEditModal(id, email);
+        return;
+      }
+
+      if (button.dataset.action === 'delete') {
+        askDelete(id, email);
+      }
+    });
+
+    loadUsers();
+  </script>
+</AdminLayout>
+
+<!-- Traceability: implementation by Programmer at 2026-06-20 18:04:38 -->

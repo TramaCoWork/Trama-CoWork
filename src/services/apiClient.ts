@@ -31,7 +31,8 @@ export class ApiClient {
   }
 
   private buildUrl(path: string, query?: QueryParams): string {
-    const url = new URL(`${this.baseUrl}${path}`);
+    const isAbsoluteUrl = /^https?:\/\//i.test(path);
+    const url = isAbsoluteUrl ? new URL(path) : new URL(`${this.baseUrl}${path}`);
     if (query) {
       for (const [key, value] of Object.entries(query)) {
         if (value !== undefined) {
@@ -149,3 +150,5 @@ export class ApiClient {
 }
 
 export const api = new ApiClient();
+
+// Traceability: implementation by Programmer at 2026-06-22 09:33:21
