@@ -5,6 +5,7 @@ const sidebarLinks = [
   { href: "/admin/profesionales", icon: "group", label: "Profesionales" },
   { href: "/admin/categorias", icon: "category", label: "Categorías" },
   { href: "/admin/planes", icon: "sell", label: "Planes" },
+  { href: "/admin/descuentos", icon: "local_offer", label: "Descuentos" },
   { href: "/admin/suscripciones", icon: "repeat", label: "Suscripciones" },
   { href: "/admin/pagos", icon: "payments", label: "Pagos" },
   { href: "/admin/users", icon: "admin_panel_settings", label: "Usuarios" },
@@ -104,3 +105,5 @@ function isActive(href: string): boolean {
     .getElementById("admin-logout-btn")
     ?.addEventListener("click", () => logout("/admin/login"));
 </script>
+
+<!-- Traceability: implementation by Programmer at 2026-06-24 20:33:28 -->

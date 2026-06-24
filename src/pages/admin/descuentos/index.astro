@@ -1,0 +1,719 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import AdminTable from '../../../components/admin/AdminTable.astro';
+import ConfirmModal from '../../../components/ConfirmModal.astro';
+
+const columns = [
+  { key: 'plan', label: 'Plan' },
+  { key: 'discountAmount', label: 'Monto descuento' },
+  { key: 'validity', label: 'Vigencia' },
+  { key: 'cycles', label: 'Ciclos' },
+  { key: 'uses', label: 'Usos' },
+  { key: 'status', label: 'Estado' },
+  { key: 'actions', label: 'Acciones' },
+];
+---
+
+<AdminLayout title="TRAMA Admin - Descuentos">
+  <ConfirmModal />
+
+  <header class="mb-8 flex items-center justify-between gap-4">
+    <div>
+      <nav class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
+        <span>Admin</span>
+        <span class="mx-2">&gt;</span>
+        <span>Planes</span>
+        <span class="mx-2">&gt;</span>
+        <span class="text-primary">Descuentos</span>
+      </nav>
+      <h1 class="text-3xl font-black text-on-surface tracking-tighter">Descuentos</h1>
+      <p class="text-on-surface-variant font-medium mt-1 text-sm">Gestión de planes de descuento.</p>
+    </div>
+
+    <button
+      id="btn-open-create"
+      type="button"
+      class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all"
+    >
+      Nuevo descuento
+    </button>
+  </header>
+
+  <section class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label for="f-subscription-plan" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">
+          Plan de suscripción
+        </label>
+        <select
+          id="f-subscription-plan"
+          class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer"
+        >
+          <option value="">Todos</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="f-is-active" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">
+          Estado
+        </label>
+        <select
+          id="f-is-active"
+          class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer"
+        >
+          <option value="">Todos</option>
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <p id="inline-delete-error" class="hidden mb-4 rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></p>
+
+  <AdminTable title="Listado de planes de descuento" columns={columns} showExportButtons={false} />
+
+  <div
+    id="discount-modal"
+    class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/30 backdrop-blur-sm p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="discount-modal-title"
+  >
+    <div class="w-full max-w-2xl rounded-2xl bg-surface-container-low border border-outline-variant/15 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-outline-variant/15 px-6 py-4">
+        <h2 id="discount-modal-title" class="text-lg font-extrabold text-on-surface tracking-tight">Nuevo descuento</h2>
+        <button id="btn-close-modal" type="button" class="text-on-surface-variant hover:text-on-surface" aria-label="Cerrar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="discount-form" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div id="discount-current-uses-row" class="hidden md:col-span-2 rounded-lg border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface-variant"></div>
+
+        <div class="md:col-span-2">
+          <label for="discount-subscription-plan" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">
+            Plan de suscripción
+          </label>
+          <select
+            id="discount-subscription-plan"
+            required
+            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+          >
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="discount-amount" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">
+            Monto descuento
+          </label>
+          <input
+            id="discount-amount"
+            type="number"
+            step="0.01"
+            min="0.01"
+            required
+            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+          />
+        </div>
+
+        <div>
+          <label for="discount-description" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">
+            Descripción (opcional)
+          </label>
+          <input
+            id="discount-description"
+            type="text"
+            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+          />
+        </div>
+
+        <div>
+          <label for="discount-from-date" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">
+            Fecha desde
+          </label>
+          <input
+            id="discount-from-date"
+            type="date"
+            required
+            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+          />
+        </div>
+
+        <div>
+          <label for="discount-to-date" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">
+            Fecha hasta
+          </label>
+          <input
+            id="discount-to-date"
+            type="date"
+            required
+            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+          />
+        </div>
+
+        <div>
+          <label for="discount-billing-cycles" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">
+            Ciclos (opcional)
+          </label>
+          <input
+            id="discount-billing-cycles"
+            type="number"
+            min="1"
+            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+          />
+        </div>
+
+        <div>
+          <label for="discount-max-uses" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">
+            Máximo usos (opcional)
+          </label>
+          <input
+            id="discount-max-uses"
+            type="number"
+            min="1"
+            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+          />
+        </div>
+
+        <div>
+          <label for="discount-per-user-limit" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">
+            Límite por usuario (opcional)
+          </label>
+          <input
+            id="discount-per-user-limit"
+            type="number"
+            min="1"
+            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+          />
+        </div>
+
+        <label class="flex items-center gap-2 mt-6 text-sm font-semibold text-on-surface">
+          <input id="discount-is-active" type="checkbox" checked class="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20" />
+          Activo
+        </label>
+
+        <div id="discount-modal-inline-error" class="hidden md:col-span-2 rounded-lg border border-error/20 bg-error/10 px-3 py-2 text-sm font-medium text-error"></div>
+
+        <div class="md:col-span-2 flex justify-end gap-3">
+          <button id="btn-cancel-modal" type="button" class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors">Cancelar</button>
+          <button id="btn-submit-modal" type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    import { getRoleFromToken, isAuthenticated, restoreSession } from '../../../services/authService';
+    import {
+      createDiscountPlan,
+      deleteDiscountPlan,
+      fetchDiscountPlans,
+      updateDiscountPlan,
+      type CreateDiscountPlanDto,
+      type DiscountPlan,
+      type DiscountPlanFilters,
+      type UpdateDiscountPlanDto,
+    } from '../../../services/discountPlanService';
+    import { getAdminPlans } from '../../../services/planService';
+
+    type ModalMode = 'create' | 'edit';
+
+    const PAGE_SIZE = 10;
+    let currentPage = 1;
+    let currentDiscountPlans: DiscountPlan[] = [];
+    let modalMode: ModalMode = 'create';
+    let editingId: string | null = null;
+    const subscriptionPlans = new Map<string, string>();
+
+    const tbody = document.getElementById('table-body') as HTMLTableSectionElement;
+    const paginationContainer = document.getElementById('pagination-container') as HTMLDivElement;
+    const subscriptionPlanFilter = document.getElementById('f-subscription-plan') as HTMLSelectElement;
+    const isActiveFilter = document.getElementById('f-is-active') as HTMLSelectElement;
+    const deleteError = document.getElementById('inline-delete-error') as HTMLParagraphElement;
+    const modal = document.getElementById('discount-modal') as HTMLDivElement;
+    const form = document.getElementById('discount-form') as HTMLFormElement;
+    const submitButton = document.getElementById('btn-submit-modal') as HTMLButtonElement;
+    const modalInlineError = document.getElementById('discount-modal-inline-error') as HTMLDivElement;
+    const modalTitle = document.getElementById('discount-modal-title') as HTMLHeadingElement;
+    const currentUsesRow = document.getElementById('discount-current-uses-row') as HTMLDivElement;
+    const modalSubscriptionPlanInput = document.getElementById('discount-subscription-plan') as HTMLSelectElement;
+    const discountAmountInput = document.getElementById('discount-amount') as HTMLInputElement;
+    const descriptionInput = document.getElementById('discount-description') as HTMLInputElement;
+    const isActiveInput = document.getElementById('discount-is-active') as HTMLInputElement;
+    const fromDateInput = document.getElementById('discount-from-date') as HTMLInputElement;
+    const toDateInput = document.getElementById('discount-to-date') as HTMLInputElement;
+    const billingCyclesInput = document.getElementById('discount-billing-cycles') as HTMLInputElement;
+    const maxUsesInput = document.getElementById('discount-max-uses') as HTMLInputElement;
+    const perUserLimitInput = document.getElementById('discount-per-user-limit') as HTMLInputElement;
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatDate(value: string): string {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return new Intl.DateTimeFormat('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        timeZone: 'UTC',
+      }).format(date);
+    }
+
+    function showLoadingRow(): void {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center py-12 text-on-surface-variant">
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+              <span class="text-sm font-medium">Cargando planes de descuento...</span>
+            </div>
+          </td>
+        </tr>`;
+    }
+
+    function showLoadErrorRow(): void {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center py-12 text-error">
+            <span class="material-symbols-outlined text-3xl mb-2 block" aria-hidden="true">error</span>
+            <p class="text-sm font-bold">Error al cargar los planes de descuento. Intentá de nuevo.</p>
+          </td>
+        </tr>`;
+    }
+
+    function showEmptyRow(): void {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center py-16 text-on-surface-variant">
+            <span class="material-symbols-outlined text-4xl mb-3 block text-outline" aria-hidden="true">sell_off</span>
+            <p class="text-sm font-medium">No hay planes de descuento registrados.</p>
+          </td>
+        </tr>`;
+    }
+
+    function renderStatusBadge(isActive: boolean): string {
+      if (isActive) {
+        return '<span class="inline-block px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-primary-container text-on-primary-container">Activo</span>';
+      }
+      return '<span class="inline-block px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-error-container text-on-error-container">Inactivo</span>';
+    }
+
+    function resolvePlanLabel(discountPlan: DiscountPlan): string {
+      return subscriptionPlans.get(discountPlan.subscriptionPlanId) || discountPlan.subscriptionPlanId;
+    }
+
+    function renderRows(items: DiscountPlan[]): void {
+      if (items.length === 0) {
+        showEmptyRow();
+        return;
+      }
+
+      tbody.innerHTML = items
+        .map((item) => {
+          const validity = `${formatDate(item.fromDate)} → ${formatDate(item.toDate)}`;
+          const cycles = item.billingCycles === null ? '—' : String(item.billingCycles);
+          const uses = `${item.currentUses} / ${item.maxUses === null ? '—' : item.maxUses}`;
+
+          return `
+            <tr class="border-b border-outline-variant/10 hover:bg-surface-container/50 transition-colors">
+              <td class="px-5 py-3.5 text-sm text-on-surface font-medium">${escapeHtml(resolvePlanLabel(item))}</td>
+              <td class="px-5 py-3.5 text-sm text-on-surface-variant">$ ${escapeHtml(item.discountAmount)}</td>
+              <td class="px-5 py-3.5 text-sm text-on-surface-variant">${escapeHtml(validity)}</td>
+              <td class="px-5 py-3.5 text-sm text-on-surface-variant">${cycles}</td>
+              <td class="px-5 py-3.5 text-sm text-on-surface-variant">${uses}</td>
+              <td class="px-5 py-3.5">${renderStatusBadge(item.isActive)}</td>
+              <td class="px-5 py-3.5">
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    data-action="edit"
+                    data-id="${item.id}"
+                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors"
+                  >
+                    <span class="material-symbols-outlined text-sm">edit</span>
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    data-action="delete"
+                    data-id="${item.id}"
+                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-error-container text-on-error-container hover:opacity-90 transition-opacity"
+                  >
+                    <span class="material-symbols-outlined text-sm">delete</span>
+                    Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>`;
+        })
+        .join('');
+    }
+
+    function renderPagination(totalItems: number): void {
+      const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+
+      if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
+      }
+
+      const start = totalItems === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+      const end = Math.min(currentPage * PAGE_SIZE, totalItems);
+
+      paginationContainer.innerHTML = `
+        <span class="text-xs text-on-surface-variant">Mostrando ${start}–${end} de ${totalItems} planes de descuento</span>
+        <div class="flex items-center gap-2">
+          <button data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}
+            class="px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+            Anterior
+          </button>
+          <span class="text-xs font-bold text-on-surface-variant px-1">${currentPage} / ${totalPages}</span>
+          <button data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}
+            class="px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+            Siguiente
+          </button>
+        </div>`;
+
+      paginationContainer.querySelectorAll<HTMLButtonElement>('button[data-page]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const nextPage = Number(button.dataset.page);
+          if (Number.isNaN(nextPage) || nextPage < 1 || nextPage > totalPages) return;
+          currentPage = nextPage;
+          renderCurrentPage();
+        });
+      });
+    }
+
+    function renderCurrentPage(): void {
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const pageItems = currentDiscountPlans.slice(start, start + PAGE_SIZE);
+      renderRows(pageItems);
+      renderPagination(currentDiscountPlans.length);
+    }
+
+    function getFilters(): DiscountPlanFilters {
+      const filters: DiscountPlanFilters = {};
+
+      if (subscriptionPlanFilter.value) {
+        filters.subscriptionPlanId = subscriptionPlanFilter.value;
+      }
+
+      if (isActiveFilter.value) {
+        filters.isActive = isActiveFilter.value === 'true';
+      }
+
+      return filters;
+    }
+
+    function hideModalError(): void {
+      modalInlineError.classList.add('hidden');
+      modalInlineError.textContent = '';
+    }
+
+    function hideDeleteError(): void {
+      deleteError.classList.add('hidden');
+      deleteError.textContent = '';
+    }
+
+    function showDeleteError(message: string): void {
+      deleteError.textContent = message;
+      deleteError.classList.remove('hidden');
+    }
+
+    function showModalError(message: string): void {
+      modalInlineError.textContent = message;
+      modalInlineError.classList.remove('hidden');
+    }
+
+    function closeCreateModal(): void {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.body.style.overflow = '';
+      form.reset();
+      modalMode = 'create';
+      editingId = null;
+      modalTitle.textContent = 'Nuevo descuento';
+      submitButton.textContent = 'Guardar';
+      modalSubscriptionPlanInput.disabled = false;
+      currentUsesRow.classList.add('hidden');
+      currentUsesRow.textContent = '';
+      isActiveInput.checked = true;
+      hideModalError();
+    }
+
+    function openCreateModal(): void {
+      modalMode = 'create';
+      editingId = null;
+      modalTitle.textContent = 'Nuevo descuento';
+      submitButton.textContent = 'Guardar';
+      modalSubscriptionPlanInput.disabled = false;
+      currentUsesRow.classList.add('hidden');
+      currentUsesRow.textContent = '';
+      hideModalError();
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function toInputDate(value: string): string {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      return date.toISOString().slice(0, 10);
+    }
+
+    function openEditModal(item: DiscountPlan): void {
+      modalMode = 'edit';
+      editingId = item.id;
+      form.reset();
+      hideModalError();
+
+      modalTitle.textContent = 'Editar descuento';
+      submitButton.textContent = 'Guardar cambios';
+      modalSubscriptionPlanInput.disabled = true;
+      modalSubscriptionPlanInput.value = item.subscriptionPlanId;
+
+      discountAmountInput.value = item.discountAmount;
+      descriptionInput.value = item.description || '';
+      isActiveInput.checked = item.isActive;
+      fromDateInput.value = toInputDate(item.fromDate);
+      toDateInput.value = toInputDate(item.toDate);
+      billingCyclesInput.value = item.billingCycles === null ? '' : String(item.billingCycles);
+      maxUsesInput.value = item.maxUses === null ? '' : String(item.maxUses);
+      perUserLimitInput.value = item.perUserLimit === null ? '' : String(item.perUserLimit);
+
+      currentUsesRow.textContent = `Usos actuales: ${item.currentUses} / ${item.maxUses === null ? '—' : item.maxUses}`;
+      currentUsesRow.classList.remove('hidden');
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function toIsoDate(value: string): string {
+      return `${value}T00:00:00.000Z`;
+    }
+
+    function parseOptionalPositiveInt(value: string): number | undefined {
+      const trimmed = value.trim();
+      if (!trimmed) return undefined;
+      const parsed = Number(trimmed);
+      if (!Number.isFinite(parsed) || parsed < 1) {
+        return undefined;
+      }
+      return parsed;
+    }
+
+    function validateCreateForm(): string | null {
+      if (!modalSubscriptionPlanInput.value) {
+        return 'Seleccioná un plan de suscripción.';
+      }
+
+      const amount = Number(discountAmountInput.value);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        return 'El monto de descuento debe ser mayor a cero.';
+      }
+
+      if (fromDateInput.value >= toDateInput.value) {
+        return 'La fecha de inicio debe ser anterior a la fecha de fin.';
+      }
+
+      return null;
+    }
+
+    function getSaveErrorMessage(error: unknown): string {
+      const err = error as Error;
+      if (err.message.includes('Ya existe un plan de descuento activo en ese rango de fechas para este plan.')) {
+        return err.message;
+      }
+      return 'Ocurrió un error al guardar. Intentá de nuevo.';
+    }
+
+    async function onSubmit(event: Event): Promise<void> {
+      event.preventDefault();
+      hideModalError();
+
+      const validationError = validateCreateForm();
+      if (validationError) {
+        showModalError(validationError);
+        return;
+      }
+
+      const billingCycles = parseOptionalPositiveInt(billingCyclesInput.value);
+      const maxUses = parseOptionalPositiveInt(maxUsesInput.value);
+      const perUserLimit = parseOptionalPositiveInt(perUserLimitInput.value);
+
+      submitButton.disabled = true;
+      try {
+        if (modalMode === 'create') {
+          const createPayload: CreateDiscountPlanDto = {
+            subscriptionPlanId: modalSubscriptionPlanInput.value,
+            discountAmount: Number(discountAmountInput.value),
+            isActive: isActiveInput.checked,
+            fromDate: toIsoDate(fromDateInput.value),
+            toDate: toIsoDate(toDateInput.value),
+            ...(descriptionInput.value.trim() ? { description: descriptionInput.value.trim() } : {}),
+            ...(billingCycles !== undefined ? { billingCycles } : {}),
+            ...(maxUses !== undefined ? { maxUses } : {}),
+            ...(perUserLimit !== undefined ? { perUserLimit } : {}),
+          };
+          await createDiscountPlan(createPayload);
+        } else if (editingId) {
+          const updatePayload: UpdateDiscountPlanDto = {
+            discountAmount: Number(discountAmountInput.value),
+            isActive: isActiveInput.checked,
+            fromDate: toIsoDate(fromDateInput.value),
+            toDate: toIsoDate(toDateInput.value),
+            description: descriptionInput.value.trim(),
+            ...(billingCycles !== undefined ? { billingCycles } : {}),
+            ...(maxUses !== undefined ? { maxUses } : {}),
+            ...(perUserLimit !== undefined ? { perUserLimit } : {}),
+          };
+          await updateDiscountPlan(editingId, updatePayload);
+        }
+
+        closeCreateModal();
+        currentPage = 1;
+        await loadDiscountPlans();
+      } catch (error) {
+        showModalError(getSaveErrorMessage(error));
+      } finally {
+        submitButton.disabled = false;
+      }
+    }
+
+    function onTableClick(event: Event): void {
+      const target = event.target as HTMLElement;
+      const button = target.closest<HTMLButtonElement>('button[data-action]');
+      if (!button) return;
+
+      const discountPlanId = button.dataset.id;
+      if (!discountPlanId) return;
+
+      const discountPlan = currentDiscountPlans.find((item) => item.id === discountPlanId);
+      if (!discountPlan) return;
+
+      if (button.dataset.action === 'edit') {
+        openEditModal(discountPlan);
+        return;
+      }
+
+      if (button.dataset.action === 'delete') {
+        askDelete(discountPlan.id);
+      }
+    }
+
+    function askDelete(id: string): void {
+      hideDeleteError();
+
+      (window as any).openConfirmModal({
+        title: 'Desactivar descuento',
+        body: '¿Querés desactivar este plan de descuento? Desactivar definitivamente.',
+        confirmText: 'Desactivar',
+        cancelText: 'Cancelar',
+        confirmStyle: 'error',
+        onConfirm: async () => {
+          try {
+            await deleteDiscountPlan(id);
+            await loadDiscountPlans();
+          } catch {
+            showDeleteError('No se pudo eliminar el plan de descuento.');
+          }
+        },
+      });
+    }
+
+    async function loadActiveSubscriptionPlans(): Promise<void> {
+      const response = await getAdminPlans({ isActive: true });
+      subscriptionPlans.clear();
+      subscriptionPlanFilter.innerHTML = '<option value="">Todos</option>';
+      modalSubscriptionPlanInput.innerHTML = '<option value="">Seleccionar...</option>';
+
+      response.data.forEach((plan) => {
+        subscriptionPlans.set(plan.id, plan.name);
+
+        const option = document.createElement('option');
+        option.value = plan.id;
+        option.textContent = plan.name;
+        subscriptionPlanFilter.appendChild(option);
+
+        const modalOption = document.createElement('option');
+        modalOption.value = plan.id;
+        modalOption.textContent = plan.name;
+        modalSubscriptionPlanInput.appendChild(modalOption);
+      });
+    }
+
+    async function loadDiscountPlans(): Promise<void> {
+      hideDeleteError();
+      showLoadingRow();
+      try {
+        currentDiscountPlans = await fetchDiscountPlans(getFilters());
+        renderCurrentPage();
+      } catch {
+        currentDiscountPlans = [];
+        showLoadErrorRow();
+        paginationContainer.innerHTML = '';
+      }
+    }
+
+    async function init(): Promise<void> {
+      restoreSession();
+
+      if (!isAuthenticated()) {
+        window.location.href = '/admin/login';
+        return;
+      }
+
+      if (getRoleFromToken() !== 'admin') {
+        window.location.href = '/dashboard';
+        return;
+      }
+
+      try {
+        await loadActiveSubscriptionPlans();
+      } catch {
+        subscriptionPlans.clear();
+        subscriptionPlanFilter.innerHTML = '<option value="">Todos</option>';
+        modalSubscriptionPlanInput.innerHTML = '<option value="">Seleccionar...</option>';
+      }
+
+      await loadDiscountPlans();
+
+      subscriptionPlanFilter.addEventListener('change', () => {
+        currentPage = 1;
+        loadDiscountPlans();
+      });
+
+      isActiveFilter.addEventListener('change', () => {
+        currentPage = 1;
+        loadDiscountPlans();
+      });
+
+      document.getElementById('btn-open-create')?.addEventListener('click', openCreateModal);
+      document.getElementById('btn-close-modal')?.addEventListener('click', closeCreateModal);
+      document.getElementById('btn-cancel-modal')?.addEventListener('click', closeCreateModal);
+      form.addEventListener('submit', onSubmit);
+      tbody.addEventListener('click', onTableClick);
+      modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+          closeCreateModal();
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      init();
+    });
+  </script>
+</AdminLayout>
+
+<!-- Traceability: implementation by Programmer at 2026-06-24 21:52:00 -->
