@@ -1,0 +1,402 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const features = [
+  {
+    icon: "bolt",
+    title: "Visibilidad estratégica",
+    description:
+      "Posicioná tu perfil frente a empresas que valoran experiencia concreta y resultados medibles.",
+  },
+  {
+    icon: "groups",
+    title: "Red curada",
+    description:
+      "Conectá con colegas de distintas disciplinas para colaborar en proyectos de mayor alcance.",
+  },
+  {
+    icon: "school",
+    title: "Formación práctica",
+    description:
+      "Accedé a talleres y recursos aplicables a tu día a día profesional, sin teoría innecesaria.",
+  },
+  {
+    icon: "campaign",
+    title: "Impulso comercial",
+    description:
+      "Recibí apoyo para comunicar tu propuesta de valor y atraer clientes alineados a tu especialidad.",
+  },
+  {
+    icon: "verified",
+    title: "Reputación respaldada",
+    description:
+      "Construí confianza con validaciones de tu experiencia y recomendaciones dentro de la comunidad.",
+  },
+  {
+    icon: "favorite",
+    title: "Bienestar sostenible",
+    description:
+      "Diseñá una práctica profesional rentable sin resignar equilibrio personal ni calidad de vida.",
+  },
+];
+
+const pillars = [
+  {
+    title: "Comunidad activa",
+    description:
+      "Un espacio donde el networking se transforma en vínculos reales, intercambio y colaboración continua.",
+  },
+  {
+    title: "Oportunidades concretas",
+    description:
+      "Proyectos y conexiones con foco en impacto profesional, crecimiento y relaciones de largo plazo.",
+  },
+  {
+    title: "Acompañamiento experto",
+    description:
+      "Mentorías, feedback y herramientas para tomar mejores decisiones en cada etapa de tu carrera.",
+  },
+];
+
+const benefitItems = [
+  "Accedé a una promo de $25.000 por 3 meses para impulsar tu crecimiento con respaldo.",
+  "Conservás el 100% de tus ingresos por servicios y escalás con autonomía.",
+  "Participás de una comunidad activa con colaboración, networking y oportunidades reales.",
+];
+
+const faqItems = [
+  {
+    question: "¿Para quién es la membresía de profesionales?",
+    answer:
+      "Está pensada para profesionales independientes que quieren crecer con una red de pares, acceso a oportunidades y acompañamiento continuo.",
+  },
+  {
+    question: "¿Qué incluye la membresía durante los 3 meses?",
+    answer:
+      "Incluye acceso a comunidad, instancias de networking, recursos de formación y espacios para potenciar tu posicionamiento profesional.",
+  },
+  {
+    question: "¿La membresía exige exclusividad laboral?",
+    answer:
+      "No. Podés mantener tus clientes y proyectos actuales. TRAMA complementa tu actividad para ayudarte a escalarla.",
+  },
+  {
+    question: "¿Cómo se gestiona el inicio una vez que me registro?",
+    answer:
+      "Después del registro recibís el contacto del equipo para coordinar tu onboarding y definir los próximos pasos dentro de la comunidad.",
+  },
+  {
+    question: "¿Qué pasa cuando termina la promoción inicial?",
+    answer:
+      "Una vez finalizados los 3 meses promocionales, podés continuar con la membresía al valor regular vigente de $33.000/mes.",
+  },
+  {
+    question: "¿Qué medios de pago están disponibles?",
+    answer:
+      "Actualmente los medios de pago se informan al momento de la confirmación de ingreso y pueden variar según disponibilidad.",
+  },
+];
+---
+
+<Layout
+  title="Membresía para profesionales | TRAMA"
+  description="Sumate a la membresía para profesionales de TRAMA y accedé a comunidad, visibilidad y crecimiento con una red curada."
+>
+  <section
+    class="py-24 px-6 bg-cover bg-center bg-no-repeat"
+    style="background-image: url('/images/profesionales-hero.jpg');"
+  >
+    <div class="max-w-5xl mx-auto text-center">
+      <h2 class="text-4xl font-extrabold tracking-tight text-neutral-900">
+        El mundo cambió
+      </h2>
+      <p
+        class="text-xl text-neutral-800 font-light max-w-2xl mx-auto leading-relaxed"
+      >
+        Hoy crecer como profesional independiente requiere algo más que talento:
+        necesitás visibilidad, comunidad y una red que te acerque oportunidades
+        relevantes.
+      </p>
+    </div>
+  </section>
+
+  <section class="max-w-7xl mx-auto px-6 py-24 space-y-16">
+
+    <article class="space-y-4 max-w-3xl">
+      <h2 class="text-3xl font-bold tracking-tight text-on-surface">
+        ¿Qué es TRAMA?
+      </h2>
+      <p class="text-lg leading-relaxed text-on-surface-variant">
+        TRAMA es un ecosistema profesional donde conectás con pares, ampliás tu
+        alcance y desarrollás tu carrera con una propuesta concreta y
+        sostenible.
+      </p>
+    </article>
+
+    <article class="space-y-8">
+      <div class="space-y-3">
+        <h2 class="text-3xl font-bold tracking-tight text-on-surface">
+          Una red curada para profesionales que quieren avanzar
+        </h2>
+        <p class="text-lg leading-relaxed text-on-surface-variant max-w-4xl">
+          Diseñamos una experiencia con foco en valor real: conexiones de calidad,
+          herramientas aplicables y una comunidad que acompaña tu crecimiento.
+        </p>
+      </div>
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {
+          features.map((item) => (
+            <div class="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-6">
+              <span
+                class="material-symbols-outlined mb-4 text-3xl text-primary"
+                aria-hidden="true"
+              >
+                {item.icon}
+              </span>
+              <h3 class="mb-2 text-xl font-bold text-on-surface">{item.title}</h3>
+              <p class="leading-relaxed text-on-surface-variant">
+                {item.description}
+              </p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="grid gap-6 md:grid-cols-3">
+        {
+          pillars.map((pillar) => (
+            <div class="rounded-2xl bg-surface-container p-6">
+              <h3 class="mb-3 text-xl font-bold text-on-surface">{pillar.title}</h3>
+              <p class="leading-relaxed text-on-surface-variant">
+                {pillar.description}
+              </p>
+            </div>
+          ))
+        }
+      </div>
+    </article>
+  </section>
+
+  <section class="bg-neutral-100 py-10 px-6">
+    <div class="max-w-7xl mx-auto grid gap-5 md:grid-cols-3">
+      <article class="rounded-2xl bg-white p-6 shadow-sm">
+        <span class="material-symbols-outlined text-3xl text-primary" aria-hidden="true"
+          >sell</span
+        >
+        <h3 class="mt-4 text-xl font-bold text-on-surface">Promo mensual exclusiva</h3>
+        <p class="mt-2 leading-relaxed text-on-surface-variant">
+          Aprovechá el valor promocional de ingreso durante 3 meses para empezar a
+          crecer con TRAMA.
+        </p>
+      </article>
+      <article class="rounded-2xl bg-white p-6 shadow-sm">
+        <span class="material-symbols-outlined text-3xl text-primary" aria-hidden="true"
+          >payments</span
+        >
+        <h3 class="mt-4 text-xl font-bold text-on-surface">Ingresos 100% tuyos</h3>
+        <p class="mt-2 leading-relaxed text-on-surface-variant">
+          Todo lo que generás por tus servicios queda para vos, sin comisiones.
+        </p>
+      </article>
+      <article class="rounded-2xl bg-white p-6 shadow-sm">
+        <span class="material-symbols-outlined text-3xl text-primary" aria-hidden="true"
+          >groups</span
+        >
+        <h3 class="mt-4 text-xl font-bold text-on-surface">Comunidad participativa</h3>
+        <p class="mt-2 leading-relaxed text-on-surface-variant">
+          Integrate a una red activa para conectar, colaborar y participar de
+          espacios que potencian tu práctica.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section id="beneficios" class="bg-surface-container-low py-24 px-6 scroll-mt-28">
+    <div class="max-w-7xl mx-auto grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:items-center">
+      <div class="space-y-7">
+        <h2 class="text-3xl font-bold tracking-tight text-on-surface">
+          Beneficios de la membresía
+        </h2>
+        <p class="text-lg leading-relaxed text-on-surface-variant">
+          Un espacio creado para profesionales que quieren crecer, colaborar y
+          generar impacto.
+        </p>
+        <ul class="grid gap-4">
+          {
+            benefitItems.map((benefit) => (
+              <li class="flex items-start gap-3 rounded-xl border border-outline-variant/20 bg-surface-container-lowest p-5">
+                <span class="material-symbols-outlined mt-0.5 text-primary" aria-hidden="true"
+                  >check_circle</span
+                >
+                <p class="font-medium leading-relaxed text-on-surface">{benefit}</p>
+              </li>
+            ))
+          }
+        </ul>
+        <a
+          href="/registro"
+          class="inline-flex rounded-full bg-primary px-8 py-3 font-bold text-on-primary shadow-md transition-transform hover:scale-105"
+        >
+          Quiero sumarme
+        </a>
+      </div>
+      <div>
+        <img
+          src="/images/membresia-app-mockup.jpg"
+          alt="Vista de la membresía profesional de TRAMA"
+          class="h-full w-full rounded-3xl object-cover shadow-xl"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="max-w-7xl mx-auto px-6 py-16">
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <article class="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-5">
+        <span class="material-symbols-outlined text-3xl text-primary" aria-hidden="true"
+          >lock</span
+        >
+        <h3 class="mt-3 text-lg font-bold text-on-surface">Pago seguro</h3>
+        <p class="mt-1 text-sm leading-relaxed text-on-surface-variant">
+          Tu suscripción se procesa con canales confiables y protegidos.
+        </p>
+      </article>
+      <article class="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-5">
+        <span class="material-symbols-outlined text-3xl text-primary" aria-hidden="true"
+          >support_agent</span
+        >
+        <h3 class="mt-3 text-lg font-bold text-on-surface">Soporte continuo</h3>
+        <p class="mt-1 text-sm leading-relaxed text-on-surface-variant">
+          Te acompañamos durante todo el proceso para que avances con claridad.
+        </p>
+      </article>
+      <article class="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-5">
+        <span class="material-symbols-outlined text-3xl text-primary" aria-hidden="true"
+          >event_busy</span
+        >
+        <h3 class="mt-3 text-lg font-bold text-on-surface">Cancelás cuando quieras</h3>
+        <p class="mt-1 text-sm leading-relaxed text-on-surface-variant">
+          Sin permanencia forzada: podés pausar o cancelar en cualquier momento.
+        </p>
+      </article>
+      <article class="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-5">
+        <span class="material-symbols-outlined text-3xl text-primary" aria-hidden="true"
+          >verified_user</span
+        >
+        <h3 class="mt-3 text-lg font-bold text-on-surface">Información protegida</h3>
+        <p class="mt-1 text-sm leading-relaxed text-on-surface-variant">
+          Cuidamos tus datos y tu actividad dentro de la plataforma.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="max-w-5xl mx-auto px-6 py-24">
+    <div class="space-y-8">
+      <div class="space-y-3">
+        <h2 class="text-3xl font-bold tracking-tight text-on-surface">
+          Preguntas frecuentes
+        </h2>
+        <p class="text-lg leading-relaxed text-on-surface-variant">
+          Resolvemos las dudas más comunes para que puedas decidir con claridad.
+        </p>
+      </div>
+      <div class="space-y-4">
+        {
+          faqItems.map((item, index) => {
+            const answerId = `faq-answer-${index + 1}`;
+            return (
+              <article class="rounded-xl border border-outline-variant/20 bg-surface-container-lowest">
+                <h3>
+                  <button
+                    type="button"
+                    class="faq-trigger flex w-full items-center justify-between gap-4 p-5 text-left text-lg font-semibold text-on-surface"
+                    aria-expanded="false"
+                    aria-controls={answerId}
+                    data-faq-target={answerId}
+                  >
+                    <span>{item.question}</span>
+                    <span
+                      class="faq-icon material-symbols-outlined text-on-surface-variant transition-transform"
+                      aria-hidden="true"
+                    >
+                      expand_more
+                    </span>
+                  </button>
+                </h3>
+                <div
+                  id={answerId}
+                  class="faq-panel overflow-hidden px-5"
+                  style="max-height: 0"
+                  aria-hidden="true"
+                >
+                  <p class="pb-5 leading-relaxed text-on-surface-variant">
+                    {item.answer}
+                  </p>
+                </div>
+              </article>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-primary py-20 px-6">
+    <div class="max-w-5xl mx-auto text-center space-y-6">
+      <h2 class="text-4xl font-extrabold tracking-tight text-on-primary">
+        Es tu momento para entrar en TRAMA
+      </h2>
+      <p class="mx-auto max-w-3xl text-xl font-light leading-relaxed text-on-primary/90">
+        Sumate a la membresía para profesionales y construí una red que impulse
+        tu próximo nivel.
+      </p>
+      <a
+        href="/registro"
+        class="inline-flex rounded-full bg-on-primary px-10 py-4 font-bold text-primary transition-transform hover:scale-105"
+      >
+        Registrarme ahora
+      </a>
+    </div>
+  </section>
+
+  <script>
+    const triggers = document.querySelectorAll<HTMLButtonElement>(".faq-trigger");
+
+    const toggleFaqItem = (button: HTMLButtonElement) => {
+      const targetId = button.dataset.faqTarget;
+      if (!targetId) return;
+
+      const panel = document.getElementById(targetId);
+      const icon = button.querySelector<HTMLElement>(".faq-icon");
+      if (!(panel instanceof HTMLElement)) return;
+
+      const isExpanded = button.getAttribute("aria-expanded") === "true";
+      button.setAttribute("aria-expanded", String(!isExpanded));
+      panel.setAttribute("aria-hidden", String(isExpanded));
+
+      if (isExpanded) {
+        panel.style.maxHeight = "0px";
+      } else {
+        panel.style.maxHeight = `${panel.scrollHeight}px`;
+      }
+
+      icon?.classList.toggle("rotate-180", !isExpanded);
+    };
+
+    triggers.forEach((button) => {
+      button.addEventListener("click", () => {
+        toggleFaqItem(button);
+      });
+
+      button.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        toggleFaqItem(button);
+      });
+    });
+  </script>
+</Layout>
+
+<!-- Traceability: edited by Programmer at 2026-06-23 16:05:00 -->
