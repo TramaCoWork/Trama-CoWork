@@ -59,7 +59,6 @@ const pillars = [
 ];
 
 const benefitItems = [
-  "Accedé a una promo de $25.000 por 3 meses para impulsar tu crecimiento con respaldo.",
   "Conservás el 100% de tus ingresos por servicios y escalás con autonomía.",
   "Participás de una comunidad activa con colaboración, networking y oportunidades reales.",
 ];
@@ -69,11 +68,6 @@ const faqItems = [
     question: "¿Para quién es la membresía de profesionales?",
     answer:
       "Está pensada para profesionales independientes que quieren crecer con una red de pares, acceso a oportunidades y acompañamiento continuo.",
-  },
-  {
-    question: "¿Qué incluye la membresía durante los 3 meses?",
-    answer:
-      "Incluye acceso a comunidad, instancias de networking, recursos de formación y espacios para potenciar tu posicionamiento profesional.",
   },
   {
     question: "¿La membresía exige exclusividad laboral?",
@@ -121,7 +115,6 @@ const faqItems = [
   </section>
 
   <section class="max-w-7xl mx-auto px-6 py-24 space-y-16">
-
     <article class="space-y-4 max-w-3xl">
       <h2 class="text-3xl font-bold tracking-tight text-on-surface">
         ¿Qué es TRAMA?
@@ -139,8 +132,9 @@ const faqItems = [
           Una red curada para profesionales que quieren avanzar
         </h2>
         <p class="text-lg leading-relaxed text-on-surface-variant max-w-4xl">
-          Diseñamos una experiencia con foco en valor real: conexiones de calidad,
-          herramientas aplicables y una comunidad que acompaña tu crecimiento.
+          Diseñamos una experiencia con foco en valor real: conexiones de
+          calidad, herramientas aplicables y una comunidad que acompaña tu
+          crecimiento.
         </p>
       </div>
       <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -153,7 +147,9 @@ const faqItems = [
               >
                 {item.icon}
               </span>
-              <h3 class="mb-2 text-xl font-bold text-on-surface">{item.title}</h3>
+              <h3 class="mb-2 text-xl font-bold text-on-surface">
+                {item.title}
+              </h3>
               <p class="leading-relaxed text-on-surface-variant">
                 {item.description}
               </p>
@@ -166,7 +162,9 @@ const faqItems = [
         {
           pillars.map((pillar) => (
             <div class="rounded-2xl bg-surface-container p-6">
-              <h3 class="mb-3 text-xl font-bold text-on-surface">{pillar.title}</h3>
+              <h3 class="mb-3 text-xl font-bold text-on-surface">
+                {pillar.title}
+              </h3>
               <p class="leading-relaxed text-on-surface-variant">
                 {pillar.description}
               </p>
@@ -180,29 +178,38 @@ const faqItems = [
   <section class="bg-neutral-100 py-10 px-6">
     <div class="max-w-7xl mx-auto grid gap-5 md:grid-cols-3">
       <article class="rounded-2xl bg-white p-6 shadow-sm">
-        <span class="material-symbols-outlined text-3xl text-primary" aria-hidden="true"
-          >sell</span
+        <span
+          class="material-symbols-outlined text-3xl text-primary"
+          aria-hidden="true">sell</span
         >
-        <h3 class="mt-4 text-xl font-bold text-on-surface">Promo mensual exclusiva</h3>
+        <h3 class="mt-4 text-xl font-bold text-on-surface">
+          Promo mensual exclusiva
+        </h3>
         <p class="mt-2 leading-relaxed text-on-surface-variant">
-          Aprovechá el valor promocional de ingreso durante 3 meses para empezar a
-          crecer con TRAMA.
+          Aprovechá el valor promocional de ingreso durante 3 meses para empezar
+          a crecer con TRAMA.
         </p>
       </article>
       <article class="rounded-2xl bg-white p-6 shadow-sm">
-        <span class="material-symbols-outlined text-3xl text-primary" aria-hidden="true"
-          >payments</span
+        <span
+          class="material-symbols-outlined text-3xl text-primary"
+          aria-hidden="true">payments</span
         >
-        <h3 class="mt-4 text-xl font-bold text-on-surface">Ingresos 100% tuyos</h3>
+        <h3 class="mt-4 text-xl font-bold text-on-surface">
+          Ingresos 100% tuyos
+        </h3>
         <p class="mt-2 leading-relaxed text-on-surface-variant">
           Todo lo que generás por tus servicios queda para vos, sin comisiones.
         </p>
       </article>
       <article class="rounded-2xl bg-white p-6 shadow-sm">
-        <span class="material-symbols-outlined text-3xl text-primary" aria-hidden="true"
-          >groups</span
+        <span
+          class="material-symbols-outlined text-3xl text-primary"
+          aria-hidden="true">groups</span
         >
-        <h3 class="mt-4 text-xl font-bold text-on-surface">Comunidad participativa</h3>
+        <h3 class="mt-4 text-xl font-bold text-on-surface">
+          Comunidad participativa
+        </h3>
         <p class="mt-2 leading-relaxed text-on-surface-variant">
           Integrate a una red activa para conectar, colaborar y participar de
           espacios que potencian tu práctica.
@@ -211,8 +218,13 @@ const faqItems = [
     </div>
   </section>
 
-  <section id="beneficios" class="bg-surface-container-low py-24 px-6 scroll-mt-28">
-    <div class="max-w-7xl mx-auto grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:items-center">
+  <section
+    id="beneficios"
+    class="bg-surface-container-low py-24 px-6 scroll-mt-28"
+  >
+    <div
+      class="max-w-7xl mx-auto grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:items-center"
+    >
       <div class="space-y-7">
         <h2 class="text-3xl font-bold tracking-tight text-on-surface">
           Beneficios de la membresía
@@ -225,10 +237,15 @@ const faqItems = [
           {
             benefitItems.map((benefit) => (
               <li class="flex items-start gap-3 rounded-xl border border-outline-variant/20 bg-surface-container-lowest p-5">
-                <span class="material-symbols-outlined mt-0.5 text-primary" aria-hidden="true"
-                  >check_circle</span
+                <span
+                  class="material-symbols-outlined mt-0.5 text-primary"
+                  aria-hidden="true"
                 >
-                <p class="font-medium leading-relaxed text-on-surface">{benefit}</p>
+                  check_circle
+                </span>
+                <p class="font-medium leading-relaxed text-on-surface">
+                  {benefit}
+                </p>
               </li>
             ))
           }
@@ -253,38 +270,54 @@ const faqItems = [
 
   <section class="max-w-7xl mx-auto px-6 py-16">
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <article class="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-5">
-        <span class="material-symbols-outlined text-3xl text-primary" aria-hidden="true"
-          >lock</span
+      <article
+        class="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-5"
+      >
+        <span
+          class="material-symbols-outlined text-3xl text-primary"
+          aria-hidden="true">lock</span
         >
         <h3 class="mt-3 text-lg font-bold text-on-surface">Pago seguro</h3>
         <p class="mt-1 text-sm leading-relaxed text-on-surface-variant">
           Tu suscripción se procesa con canales confiables y protegidos.
         </p>
       </article>
-      <article class="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-5">
-        <span class="material-symbols-outlined text-3xl text-primary" aria-hidden="true"
-          >support_agent</span
+      <article
+        class="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-5"
+      >
+        <span
+          class="material-symbols-outlined text-3xl text-primary"
+          aria-hidden="true">support_agent</span
         >
         <h3 class="mt-3 text-lg font-bold text-on-surface">Soporte continuo</h3>
         <p class="mt-1 text-sm leading-relaxed text-on-surface-variant">
           Te acompañamos durante todo el proceso para que avances con claridad.
         </p>
       </article>
-      <article class="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-5">
-        <span class="material-symbols-outlined text-3xl text-primary" aria-hidden="true"
-          >event_busy</span
+      <article
+        class="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-5"
+      >
+        <span
+          class="material-symbols-outlined text-3xl text-primary"
+          aria-hidden="true">event_busy</span
         >
-        <h3 class="mt-3 text-lg font-bold text-on-surface">Cancelás cuando quieras</h3>
+        <h3 class="mt-3 text-lg font-bold text-on-surface">
+          Cancelás cuando quieras
+        </h3>
         <p class="mt-1 text-sm leading-relaxed text-on-surface-variant">
           Sin permanencia forzada: podés pausar o cancelar en cualquier momento.
         </p>
       </article>
-      <article class="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-5">
-        <span class="material-symbols-outlined text-3xl text-primary" aria-hidden="true"
-          >verified_user</span
+      <article
+        class="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-5"
+      >
+        <span
+          class="material-symbols-outlined text-3xl text-primary"
+          aria-hidden="true">verified_user</span
         >
-        <h3 class="mt-3 text-lg font-bold text-on-surface">Información protegida</h3>
+        <h3 class="mt-3 text-lg font-bold text-on-surface">
+          Información protegida
+        </h3>
         <p class="mt-1 text-sm leading-relaxed text-on-surface-variant">
           Cuidamos tus datos y tu actividad dentro de la plataforma.
         </p>
@@ -348,7 +381,9 @@ const faqItems = [
       <h2 class="text-4xl font-extrabold tracking-tight text-on-primary">
         Es tu momento para entrar en TRAMA
       </h2>
-      <p class="mx-auto max-w-3xl text-xl font-light leading-relaxed text-on-primary/90">
+      <p
+        class="mx-auto max-w-3xl text-xl font-light leading-relaxed text-on-primary/90"
+      >
         Sumate a la membresía para profesionales y construí una red que impulse
         tu próximo nivel.
       </p>
@@ -362,7 +397,8 @@ const faqItems = [
   </section>
 
   <script>
-    const triggers = document.querySelectorAll<HTMLButtonElement>(".faq-trigger");
+    const triggers =
+      document.querySelectorAll<HTMLButtonElement>(".faq-trigger");
 
     const toggleFaqItem = (button: HTMLButtonElement) => {
       const targetId = button.dataset.faqTarget;
