@@ -18,6 +18,21 @@ export interface SubscriptionPlan {
   frequencyType: 'days' | 'months' | 'years';
   trialDays: number;
   isActive: boolean;
+  discount?: {
+    id: string;
+    discountAmount: string;
+    description: string | null;
+    isActive: boolean;
+    fromDate: string;
+    toDate: string;
+    billingCycles: number | null;
+    maxUses: number | null;
+    currentUses: number;
+    perUserLimit: number | null;
+    deletedAt: string | null;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }

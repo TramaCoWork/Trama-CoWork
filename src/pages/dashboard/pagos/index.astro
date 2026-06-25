@@ -183,6 +183,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
     import { getUserIdFromToken, getToken, logout } from '../../../services/authService';
     import { api } from '../../../services/apiClient';
     import { getInitLink } from '../../../services/subscriptionService';
+    import { renderPlanCardHTML } from '../../../components/planCardUtils';
     import type {
       SubscriptionPlan,
       Subscription,
@@ -296,33 +297,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
         return;
       }
 
-      plansGrid.innerHTML = plans.map((plan) => {
-        const price = formatCurrency(plan.amount, plan.currency);
-        const freq = frequencyLabel(plan.frequency, plan.frequencyType);
-        const trialHtml = plan.trialDays > 0
-          ? `<div class="flex items-center gap-1.5 mt-3 px-3 py-2 bg-green-50 dark:bg-green-900/20 rounded-xl">
-              <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-sm" aria-hidden="true">redeem</span>
-              <span class="text-xs font-bold text-green-700 dark:text-green-300">${plan.trialDays} dias de prueba gratis</span>
-            </div>`
-          : '';
-
-        return `<div class="bg-surface-container-lowest rounded-3xl p-8 border border-outline-variant/10 hover:border-primary/30 hover:shadow-lg transition-all flex flex-col">
-          <div class="flex-1">
-            <h3 class="text-lg font-extrabold text-on-surface tracking-tight">${plan.name}</h3>
-            ${plan.description ? `<p class="text-sm text-on-surface-variant mt-2 leading-relaxed">${plan.description}</p>` : ''}
-            ${trialHtml}
-            <div class="mt-6">
-              <span class="text-3xl font-black text-on-surface">${price}</span>
-              <span class="text-sm text-on-surface-variant font-medium">${freq}</span>
-            </div>
-          </div>
-          <button type="button" data-subscribe-plan="${plan.id}"
-            class="mt-8 w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold text-sm bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all">
-            <span class="material-symbols-outlined text-sm" aria-hidden="true">credit_card</span>
-            Suscribirme
-          </button>
-        </div>`;
-      }).join('');
+      plansGrid.innerHTML = plans.map((plan) => renderPlanCardHTML(plan)).join('');
 
       // Bind subscribe buttons
       const plansById = new Map(plans.map((p) => [p.id, p]));
@@ -530,4 +505,4 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
   </script>
 </DashboardLayout>
 
-<!-- Traceability: implementation by Programmer at 2026-06-22 09:33:21 -->
+<!-- Traceability: implementation by Programmer at 2026-06-25 09:39:00 -->
