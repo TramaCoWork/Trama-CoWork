@@ -77,9 +77,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 </AdminLayout>
 
 <script>
+  import { apiURL } from '../../services/apiClient';
   import { getToken } from '../../services/authService';
 
-  const BASE = import.meta.env.PUBLIC_API_BASE_URL;
   const form = document.getElementById('change-password-form') as HTMLFormElement;
   const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
   const msgSuccess = document.getElementById('msg-success') as HTMLDivElement;
@@ -139,7 +139,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     submitBtn.textContent = 'Cambiando...';
 
     try {
-      const res = await fetch(`${BASE}/auth/change-password`, {
+      const res = await fetch(apiURL('/auth/change-password'), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -167,3 +167,5 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     }
   });
 </script>
+
+<!-- Trazabilidad: editado por Programmer en 2026-06-25 22:18:00 -->
