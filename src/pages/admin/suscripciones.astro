@@ -1,8 +1,11 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
+import ConfirmModal from '../../components/ConfirmModal.astro';
 ---
 
 <AdminLayout title="TRAMA Admin - Suscripciones">
+  <ConfirmModal />
+
   <header class="mb-8">
     <h1 class="text-3xl font-black text-on-surface tracking-tighter">Suscripciones</h1>
     <p class="text-on-surface-variant font-medium mt-1 text-sm">Gestión de suscripciones de usuarios.</p>
@@ -59,11 +62,12 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
             <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Fecha inicio</th>
             <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Próximo pago</th>
             <th class="text-center px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Pagos</th>
+            <th class="text-center px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Acciones</th>
           </tr>
         </thead>
         <tbody id="subs-table-body">
           <tr>
-            <td colspan="6" class="text-center py-12 text-on-surface-variant">
+            <td colspan="7" class="text-center py-12 text-on-surface-variant">
               <div class="flex flex-col items-center gap-3">
                 <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
                 <span class="text-sm font-medium">Cargando suscripciones...</span>
@@ -80,11 +84,54 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     <div id="pagination-bottom" class="flex items-center gap-2"></div>
   </div>
 
+  <div
+    id="update-amount-modal"
+    class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/30 backdrop-blur-sm p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="update-amount-title"
+  >
+    <div class="w-full max-w-md rounded-2xl bg-surface-container-low border border-outline-variant/15 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-outline-variant/15 px-6 py-4">
+        <h2 id="update-amount-title" class="text-lg font-extrabold text-on-surface tracking-tight">Actualizar monto</h2>
+        <button id="update-amount-close" type="button" class="text-on-surface-variant hover:text-on-surface" aria-label="Cerrar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <p id="update-amount-current" class="text-sm font-medium text-on-surface-variant">Monto actual: $ 0</p>
+
+        <div>
+          <label for="new-amount-input" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">
+            Nuevo monto
+          </label>
+          <input
+            id="new-amount-input"
+            type="number"
+            min="1"
+            step="1"
+            required
+            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+          />
+        </div>
+
+        <div id="update-amount-error" class="hidden rounded-lg border border-error/20 bg-error/10 px-3 py-2 text-sm font-medium text-error"></div>
+
+        <div class="flex justify-end gap-3">
+          <button id="update-amount-cancel" type="button" class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors">Cancelar</button>
+          <button id="update-amount-accept" type="button" class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all">Aceptar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     import { getToken, restoreSession } from '../../services/authService';
     import { api } from '../../services/apiClient';
     import {
       getAdminSubscriptions,
+      updateSubscriptionAmount,
       type AdminSubscription,
       type AdminSubscriptionFilters,
     } from '../../services/subscriptionAdminService';
@@ -117,6 +164,14 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     const searchInput = document.getElementById('f-search') as HTMLInputElement;
     const dateFromInput = document.getElementById('f-date-from') as HTMLInputElement;
     const dateToInput = document.getElementById('f-date-to') as HTMLInputElement;
+    const updateAmountModal = document.getElementById('update-amount-modal') as HTMLDivElement;
+    const updateAmountCurrent = document.getElementById('update-amount-current') as HTMLParagraphElement;
+    const newAmountInput = document.getElementById('new-amount-input') as HTMLInputElement;
+    const updateAmountError = document.getElementById('update-amount-error') as HTMLDivElement;
+    const updateAmountAccept = document.getElementById('update-amount-accept') as HTMLButtonElement;
+
+    let currentSubId: string | null = null;
+    let currentSubAmount = 0;
 
     function escapeHtml(value: string): string {
       return value
@@ -132,10 +187,66 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       return new Date(dateStr).toLocaleDateString('es-AR');
     }
 
+    function formatAmount(amount: number): string {
+      return new Intl.NumberFormat('es-AR', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(amount);
+    }
+
+    function parseAmount(value: unknown): number {
+      const numeric = Number(value);
+      if (Number.isFinite(numeric)) return numeric;
+      const cleaned = String(value ?? '').replace(',', '.').replace(/[^\d.-]/g, '');
+      const parsed = Number(cleaned);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function hideUpdateAmountError(): void {
+      updateAmountError.classList.add('hidden');
+      updateAmountError.textContent = '';
+    }
+
+    function showUpdateAmountError(message: string): void {
+      updateAmountError.textContent = message;
+      updateAmountError.classList.remove('hidden');
+    }
+
+    function resetUpdateAmountState(): void {
+      currentSubId = null;
+      currentSubAmount = 0;
+      newAmountInput.value = '';
+      newAmountInput.disabled = false;
+      updateAmountAccept.disabled = false;
+      hideUpdateAmountError();
+    }
+
+    function closeUpdateAmountModal(): void {
+      updateAmountModal.classList.add('hidden');
+      updateAmountModal.classList.remove('flex');
+      document.body.style.overflow = '';
+      resetUpdateAmountState();
+    }
+
+    function openUpdateAmountModal(subscriptionId: string, currentAmount: number): void {
+      currentSubId = subscriptionId;
+      currentSubAmount = currentAmount;
+      updateAmountCurrent.textContent = `Monto actual: $ ${formatAmount(currentAmount)}`;
+      newAmountInput.value = String(Math.max(1, Math.round(currentAmount)));
+      newAmountInput.disabled = false;
+      updateAmountAccept.disabled = false;
+      hideUpdateAmountError();
+      updateAmountModal.classList.remove('hidden');
+      updateAmountModal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+      newAmountInput.focus();
+      newAmountInput.select();
+    }
+
     function setLoadingTable() {
       tableBody.innerHTML = `
         <tr>
-          <td colspan="6" class="text-center py-12 text-on-surface-variant">
+          <td colspan="7" class="text-center py-12 text-on-surface-variant">
             <div class="flex flex-col items-center gap-3">
               <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
               <span class="text-sm font-medium">Cargando suscripciones...</span>
@@ -154,7 +265,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       if (subs.length === 0) {
         tableBody.innerHTML = `
           <tr>
-            <td colspan="6" class="text-center py-16 text-on-surface-variant">
+            <td colspan="7" class="text-center py-16 text-on-surface-variant">
               <span class="material-symbols-outlined text-4xl mb-3 block text-outline" aria-hidden="true">repeat</span>
               <p class="text-sm font-medium">No se encontraron suscripciones con los filtros aplicados.</p>
             </td>
@@ -167,6 +278,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
           const email = sub.user?.email || '—';
           const name = sub.user?.name ? ` · ${sub.user.name}` : '';
           const plan = `${sub.plan.name} · $${sub.plan.amount}`;
+          const rowAmount = parseAmount((sub as AdminSubscription & { amount?: unknown }).amount ?? sub.plan?.amount);
 
           return `
             <tr class="border-b border-outline-variant/10 hover:bg-surface-container/50 transition-colors">
@@ -176,6 +288,19 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
               <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(formatDate(sub.startDate))}</td>
               <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(formatDate(sub.nextPaymentDate))}</td>
               <td class="px-5 py-3.5 text-center text-on-surface-variant text-xs font-bold">${sub._count.payments}</td>
+              <td class="px-5 py-3.5 text-center">
+                <button
+                  type="button"
+                  data-action="update-amount"
+                  data-sub-id="${escapeHtml(sub.id)}"
+                  data-sub-amount="${rowAmount}"
+                  class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors"
+                  aria-label="Actualizar monto"
+                  title="Actualizar monto"
+                >
+                  <span class="material-symbols-outlined text-base">attach_money</span>
+                </button>
+              </td>
             </tr>`;
         })
         .join('');
@@ -253,7 +378,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         paginationBottom.innerHTML = '';
         tableBody.innerHTML = `
           <tr>
-            <td colspan="6" class="text-center py-12 text-error">
+            <td colspan="7" class="text-center py-12 text-error">
               <span class="material-symbols-outlined text-3xl mb-2 block" aria-hidden="true">error</span>
               <p class="text-sm font-bold">Error al cargar suscripciones</p>
               <p class="text-xs mt-1">${escapeHtml(error?.message || 'Error desconocido')}</p>
@@ -261,6 +386,65 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
           </tr>`;
       }
     }
+
+    async function onAcceptUpdateAmount(): Promise<void> {
+      hideUpdateAmountError();
+
+      if (!currentSubId) {
+        showUpdateAmountError('No se encontró la suscripción seleccionada.');
+        return;
+      }
+
+      if (!newAmountInput.reportValidity()) {
+        return;
+      }
+
+      const newAmount = Number(newAmountInput.value);
+      if (!Number.isInteger(newAmount) || newAmount <= 0) {
+        showUpdateAmountError('Ingresá un monto entero mayor a 0.');
+        return;
+      }
+
+      (window as any).openConfirmModal({
+        title: 'Confirmar actualización',
+        body: `¿Confirmás que querés cambiar el monto de $ ${formatAmount(currentSubAmount)} a $ ${formatAmount(newAmount)}?`,
+        confirmText: 'Confirmar',
+        cancelText: 'Cancelar',
+        confirmStyle: 'primary',
+        onConfirm: async () => {
+          if (!currentSubId) return;
+
+          updateAmountAccept.disabled = true;
+          newAmountInput.disabled = true;
+          hideUpdateAmountError();
+
+          try {
+            await updateSubscriptionAmount(currentSubId, newAmount);
+            closeUpdateAmountModal();
+            await loadSubscriptions();
+          } catch (error: any) {
+            showUpdateAmountError(error?.message || 'Error al actualizar el monto. Intentá de nuevo.');
+            updateAmountAccept.disabled = false;
+            newAmountInput.disabled = false;
+          }
+        },
+        onCancel: () => {
+          hideUpdateAmountError();
+        },
+      });
+    }
+
+    tableBody.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const button = target.closest<HTMLButtonElement>('button[data-action="update-amount"]');
+      if (!button) return;
+
+      const subscriptionId = button.dataset.subId;
+      if (!subscriptionId) return;
+
+      const amount = parseAmount(button.dataset.subAmount);
+      openUpdateAmountModal(subscriptionId, amount);
+    });
 
     statusFilter.addEventListener('change', () => {
       currentPage = 1;
@@ -297,6 +481,24 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       loadSubscriptions();
     });
 
+    document.getElementById('update-amount-cancel')?.addEventListener('click', closeUpdateAmountModal);
+    document.getElementById('update-amount-close')?.addEventListener('click', closeUpdateAmountModal);
+    updateAmountAccept.addEventListener('click', () => {
+      onAcceptUpdateAmount();
+    });
+    updateAmountModal.addEventListener('click', (event) => {
+      if (event.target === updateAmountModal) {
+        closeUpdateAmountModal();
+      }
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !updateAmountModal.classList.contains('hidden')) {
+        closeUpdateAmountModal();
+      }
+    });
+
     loadSubscriptions();
   </script>
 </AdminLayout>
+
+<!-- Traceability: implementation by Programmer at 2026-06-25 17:10:00 -->
