@@ -1,0 +1,169 @@
+<div
+  id="referral-modal-overlay"
+  class="fixed inset-0 z-[95] hidden items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="referral-modal-title"
+>
+  <div class="w-full max-w-md rounded-2xl border border-outline-variant/20 bg-white shadow-2xl">
+    <div class="flex items-center justify-between border-b border-outline-variant/20 px-5 py-4">
+      <h3 id="referral-modal-title" class="text-lg font-extrabold tracking-tight text-on-surface">Gestionar código de referido</h3>
+      <button
+        id="referral-modal-close"
+        type="button"
+        class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container"
+        aria-label="Cerrar"
+      >
+        <span class="material-symbols-outlined text-base" aria-hidden="true">close</span>
+      </button>
+    </div>
+
+    <form id="referral-modal-form" class="px-5 py-4">
+      <label for="referral-modal-input" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+        Código de referido
+      </label>
+      <input
+        id="referral-modal-input"
+        type="text"
+        class="mt-2 w-full rounded-xl border border-outline-variant/25 bg-surface px-3 py-2 text-sm text-on-surface outline-none transition-colors focus:border-primary"
+        autocomplete="off"
+      />
+      <p id="referral-modal-error" class="mt-2 hidden text-sm font-medium text-error"></p>
+
+      <div class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <button
+          id="referral-modal-cancel"
+          type="button"
+          class="rounded-xl bg-surface-container px-4 py-2.5 text-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container-high"
+        >
+          Cancelar
+        </button>
+        <button
+          id="referral-modal-save"
+          type="submit"
+          class="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-on-primary transition-all hover:brightness-110 active:scale-[0.98]"
+        >
+          Guardar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  import { updateReferralCode } from '../services/authService';
+
+  interface ReferralModalWindow {
+    openReferralModal: (currentCode: string | null) => void;
+    closeReferralModal: () => void;
+  }
+
+  const overlay = document.getElementById('referral-modal-overlay') as HTMLDivElement;
+  const closeButton = document.getElementById('referral-modal-close') as HTMLButtonElement;
+  const cancelButton = document.getElementById('referral-modal-cancel') as HTMLButtonElement;
+  const form = document.getElementById('referral-modal-form') as HTMLFormElement;
+  const input = document.getElementById('referral-modal-input') as HTMLInputElement;
+  const errorMessage = document.getElementById('referral-modal-error') as HTMLParagraphElement;
+
+  const MIN_REFERRAL_CODE_LENGTH = 5;
+  const MAX_REFERRAL_CODE_LENGTH = 15;
+  const VALIDATION_ERROR_TEXT = 'El código debe tener entre 5 y 15 caracteres y no puede contener espacios.';
+  const CONFLICT_ERROR_TEXT = 'Ese código de referido ya está en uso';
+  const GENERIC_SAVE_ERROR_TEXT = 'Ocurrió un error al guardar. Intentá de nuevo.';
+
+  let savedCode = '';
+  let restoreFocusElement: HTMLElement | null = null;
+
+  function showError(message: string): void {
+    errorMessage.textContent = message;
+    errorMessage.classList.remove('hidden');
+  }
+
+  function clearError(): void {
+    errorMessage.textContent = '';
+    errorMessage.classList.add('hidden');
+  }
+
+  function resetInputToSavedCode(): void {
+    input.value = savedCode;
+  }
+
+  function isValidReferralCode(value: string): boolean {
+    return value.length >= MIN_REFERRAL_CODE_LENGTH
+      && value.length <= MAX_REFERRAL_CODE_LENGTH
+      && !/\s/.test(value);
+  }
+
+  function closeModal(): void {
+    resetInputToSavedCode();
+    clearError();
+    overlay.classList.add('hidden');
+    overlay.classList.remove('flex');
+    document.body.style.overflow = '';
+    restoreFocusElement?.focus();
+  }
+
+  function openModal(currentCode: string | null): void {
+    savedCode = currentCode ?? '';
+    resetInputToSavedCode();
+    clearError();
+    restoreFocusElement = document.getElementById('referral-manage-button') as HTMLElement | null;
+
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    input.focus();
+  }
+
+  async function saveReferralCode(event: Event): Promise<void> {
+    event.preventDefault();
+    const nextCode = input.value.trim();
+
+    if (!isValidReferralCode(nextCode)) {
+      showError(VALIDATION_ERROR_TEXT);
+      return;
+    }
+
+    try {
+      const response = await updateReferralCode(nextCode);
+      savedCode = response.referralCode ?? nextCode;
+      document.dispatchEvent(
+        new CustomEvent('referral-code-updated', {
+          detail: { referralCode: savedCode },
+        }),
+      );
+      closeModal();
+    } catch (error) {
+      if (error instanceof Error && error.message === CONFLICT_ERROR_TEXT) {
+        showError(error.message);
+        return;
+      }
+      showError(GENERIC_SAVE_ERROR_TEXT);
+    }
+  }
+
+  input.addEventListener('input', () => {
+    clearError();
+  });
+
+  form.addEventListener('submit', (event) => {
+    void saveReferralCode(event);
+  });
+  closeButton.addEventListener('click', closeModal);
+  cancelButton.addEventListener('click', closeModal);
+
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !overlay.classList.contains('hidden')) {
+      closeModal();
+    }
+  });
+
+  (window as unknown as ReferralModalWindow).openReferralModal = openModal;
+  (window as unknown as ReferralModalWindow).closeReferralModal = closeModal;
+</script>

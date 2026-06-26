@@ -27,7 +27,7 @@ vi.mock('../apiClient', () => {
 });
 
 import { api } from '../apiClient';
-import { getToken, getUserIdFromToken, isAuthenticated, login, logout, restoreSession } from '../authService';
+import { getToken, getUserIdFromToken, isAuthenticated, login, logout, professionalRegister, restoreSession } from '../authService';
 
 // Helper to create a fake JWT with exp claim
 function fakeJwt(payload: Record<string, unknown>): string {
@@ -121,6 +121,54 @@ describe('AuthService', () => {
       storage.trama_access_token = token;
       restoreSession();
       expect(localStorage.removeItem).toHaveBeenCalledWith('trama_access_token');
+    });
+  });
+
+  describe('professionalRegister', () => {
+    it('incluye referralCode en el body cuando se provee', async () => {
+      const mockRes = { access_token: 'token-preg', userId: 'u1' };
+      (api.post as any).mockResolvedValue(mockRes);
+
+      await professionalRegister({
+        name: 'Test',
+        email: 't@t.com',
+        password: '12345678',
+        referralCode: 'ABC123',
+      });
+
+      expect(api.post).toHaveBeenCalledWith(
+        '/auth/professional-register',
+        expect.objectContaining({ referralCode: 'ABC123' }),
+      );
+    });
+
+    it('omite referralCode del body cuando no se provee', async () => {
+      const mockRes = { access_token: 'token-preg2', userId: 'u2' };
+      (api.post as any).mockResolvedValue(mockRes);
+
+      await professionalRegister({
+        name: 'Test',
+        email: 't@t.com',
+        password: '12345678',
+      });
+
+      const calledBody = (api.post as any).mock.calls[0][1];
+      expect(calledBody).not.toHaveProperty('referralCode');
+    });
+
+    it('almacena el token y userId al registrarse', async () => {
+      const mockRes = { access_token: 'token-reg', userId: 'user-new' };
+      (api.post as any).mockResolvedValue(mockRes);
+
+      const result = await professionalRegister({
+        name: 'Test',
+        email: 't@t.com',
+        password: '12345678',
+      });
+
+      expect(localStorage.setItem).toHaveBeenCalledWith('trama_access_token', 'token-reg');
+      expect(api.setHeader).toHaveBeenCalledWith('Authorization', 'Bearer token-reg');
+      expect(result).toEqual(mockRes);
     });
   });
 });

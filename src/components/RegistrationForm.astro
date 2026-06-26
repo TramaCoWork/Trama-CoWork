@@ -190,6 +190,23 @@ import logoWhite from "../assets/images/logo-transparent.png";
       </label>
     </div>
 
+    <div class="flex flex-col" style="margin-top:22px;">
+      <label
+        for="referral-code"
+        style="font-size:11px; font-weight:600; letter-spacing:0.08em; color:#6B7280; text-transform:uppercase; margin-bottom:6px;"
+        >Código de referido (opcional)</label
+      >
+      <div class="input-icon-wrapper w-full">
+        <span class="material-symbols-outlined" aria-hidden="true">share</span>
+        <input
+          class="reg-input input-icon"
+          id="referral-code"
+          name="referralCode"
+          type="text"
+        />
+      </div>
+    </div>
+
     <button
       class="btn-cta w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
       type="submit"
@@ -243,6 +260,27 @@ import logoWhite from "../assets/images/logo-transparent.png";
     "confirm-password-error",
   )!;
   const termsCheck = document.getElementById("terms") as HTMLInputElement;
+  const referralCodeInput = document.getElementById(
+    "referral-code",
+  ) as HTMLInputElement;
+
+  function prefillReferralCodeFromQuery() {
+    const referralCodeParam = new URLSearchParams(window.location.search).get(
+      "ref",
+    );
+    if (referralCodeParam === null) return;
+    const trimmedReferralCode = referralCodeParam.trim();
+    if (trimmedReferralCode === "") return;
+    referralCodeInput.value = trimmedReferralCode;
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", prefillReferralCodeFromQuery, {
+      once: true,
+    });
+  } else {
+    prefillReferralCodeFromQuery();
+  }
 
   // ─── Toggle password visibility ───────────────────────────────
   function setupToggle(
@@ -330,11 +368,18 @@ import logoWhite from "../assets/images/logo-transparent.png";
       '<div class="w-5 h-5 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin"></div> <span>Creando cuenta...</span>';
 
     try {
-      await professionalRegister({
+      const referralCode = referralCodeInput.value.trim();
+      const requestBody: Parameters<typeof professionalRegister>[0] = {
         name: nameInput.value.trim(),
         email: emailInput.value.trim(),
         password: passwordInput.value,
-      });
+      };
+
+      if (referralCode !== "") {
+        requestBody.referralCode = referralCode;
+      }
+
+      await professionalRegister(requestBody);
       window.location.href = "/dashboard";
     } catch (err: any) {
       console.error("Error en registro:", err);

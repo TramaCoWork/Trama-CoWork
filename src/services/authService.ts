@@ -124,6 +124,11 @@ export interface RegisterResponse {
   userId: string;
 }
 
+type ApiError = Error & {
+  status?: number;
+  body?: unknown;
+};
+
 export async function professionalRegister(
   data: ProfessionalRegisterRequest,
 ): Promise<RegisterResponse> {
@@ -131,6 +136,38 @@ export async function professionalRegister(
   localStorage.setItem(TOKEN_KEY, res.access_token);
   api.setHeader('Authorization', `Bearer ${res.access_token}`);
   return res;
+}
+
+export interface ReferralCodeResponse {
+  referralCode: string | null;
+}
+
+function setReferralAuthHeader(): void {
+  const token = getToken();
+  if (token) {
+    api.setHeader('Authorization', `Bearer ${token}`);
+  }
+}
+
+export async function getReferralCode(): Promise<ReferralCodeResponse> {
+  setReferralAuthHeader();
+  return api.get<ReferralCodeResponse>('/auth/me/referral-code');
+}
+
+export async function updateReferralCode(referralCode: string): Promise<ReferralCodeResponse> {
+  setReferralAuthHeader();
+  try {
+    return await api.patch<ReferralCodeResponse>('/auth/me/referral-code', { referralCode });
+  } catch (error) {
+    const apiError = error as ApiError;
+    if (apiError.status === 409 && apiError.body && typeof apiError.body === 'object') {
+      const body = apiError.body as { message?: unknown };
+      if (typeof body.message === 'string') {
+        throw new Error(body.message);
+      }
+    }
+    throw error;
+  }
 }
 
 // ─── Password Recovery ─────────────────────────────────────────
