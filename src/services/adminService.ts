@@ -4,7 +4,8 @@
  * API calls for admin panel.
  */
 
-import { api } from './apiClient';
+import { api, apiURL } from './apiClient';
+import { getToken } from './authService';
 
 // ─── Types ─────────────────────────────────────────────────────
 
@@ -200,6 +201,15 @@ export interface AdminRegisterProfessionalResponse {
   };
 }
 
+const ADMIN_PROFESSIONALS_PATH = new URL(apiURL('/admin/professionals')).pathname;
+
+function setAuthHeader(): void {
+  const token = getToken();
+  if (token) {
+    api.setHeader('Authorization', `Bearer ${token}`);
+  }
+}
+
 function toAdminError(error: unknown, fallbackMessage: string): Error & { status?: number; body?: unknown } {
   if (error && typeof error === 'object' && 'message' in error) {
     const errorWithMeta = error as { message?: string; status?: number; body?: unknown };
@@ -237,6 +247,22 @@ export async function updateProfessional(
     return await api.patch(`/admin/professionals/${id}`, payload);
   } catch (error) {
     throw toAdminError(error, 'Error al actualizar profesional');
+  }
+}
+
+export async function changeProfessionalPassword(
+  id: string,
+  password: string,
+  confirmPassword: string,
+): Promise<unknown> {
+  setAuthHeader();
+  try {
+    return await api.patch(apiURL(`${ADMIN_PROFESSIONALS_PATH}/${id}/password`), {
+      password,
+      confirmPassword,
+    });
+  } catch (error) {
+    throw toAdminError(error, 'Error al cambiar contraseña');
   }
 }
 

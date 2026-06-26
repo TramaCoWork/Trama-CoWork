@@ -1,11 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('../authService', () => ({
+  getToken: vi.fn(() => 'test-token'),
+}));
+
 import { api } from '../apiClient';
 import {
+  changeProfessionalPassword,
   registerProfessional,
+  type AdminUpdateProfessionalPayload,
   updateProfessional,
   uploadProfessionalPhoto,
-  type AdminUpdateProfessionalPayload,
 } from '../adminService';
 
 describe('adminService', () => {
@@ -99,7 +104,7 @@ describe('adminService', () => {
       await uploadProfessionalPhoto('profile-123', file);
 
       expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/admin/uploads/professionals/profile-123/photo'),
+        expect.stringContaining('/uploads/admin/professionals/profile-123/photo'),
         expect.objectContaining({ method: 'POST' }),
       );
     });
@@ -151,6 +156,74 @@ describe('adminService', () => {
 
       expect(patchSpy).toHaveBeenCalledWith('/admin/professionals/prof-123', payload);
       patchSpy.mockRestore();
+    });
+  });
+
+  describe('changeProfessionalPassword', () => {
+    it('envia PATCH con payload y Authorization header en 200', async () => {
+      const setHeaderSpy = vi.spyOn(api, 'setHeader');
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ message: 'ok' }),
+      } as Response);
+
+      const response = await changeProfessionalPassword('123', '12345678', '12345678');
+
+      expect(response).toEqual({ message: 'ok' });
+      expect(setHeaderSpy).toHaveBeenCalledWith('Authorization', 'Bearer test-token');
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/admin/professionals/123/password'),
+        expect.objectContaining({
+          method: 'PATCH',
+          headers: expect.objectContaining({ Authorization: 'Bearer test-token' }),
+          body: JSON.stringify({ password: '12345678', confirmPassword: '12345678' }),
+        }),
+      );
+
+      setHeaderSpy.mockRestore();
+    });
+
+    it('propaga status 400 con metadata del error', async () => {
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+        json: async () => ({ message: 'Password policy error' }),
+      } as Response);
+
+      await expect(changeProfessionalPassword('123', '12345678', '12345678')).rejects.toMatchObject({
+        status: 400,
+        body: { message: 'Password policy error' },
+      });
+    });
+
+    it('propaga status 404 con metadata del error', async () => {
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+        json: async () => ({ message: 'Professional not found' }),
+      } as Response);
+
+      await expect(changeProfessionalPassword('123', '12345678', '12345678')).rejects.toMatchObject({
+        status: 404,
+        body: { message: 'Professional not found' },
+      });
+    });
+
+    it('propaga status 500 cuando no hay body parseable', async () => {
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+        json: async () => {
+          throw new Error('invalid json');
+        },
+      } as Response);
+
+      await expect(changeProfessionalPassword('123', '12345678', '12345678')).rejects.toMatchObject({
+        status: 500,
+      });
     });
   });
 });

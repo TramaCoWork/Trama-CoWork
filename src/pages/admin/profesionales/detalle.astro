@@ -94,6 +94,14 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
           <span class="material-symbols-outlined text-lg" aria-hidden="true">close</span>
           Cancelar
         </button>
+        <button
+          id="btn-open-password-modal"
+          type="button"
+          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface hover:bg-surface-container-high active:scale-[0.98] transition-all"
+        >
+          <span class="material-symbols-outlined text-lg" aria-hidden="true">lock_reset</span>
+          Cambiar contraseña
+        </button>
       </div>
     </div>
 
@@ -418,6 +426,70 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     </div>
   </div>
 
+  <!-- Change password modal -->
+  <div
+    id="change-password-modal"
+    class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="change-password-title"
+  >
+    <div class="w-full max-w-md bg-surface-container-low rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+      <div class="px-6 py-4 border-b border-outline-variant/15 flex items-center justify-between gap-4">
+        <h3 id="change-password-title" class="text-lg font-extrabold text-on-surface tracking-tight">Cambiar contraseña</h3>
+        <button
+          id="change-password-close"
+          type="button"
+          class="w-9 h-9 rounded-lg bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors"
+          aria-label="Cerrar modal"
+        >
+          <span class="material-symbols-outlined text-base" aria-hidden="true">close</span>
+        </button>
+      </div>
+
+      <form id="change-password-form" class="p-6 space-y-4" novalidate>
+        <div>
+          <label for="change-password-new" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-2">Nueva contraseña</label>
+          <input
+            id="change-password-new"
+            name="password"
+            type="password"
+            class="w-full bg-surface border border-outline-variant/20 rounded-xl px-4 py-2.5 text-on-surface text-sm font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+
+        <div>
+          <label for="change-password-confirm" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant block mb-2">Confirmar contraseña</label>
+          <input
+            id="change-password-confirm"
+            name="confirmPassword"
+            type="password"
+            class="w-full bg-surface border border-outline-variant/20 rounded-xl px-4 py-2.5 text-on-surface text-sm font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+
+        <p id="change-password-error" class="hidden text-sm font-medium text-error"></p>
+
+        <div class="flex flex-wrap items-center justify-end gap-2 pt-1">
+          <button
+            id="change-password-cancel"
+            type="button"
+            class="px-4 py-2.5 rounded-xl font-bold text-sm bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            id="change-password-submit"
+            type="submit"
+            class="px-4 py-2.5 rounded-xl font-bold text-sm bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            <span id="change-password-submit-text">Guardar</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     import { restoreSession, getToken } from '../../../services/authService';
     import { api } from '../../../services/apiClient';
@@ -425,6 +497,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       fetchProfessionalDetail,
       fetchProfessionalDocuments,
       fetchValidationHistory,
+      changeProfessionalPassword,
       resendVerificationEmail,
       updateProfessional,
       uploadProfessionalPhoto,
@@ -457,6 +530,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     const DOC_ZOOM_MIN = 0.5;
     const DOC_ZOOM_MAX = 3;
     const DOC_ZOOM_STEP = 0.25;
+    const PASSWORD_MIN_LENGTH = 8;
 
     let profData: AdminProfessional | null = null;
     let isEditMode = false;
@@ -465,6 +539,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     let docReviewBlobUrl = '';
     let docReviewZoom = 1;
     let currentDocReviewId: string | null = null;
+    let isPasswordRequestInFlight = false;
 
     const STATUS_MAP: Record<string, { label: string; cls: string }> = {
       incomplete:      { label: 'Incompleto',    cls: 'bg-outline/10 text-outline' },
@@ -511,6 +586,118 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         toast.classList.remove('translate-y-0', 'opacity-100');
         setTimeout(() => toast.classList.add('hidden'), 300);
       }, 4000);
+    }
+
+    // ─── Change password modal ──────────────────────────────────
+    function setPasswordModalError(message: string) {
+      const errorEl = document.getElementById('change-password-error');
+      if (!errorEl) return;
+      if (!message) {
+        errorEl.textContent = '';
+        errorEl.classList.add('hidden');
+        return;
+      }
+      errorEl.textContent = message;
+      errorEl.classList.remove('hidden');
+    }
+
+    function setPasswordSavingState(isSaving: boolean) {
+      const submitBtn = document.getElementById('change-password-submit') as HTMLButtonElement | null;
+      const submitText = document.getElementById('change-password-submit-text');
+      if (submitBtn) submitBtn.disabled = isSaving;
+      if (submitText) submitText.textContent = isSaving ? 'Guardando...' : 'Guardar';
+    }
+
+    function resetPasswordModalState() {
+      const form = document.getElementById('change-password-form') as HTMLFormElement | null;
+      form?.reset();
+      setPasswordModalError('');
+      setPasswordSavingState(isPasswordRequestInFlight);
+    }
+
+    function openPasswordModal() {
+      const modal = document.getElementById('change-password-modal');
+      if (!modal) return;
+      resetPasswordModalState();
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+      (document.getElementById('change-password-new') as HTMLInputElement | null)?.focus();
+    }
+
+    function closePasswordModal() {
+      const modal = document.getElementById('change-password-modal');
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.body.style.overflow = '';
+      setPasswordModalError('');
+    }
+
+    async function handleChangePasswordSubmit(event: SubmitEvent) {
+      event.preventDefault();
+      if (isPasswordRequestInFlight) return;
+
+      const newPasswordInput = document.getElementById('change-password-new') as HTMLInputElement | null;
+      const confirmPasswordInput = document.getElementById('change-password-confirm') as HTMLInputElement | null;
+      const password = newPasswordInput?.value || '';
+      const confirmPassword = confirmPasswordInput?.value || '';
+
+      if (!password || !confirmPassword) {
+        setPasswordModalError('Completá ambas contraseñas.');
+        return;
+      }
+
+      if (password.length < PASSWORD_MIN_LENGTH) {
+        setPasswordModalError('La contraseña debe tener al menos 8 caracteres.');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        setPasswordModalError('Las contraseñas no coinciden.');
+        return;
+      }
+
+      if (!profileId) {
+        setPasswordModalError('No se pudo identificar al profesional. Recargá la página.');
+        return;
+      }
+
+      isPasswordRequestInFlight = true;
+      setPasswordSavingState(true);
+      setPasswordModalError('');
+
+      try {
+        await changeProfessionalPassword(profileId, password, confirmPassword);
+        closePasswordModal();
+        showToast('Contraseña actualizada', 'success');
+      } catch (error: any) {
+        if (error?.status === 400) {
+          const modal = document.getElementById('change-password-modal');
+          if (modal && !modal.classList.contains('hidden')) {
+            setPasswordModalError('La contraseña no cumple los requisitos. Verificá que tenga al menos 8 caracteres.');
+          }
+          return;
+        }
+
+        if (error?.status === 404) {
+          const modal = document.getElementById('change-password-modal');
+          if (modal && !modal.classList.contains('hidden')) {
+            setPasswordModalError('No se encontró el profesional. Recargá la página e intentá de nuevo.');
+          }
+          return;
+        }
+
+        closePasswordModal();
+        if (error?.status === 500) {
+          showToast('Error del servidor al cambiar la contraseña. Intentá de nuevo más tarde.', 'error');
+        } else {
+          showToast('Error inesperado al cambiar la contraseña.', 'error');
+        }
+      } finally {
+        isPasswordRequestInFlight = false;
+        setPasswordSavingState(false);
+      }
     }
 
     // ─── Email verification UI ───────────────────────────────────
@@ -1337,12 +1524,29 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       saveEditForm();
     });
 
+    document.getElementById('btn-open-password-modal')?.addEventListener('click', openPasswordModal);
+    document.getElementById('change-password-close')?.addEventListener('click', closePasswordModal);
+    document.getElementById('change-password-cancel')?.addEventListener('click', closePasswordModal);
+    document.getElementById('change-password-form')?.addEventListener('submit', (event) => {
+      handleChangePasswordSubmit(event as SubmitEvent);
+    });
+    document.getElementById('change-password-modal')?.addEventListener('click', (event) => {
+      if (event.target === event.currentTarget) {
+        closePasswordModal();
+      }
+    });
+
     document.getElementById('doc-review-close')?.addEventListener('click', closeDocumentReviewModal);
     document.getElementById('doc-review-cancel')?.addEventListener('click', closeDocumentReviewModal);
     document.getElementById('doc-review-modal')?.addEventListener('click', (event) => {
       if (event.target === event.currentTarget) closeDocumentReviewModal();
     });
     document.addEventListener('keydown', (event) => {
+      const changePasswordModal = document.getElementById('change-password-modal');
+      if (event.key === 'Escape' && changePasswordModal && !changePasswordModal.classList.contains('hidden')) {
+        closePasswordModal();
+        return;
+      }
       const modal = document.getElementById('doc-review-modal');
       if (event.key === 'Escape' && modal && !modal.classList.contains('hidden')) closeDocumentReviewModal();
     });
