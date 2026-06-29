@@ -42,7 +42,8 @@ export interface CommunityChannelComment {
 
 export interface PaginatedMeta {
   page: number;
-  sizePage: number;
+  sizePage?: number;
+  limit?: number;
   total: number;
   totalPages: number;
 }
@@ -52,6 +53,7 @@ export interface PaginatedResponse<T> {
   total?: number;
   page?: number;
   sizePage?: number;
+  limit?: number;
   totalPages?: number;
   meta?: PaginatedMeta;
 }
@@ -162,10 +164,34 @@ export async function deleteChannel(id: string): Promise<{ message: string }> {
   }
 }
 
-export async function listMembers(channelId: string): Promise<CommunityChannelMember[]> {
+export async function listMembers(
+  channelId: string,
+  page = 1,
+  limit = 20,
+): Promise<PaginatedResponse<CommunityChannelMember>> {
   setAuthHeader();
   try {
-    return await api.get<CommunityChannelMember[]>(`${ADMIN_CHANNELS_PATH}/${channelId}/members`);
+    const response = await api.get<PaginatedResponse<CommunityChannelMember> | CommunityChannelMember[]>(
+      `${ADMIN_CHANNELS_PATH}/${channelId}/members`,
+      {
+        page,
+        limit,
+      },
+    );
+
+    if (Array.isArray(response)) {
+      return {
+        data: response,
+        meta: {
+          page,
+          limit,
+          total: response.length,
+          totalPages: 1,
+        },
+      };
+    }
+
+    return response;
   } catch (error) {
     throw toAdminError(error, 'Error al cargar miembros');
   }

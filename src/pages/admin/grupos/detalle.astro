@@ -90,13 +90,22 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <h2 class="text-xl font-extrabold tracking-tight text-on-surface">Miembros</h2>
 
-      <button
-        id="member-add-open"
-        type="button"
-        class="rounded-xl bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90"
-      >
-        Agregar miembro
-      </button>
+      <div class="flex items-center gap-2">
+        <button
+          id="member-add-open"
+          type="button"
+          class="rounded-xl bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90"
+        >
+          Agregar miembro
+        </button>
+        <button
+          id="members-load-more"
+          type="button"
+          class="hidden rounded-xl bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Cargar más
+        </button>
+      </div>
     </div>
 
     <p id="members-inline-error" class="mb-3 hidden rounded-lg border border-error/20 bg-error/10 px-3 py-2 text-sm font-medium text-error"></p>
@@ -308,8 +317,13 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     }
 
     const POSTS_PAGE_SIZE = 10;
+    const MEMBERS_PAGE_SIZE = 20;
     let currentChannel: CommunityChannel | null = null;
     let infoEditMode = false;
+    let membersPage = 1;
+    let membersTotalPages = 1;
+    let membersLoading = false;
+    let memberNameMapPromise: Promise<Map<string, string>> | null = null;
     let postsPage = 1;
     let postsTotalPages = 1;
     let postsLoading = false;
@@ -332,6 +346,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     const membersError = document.getElementById('members-inline-error') as HTMLParagraphElement;
     const membersTableBody = document.getElementById('members-table-body') as HTMLTableSectionElement;
     const memberAddOpen = document.getElementById('member-add-open') as HTMLButtonElement;
+    const membersLoadMore = document.getElementById('members-load-more') as HTMLButtonElement;
     const memberSearchModal = document.getElementById('member-search-modal') as HTMLDivElement;
     const memberSearchForm = document.getElementById('member-search-form') as HTMLFormElement;
     const memberSearchInput = document.getElementById('member-search-input') as HTMLInputElement;
@@ -473,6 +488,11 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         </tr>`;
     }
 
+    function updateMembersLoadMore(): void {
+      const show = membersPage < membersTotalPages;
+      membersLoadMore.classList.toggle('hidden', !show);
+    }
+
     async function loadMemberNameMap(): Promise<Map<string, string>> {
       const nameMap = new Map<string, string>();
 
@@ -521,8 +541,8 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       }));
     }
 
-    function renderMembersRows(rows: EnrichedMember[]): void {
-      membersTableBody.innerHTML = rows
+    function renderMembersRows(rows: EnrichedMember[], append: boolean): void {
+      const rowsHtml = rows
         .map((member) => {
           const acceptedLabel = member.accepted ? 'Sí' : 'No';
           return `
@@ -543,26 +563,62 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
             </tr>`;
         })
         .join('');
+
+      if (append) {
+        membersTableBody.insertAdjacentHTML('beforeend', rowsHtml);
+        return;
+      }
+
+      membersTableBody.innerHTML = rowsHtml;
     }
 
-    async function loadMembersSection(): Promise<void> {
+    async function getMemberNameMap(): Promise<Map<string, string>> {
+      if (!memberNameMapPromise) {
+        memberNameMapPromise = loadMemberNameMap();
+      }
+      return memberNameMapPromise;
+    }
+
+    async function loadMembersSection(reset: boolean): Promise<void> {
+      if (membersLoading) return;
+      membersLoading = true;
+      membersLoadMore.disabled = true;
       membersError.classList.add('hidden');
       membersError.textContent = '';
-      renderMembersLoading();
+
+      if (reset) {
+        membersPage = 1;
+        membersTotalPages = 1;
+        renderMembersLoading();
+      }
 
       try {
-        const [members, nameMap] = await Promise.all([listMembers(channelId), loadMemberNameMap()]);
-        if (members.length === 0) {
+        const [response, nameMap] = await Promise.all([
+          listMembers(channelId, membersPage, MEMBERS_PAGE_SIZE),
+          getMemberNameMap(),
+        ]);
+        const members = Array.isArray(response.data) ? response.data : [];
+        const responseMeta = response.meta;
+        membersPage = responseMeta?.page ?? response.page ?? membersPage;
+        membersTotalPages = responseMeta?.totalPages ?? response.totalPages ?? membersTotalPages;
+
+        if (members.length === 0 && membersPage === 1) {
           renderMembersEmpty();
+          updateMembersLoadMore();
           return;
         }
+
         const enriched = enrichMembers(members, nameMap);
-        renderMembersRows(enriched);
+        renderMembersRows(enriched, !reset && membersPage > 1);
+        updateMembersLoadMore();
       } catch {
         membersTableBody.innerHTML = `
           <tr>
             <td colspan="4" class="px-4 py-8 text-center text-sm font-medium text-error">No se pudieron cargar los miembros.</td>
           </tr>`;
+      } finally {
+        membersLoading = false;
+        membersLoadMore.disabled = false;
       }
     }
 
@@ -658,7 +714,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       try {
         await addMember(channelId, userId);
         closeMemberSearchModal();
-        await loadMembersSection();
+        await loadMembersSection(true);
       } catch (error) {
         const err = error as Error & { status?: number };
         if (err.status === 409) {
@@ -978,7 +1034,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         onConfirm: async () => {
           try {
             await removeMember(channelId, userId);
-            await loadMembersSection();
+            await loadMembersSection(true);
           } catch (error) {
             membersError.textContent = getErrorMessage(error, 'No se pudo remover el miembro.');
             membersError.classList.remove('hidden');
@@ -991,6 +1047,12 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       if (postsPage >= postsTotalPages || postsLoading) return;
       postsPage += 1;
       await loadPostsSection(false);
+    });
+
+    membersLoadMore.addEventListener('click', async () => {
+      if (membersPage >= membersTotalPages || membersLoading) return;
+      membersPage += 1;
+      await loadMembersSection(false);
     });
 
     postsTableBody.addEventListener('click', (event) => {
@@ -1027,7 +1089,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     async function initializePage(): Promise<void> {
       if (!channelId) return;
       await loadChannelInfo();
-      await Promise.all([loadMembersSection(), loadPostsSection(true)]);
+      await Promise.all([loadMembersSection(true), loadPostsSection(true)]);
     }
 
     void initializePage();
