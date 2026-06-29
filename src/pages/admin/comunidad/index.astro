@@ -28,7 +28,23 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
   <p id="posts-inline-error" class="mb-4 hidden rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></p>
   <p id="posts-inline-success" class="mb-4 hidden rounded-xl border border-success/25 bg-success/10 px-4 py-3 text-sm font-medium text-success"></p>
 
-  <section id="posts-grid" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"></section>
+  <section class="overflow-hidden rounded-2xl border border-outline-variant/15 bg-surface-container-low">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-outline-variant/15">
+        <thead class="bg-surface-container">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Canal</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Post</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Autor</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Comentarios</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Fecha</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="posts-grid"></tbody>
+      </table>
+    </div>
+  </section>
 
   <div class="mt-6 flex justify-center">
     <button
@@ -70,7 +86,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     let isLoading = false;
 
     const channelFilter = document.getElementById('channel-filter') as HTMLSelectElement;
-    const postsGrid = document.getElementById('posts-grid') as HTMLDivElement;
+    const postsGrid = document.getElementById('posts-grid') as HTMLTableSectionElement;
     const loadMoreButton = document.getElementById('load-more-posts') as HTMLButtonElement;
     const inlineError = document.getElementById('posts-inline-error') as HTMLParagraphElement;
     const inlineSuccess = document.getElementById('posts-inline-success') as HTMLParagraphElement;
@@ -119,9 +135,15 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     }
 
     function toPreview(content: string): string {
-      const plain = content.replace(/\s+/g, ' ').trim();
-      if (plain.length <= 120) return plain;
-      return `${plain.slice(0, 119)}…`;
+      const plain = content
+        .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+        .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+        .replace(/[*_`>#~-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      if (plain.length <= 80) return plain;
+      return `${plain.slice(0, 79)}…`;
     }
 
     function getPagination(response: PaginatedResponse<CommunityPost>): { page: number; totalPages: number } {
@@ -143,65 +165,73 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
     function setLoadingState(): void {
       postsGrid.innerHTML = `
-        <div class="col-span-full py-16 text-center text-on-surface-variant">
-          <div class="flex flex-col items-center gap-3">
-            <div class="h-8 w-8 animate-spin rounded-full border-3 border-primary/30 border-t-primary"></div>
-            <span class="text-sm font-medium">Cargando posts...</span>
-          </div>
-        </div>`;
+        <tr>
+          <td colspan="6" class="px-4 py-14 text-center text-on-surface-variant">
+            <div class="flex flex-col items-center gap-3">
+              <div class="h-8 w-8 animate-spin rounded-full border-3 border-primary/30 border-t-primary"></div>
+              <span class="text-sm font-medium">Cargando posts...</span>
+            </div>
+          </td>
+        </tr>`;
     }
 
     function setEmptyState(): void {
       const message = selectedChannel ? 'No hay posts en este canal.' : 'No hay posts para mostrar.';
       postsGrid.innerHTML = `
-        <div class="col-span-full rounded-2xl border border-outline-variant/15 bg-surface-container-low p-10 text-center text-on-surface-variant">
-          <span class="material-symbols-outlined mb-2 block text-3xl" aria-hidden="true">forum</span>
-          <p class="text-sm font-medium">${message}</p>
-        </div>`;
+        <tr>
+          <td colspan="6" class="px-4 py-10 text-center text-on-surface-variant">
+            <span class="material-symbols-outlined mb-2 block text-3xl" aria-hidden="true">forum</span>
+            <p class="text-sm font-medium">${message}</p>
+          </td>
+        </tr>`;
     }
 
-    function renderCards(posts: CommunityPost[], append: boolean): void {
-      if (!append) {
-        postsGrid.innerHTML = '';
-      }
+    function setErrorState(message: string): void {
+      postsGrid.innerHTML = `
+        <tr>
+          <td colspan="6" class="px-4 py-8 text-center text-sm font-medium text-error">${escapeHtml(message)}</td>
+        </tr>`;
+    }
 
-      const cardsHtml = posts
+    function renderPosts(posts: CommunityPost[], append: boolean): void {
+      const rows = posts
         .map((post) => {
           const channel = post.channelSlug || 'sin-canal';
+          const comments = post.commentCount ?? 0;
           return `
-            <article
-              data-post-id="${escapeHtml(post.id)}"
-              class="group cursor-pointer rounded-2xl border border-outline-variant/15 bg-surface-container-low p-4 transition-all hover:border-primary/30 hover:shadow-md"
-            >
-              <header class="mb-3 flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                  <p class="truncate text-sm font-bold text-on-surface">${escapeHtml(getAuthor(post))}</p>
-                  <p class="mt-0.5 text-[11px] font-semibold uppercase tracking-wider text-primary">${escapeHtml(channel)}</p>
-                </div>
+            <tr data-post-id="${escapeHtml(post.id)}" class="cursor-pointer border-b border-outline-variant/10 transition-colors hover:bg-primary/5">
+              <td class="px-4 py-3 align-top">
+                <span class="inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-primary">${escapeHtml(channel)}</span>
+              </td>
+              <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(toPreview(post.content || ''))}</td>
+              <td class="px-4 py-3 text-sm font-medium text-on-surface">${escapeHtml(getAuthor(post))}</td>
+              <td class="px-4 py-3 text-sm text-on-surface-variant">
+                <span class="inline-flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm" aria-hidden="true">chat</span>
+                  ${comments}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(formatDate(post.createdAt))}</td>
+              <td class="px-4 py-3 align-top">
                 <button
                   type="button"
                   data-delete-post="${escapeHtml(post.id)}"
-                  class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-error transition-colors hover:bg-error/10"
+                  class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-error transition-colors hover:bg-error/10"
                   aria-label="Eliminar post"
                 >
                   <span class="material-symbols-outlined text-lg" aria-hidden="true">delete</span>
                 </button>
-              </header>
-
-              <p class="mb-4 min-h-[3.5rem] text-sm text-on-surface-variant">${escapeHtml(toPreview(post.content || ''))}</p>
-
-              <footer class="flex items-center justify-between text-xs font-medium text-on-surface-variant">
-                <span>${escapeHtml(formatDate(post.createdAt))}</span>
-                <span class="inline-flex items-center gap-1">
-                  <span class="material-symbols-outlined text-sm" aria-hidden="true">chat</span>
-                  ${post.commentCount ?? 0}
-                </span>
-              </footer>
-            </article>`;
+              </td>
+            </tr>`;
         })
         .join('');
 
-      postsGrid.insertAdjacentHTML('beforeend', cardsHtml);
+      if (append) {
+        postsGrid.insertAdjacentHTML('beforeend', rows);
+        return;
+      }
+
+      postsGrid.innerHTML = rows;
     }
 
     async function loadChannels(): Promise<void> {
@@ -253,11 +283,11 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
           return;
         }
 
-        renderCards(response.data, !reset && currentPage > 1);
+        renderPosts(response.data, !reset && currentPage > 1);
         updateLoadMoreVisibility();
       } catch {
         if (currentPage === 1) {
-          postsGrid.innerHTML = '';
+          setErrorState('Error al cargar los posts. Intentá de nuevo.');
         }
         showInlineError('Error al cargar los posts. Intentá de nuevo.');
       } finally {
@@ -266,12 +296,12 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       }
     }
 
-    function removePostCard(postId: string): void {
-      const card = postsGrid.querySelector<HTMLElement>(`article[data-post-id="${postId}"]`);
-      card?.remove();
+    function removePostRow(postId: string): void {
+      const row = postsGrid.querySelector<HTMLTableRowElement>(`tr[data-post-id="${postId}"]`);
+      row?.remove();
 
-      const remainingCards = postsGrid.querySelectorAll('article[data-post-id]').length;
-      if (remainingCards === 0) {
+      const remainingRows = postsGrid.querySelectorAll('tr[data-post-id]').length;
+      if (remainingRows === 0) {
         setEmptyState();
       }
     }
@@ -288,7 +318,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         onConfirm: async () => {
           try {
             await deletePost(postId);
-            removePostCard(postId);
+            removePostRow(postId);
             showInlineSuccess('Post eliminado correctamente.');
           } catch {
             showInlineError('No se pudo eliminar el post. Intentá de nuevo.');
@@ -299,6 +329,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
     channelFilter.addEventListener('change', async () => {
       selectedChannel = channelFilter.value;
+      currentPage = 1;
       await loadPosts(true);
     });
 
@@ -316,13 +347,17 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         return;
       }
 
-      const card = target.closest<HTMLElement>('article[data-post-id]');
-      if (!card?.dataset.postId) return;
-      window.location.href = `/admin/comunidad/post?id=${encodeURIComponent(card.dataset.postId)}`;
+      const row = target.closest<HTMLTableRowElement>('tr[data-post-id]');
+      if (!row?.dataset.postId) return;
+      window.location.href = `/admin/comunidad/post?id=${encodeURIComponent(row.dataset.postId)}`;
     });
 
-    loadChannels();
-    loadPosts(true);
+    async function initializePage(): Promise<void> {
+      await loadChannels();
+      await loadPosts(true);
+    }
+
+    void initializePage();
   </script>
 </AdminLayout>
 
