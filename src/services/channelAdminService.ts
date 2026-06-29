@@ -253,7 +253,7 @@ export async function createPost(channelId: string, payload: CreatePostPayload):
 export async function getPost(channelId: string, postId: string): Promise<CommunityChannelPost> {
   setAuthHeader();
   try {
-    return await api.get<CommunityChannelPost>(`${ADMIN_CHANNELS_PATH}/${channelId}/posts/${postId}`);
+    return await api.get<CommunityChannelPost>(`${CHANNELS_PATH}/${channelId}/posts/${postId}`);
   } catch (error) {
     throw toAdminError(error, 'Error al cargar publicación');
   }
@@ -269,7 +269,7 @@ export async function listComments(
   try {
     return await api.get<PaginatedResponse<CommunityChannelComment>>(`${CHANNELS_PATH}/${channelId}/posts/${postId}/comments`, {
       page,
-      sizePage: limit,
+      limit,
     });
   } catch (error) {
     throw toAdminError(error, 'Error al cargar comentarios');
