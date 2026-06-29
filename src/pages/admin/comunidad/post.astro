@@ -1,0 +1,429 @@
+---
+import ConfirmModal from '../../../components/ConfirmModal.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Post de comunidad | TRAMA Admin">
+  <ConfirmModal />
+
+  <header class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-3xl font-black text-on-surface tracking-tighter">Detalle de post</h1>
+      <p class="mt-1 text-sm font-medium text-on-surface-variant">Revisá el contenido y moderá comentarios.</p>
+    </div>
+
+    <a
+      href="/admin/comunidad"
+      class="inline-flex items-center gap-1 rounded-lg bg-surface-container px-3 py-2 text-xs font-bold uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface-container-high"
+    >
+      <span class="material-symbols-outlined text-sm" aria-hidden="true">arrow_back</span>
+      Volver
+    </a>
+  </header>
+
+  <p id="detail-inline-error" class="mb-4 hidden rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></p>
+  <p id="comments-inline-error" class="mb-4 hidden rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></p>
+
+  <section class="grid grid-cols-1 gap-6 xl:grid-cols-[1.1fr_1fr]">
+    <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+      <div class="mb-4 flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <p id="post-author" class="truncate text-sm font-bold text-on-surface">—</p>
+          <p id="post-channel" class="mt-0.5 text-[11px] font-semibold uppercase tracking-wider text-primary">—</p>
+          <p id="post-date" class="mt-2 text-xs text-on-surface-variant">—</p>
+          <p id="post-comment-count" class="mt-0.5 text-xs text-on-surface-variant">Comentarios: 0</p>
+        </div>
+        <button
+          id="delete-post-btn"
+          type="button"
+          class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-error transition-colors hover:bg-error/10"
+          aria-label="Eliminar post"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+        </button>
+      </div>
+
+      <div id="post-content" class="prose prose-sm max-w-none text-on-surface"></div>
+    </article>
+
+    <aside class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+      <h2 class="mb-4 text-lg font-extrabold tracking-tight text-on-surface">Comentarios</h2>
+
+      <div id="comments-list" class="space-y-3"></div>
+
+      <div class="mt-4 flex justify-center">
+        <button
+          id="load-more-comments"
+          type="button"
+          class="hidden rounded-lg bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Cargar más comentarios
+        </button>
+      </div>
+
+      <form id="comment-form" class="mt-6 border-t border-outline-variant/15 pt-4">
+        <label for="comment-content" class="mb-2 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+          Respuesta del admin
+        </label>
+        <textarea
+          id="comment-content"
+          rows="4"
+          class="w-full resize-y rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-3 py-2.5 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          placeholder="Escribí una respuesta..."
+        ></textarea>
+        <p id="comment-form-error" class="mt-2 hidden text-sm font-medium text-error"></p>
+        <div class="mt-3 flex justify-end">
+          <button
+            id="comment-submit"
+            type="submit"
+            class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Comentar
+          </button>
+        </div>
+      </form>
+    </aside>
+  </section>
+
+  <script>
+    import { api } from '../../../services/apiClient';
+    import {
+      createAdminComment,
+      deleteComment,
+      deletePost,
+      fetchCommunityPostById,
+      fetchPostComments,
+      type CommunityComment,
+      type CommunityPost,
+      type PaginatedResponse,
+    } from '../../../services/communityAdminService';
+    import {
+      getEmailFromToken,
+      getRoleFromToken,
+      getToken,
+      isAuthenticated,
+      restoreSession,
+    } from '../../../services/authService';
+
+    restoreSession();
+    const token = getToken();
+    if (token) {
+      api.setHeader('Authorization', `Bearer ${token}`);
+    }
+
+    if (!isAuthenticated()) {
+      window.location.href = '/admin/login';
+    } else if (getRoleFromToken() !== 'admin') {
+      window.location.href = '/dashboard';
+    }
+
+    const PAGE_SIZE = 20;
+    let postId = '';
+    let commentsPage = 1;
+    let commentsTotalPages = 1;
+    let commentsLoading = false;
+
+    const detailInlineError = document.getElementById('detail-inline-error') as HTMLParagraphElement;
+    const commentsInlineError = document.getElementById('comments-inline-error') as HTMLParagraphElement;
+    const postAuthor = document.getElementById('post-author') as HTMLParagraphElement;
+    const postChannel = document.getElementById('post-channel') as HTMLParagraphElement;
+    const postDate = document.getElementById('post-date') as HTMLParagraphElement;
+    const postCommentCount = document.getElementById('post-comment-count') as HTMLParagraphElement;
+    const postContent = document.getElementById('post-content') as HTMLDivElement;
+    const deletePostButton = document.getElementById('delete-post-btn') as HTMLButtonElement;
+
+    const commentsList = document.getElementById('comments-list') as HTMLDivElement;
+    const loadMoreCommentsButton = document.getElementById('load-more-comments') as HTMLButtonElement;
+    const commentForm = document.getElementById('comment-form') as HTMLFormElement;
+    const commentTextarea = document.getElementById('comment-content') as HTMLTextAreaElement;
+    const commentFormError = document.getElementById('comment-form-error') as HTMLParagraphElement;
+    const commentSubmitButton = document.getElementById('comment-submit') as HTMLButtonElement;
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatDate(value: string): string {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return date.toLocaleString('es-AR');
+    }
+
+    function getAuthorName(email?: string | null, name?: string | null): string {
+      if (name?.trim()) return name.trim();
+      if (email?.trim()) return email.trim();
+      return 'Usuario';
+    }
+
+    function renderLightMarkdown(raw: string): string {
+      const escaped = escapeHtml(raw || '');
+      const withLinks = escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-primary underline">$1</a>');
+      const withBold = withLinks.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      const withItalic = withBold.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      return withItalic.replace(/\n/g, '<br>');
+    }
+
+    function parsePagination(response: PaginatedResponse<CommunityComment>): { page: number; totalPages: number } {
+      const page = response.meta?.page ?? response.page ?? 1;
+      const byMeta = response.meta?.totalPages;
+      if (typeof byMeta === 'number' && byMeta >= 1) {
+        return { page, totalPages: byMeta };
+      }
+
+      const explicit = response.totalPages;
+      if (typeof explicit === 'number' && explicit >= 1) {
+        return { page, totalPages: explicit };
+      }
+
+      const sizePage = response.meta?.sizePage ?? response.sizePage ?? PAGE_SIZE;
+      const total = response.meta?.total ?? response.total ?? response.data.length;
+      return { page, totalPages: Math.max(1, Math.ceil(total / sizePage)) };
+    }
+
+    function showDetailError(message: string): void {
+      detailInlineError.textContent = message;
+      detailInlineError.classList.remove('hidden');
+    }
+
+    function showCommentsError(message: string): void {
+      commentsInlineError.textContent = message;
+      commentsInlineError.classList.remove('hidden');
+    }
+
+    function hideInlineErrors(): void {
+      detailInlineError.classList.add('hidden');
+      commentsInlineError.classList.add('hidden');
+      detailInlineError.textContent = '';
+      commentsInlineError.textContent = '';
+    }
+
+    function renderPost(post: CommunityPost): void {
+      const author = getAuthorName(post.user?.email, post.user?.profile?.name);
+      postAuthor.textContent = author;
+      postChannel.textContent = post.channelSlug || 'sin-canal';
+      postDate.textContent = formatDate(post.createdAt);
+      postCommentCount.textContent = `Comentarios: ${post.commentCount ?? 0}`;
+      postContent.innerHTML = renderLightMarkdown(post.content || '');
+    }
+
+    function emptyCommentsState(): void {
+      commentsList.innerHTML = `
+        <div class="rounded-xl border border-outline-variant/15 bg-surface-container-lowest p-5 text-center text-sm text-on-surface-variant">
+          No hay comentarios en este post.
+        </div>`;
+    }
+
+    function renderComments(comments: CommunityComment[], append: boolean): void {
+      const ordered = [...comments].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+      if (!append) {
+        commentsList.innerHTML = '';
+      }
+
+      if (ordered.length === 0 && !append) {
+        emptyCommentsState();
+        return;
+      }
+
+      const html = ordered
+        .map((comment) => {
+          const author = getAuthorName(comment.user?.email, comment.user?.profile?.name);
+          return `
+            <article data-comment-id="${escapeHtml(comment.id)}" class="rounded-xl border border-outline-variant/15 bg-surface-container-lowest p-3">
+              <div class="mb-2 flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-bold text-on-surface">${escapeHtml(author)}</p>
+                  <p class="text-xs text-on-surface-variant">${escapeHtml(formatDate(comment.createdAt))}</p>
+                </div>
+                <button
+                  type="button"
+                  data-delete-comment="${escapeHtml(comment.id)}"
+                  class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-error transition-colors hover:bg-error/10"
+                  aria-label="Eliminar comentario"
+                >
+                  <span class="material-symbols-outlined text-lg" aria-hidden="true">delete</span>
+                </button>
+              </div>
+              <div class="text-sm text-on-surface-variant">${renderLightMarkdown(comment.content || '')}</div>
+            </article>`;
+        })
+        .join('');
+
+      commentsList.insertAdjacentHTML('beforeend', html);
+    }
+
+    function prependAdminComment(comment: CommunityComment): void {
+      const adminName = getEmailFromToken() || 'Admin';
+      const cardHtml = `
+        <article data-comment-id="${escapeHtml(comment.id)}" class="rounded-xl border border-outline-variant/15 bg-surface-container-lowest p-3">
+          <div class="mb-2 flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <p class="truncate text-sm font-bold text-on-surface">${escapeHtml(adminName)}</p>
+              <p class="text-xs text-on-surface-variant">${escapeHtml(formatDate(comment.createdAt))}</p>
+            </div>
+            <button
+              type="button"
+              data-delete-comment="${escapeHtml(comment.id)}"
+              class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-error transition-colors hover:bg-error/10"
+              aria-label="Eliminar comentario"
+            >
+              <span class="material-symbols-outlined text-lg" aria-hidden="true">delete</span>
+            </button>
+          </div>
+          <div class="text-sm text-on-surface-variant">${renderLightMarkdown(comment.content || '')}</div>
+        </article>`;
+
+      const emptyState = commentsList.querySelector('div');
+      if (emptyState && commentsList.children.length === 1 && emptyState.textContent?.includes('No hay comentarios')) {
+        commentsList.innerHTML = '';
+      }
+
+      commentsList.insertAdjacentHTML('afterbegin', cardHtml);
+    }
+
+    async function loadPost(): Promise<void> {
+      try {
+        const post = await fetchCommunityPostById(postId);
+        renderPost(post);
+      } catch {
+        showDetailError('No se pudo cargar el post.');
+      }
+    }
+
+    function updateLoadMoreCommentsVisibility(): void {
+      loadMoreCommentsButton.classList.toggle('hidden', commentsPage >= commentsTotalPages);
+    }
+
+    async function loadComments(reset: boolean): Promise<void> {
+      if (commentsLoading) return;
+
+      commentsLoading = true;
+      loadMoreCommentsButton.disabled = true;
+      commentsInlineError.classList.add('hidden');
+      commentsInlineError.textContent = '';
+
+      if (reset) {
+        commentsPage = 1;
+        commentsTotalPages = 1;
+      }
+
+      try {
+        const response = await fetchPostComments(postId, { page: commentsPage, sizePage: PAGE_SIZE });
+        const pagination = parsePagination(response);
+        commentsPage = pagination.page;
+        commentsTotalPages = pagination.totalPages;
+        renderComments(response.data, !reset && commentsPage > 1);
+        updateLoadMoreCommentsVisibility();
+      } catch {
+        showCommentsError('Error al cargar comentarios. Intentá de nuevo.');
+      } finally {
+        commentsLoading = false;
+        loadMoreCommentsButton.disabled = false;
+      }
+    }
+
+    function askDeletePost(): void {
+      hideInlineErrors();
+      (window as any).openConfirmModal({
+        title: 'Eliminar post',
+        body: '¿Querés eliminar este post? Esta acción no se puede deshacer.',
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        confirmStyle: 'error',
+        onConfirm: async () => {
+          try {
+            await deletePost(postId);
+            window.location.href = '/admin/comunidad';
+          } catch {
+            showDetailError('No se pudo eliminar el post. Intentá de nuevo.');
+          }
+        },
+      });
+    }
+
+    function removeComment(commentId: string): void {
+      const node = commentsList.querySelector<HTMLElement>(`article[data-comment-id="${commentId}"]`);
+      node?.remove();
+      if (commentsList.querySelectorAll('article[data-comment-id]').length === 0) {
+        emptyCommentsState();
+      }
+    }
+
+    function askDeleteComment(commentId: string): void {
+      commentsInlineError.classList.add('hidden');
+      commentsInlineError.textContent = '';
+      (window as any).openConfirmModal({
+        title: 'Eliminar comentario',
+        body: '¿Querés eliminar este comentario?',
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        confirmStyle: 'error',
+        onConfirm: async () => {
+          try {
+            await deleteComment(commentId);
+            removeComment(commentId);
+          } catch {
+            showCommentsError('No se pudo eliminar el comentario. Intentá de nuevo.');
+          }
+        },
+      });
+    }
+
+    loadMoreCommentsButton.addEventListener('click', async () => {
+      if (commentsPage >= commentsTotalPages || commentsLoading) return;
+      commentsPage += 1;
+      await loadComments(false);
+    });
+
+    commentsList.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const button = target.closest<HTMLButtonElement>('[data-delete-comment]');
+      if (!button?.dataset.deleteComment) return;
+      askDeleteComment(button.dataset.deleteComment);
+    });
+
+    deletePostButton.addEventListener('click', askDeletePost);
+
+    commentForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      commentFormError.classList.add('hidden');
+      commentFormError.textContent = '';
+
+      const content = commentTextarea.value.trim();
+      if (!content) {
+        commentFormError.textContent = 'El comentario no puede estar vacío.';
+        commentFormError.classList.remove('hidden');
+        return;
+      }
+
+      commentSubmitButton.disabled = true;
+      try {
+        const created = await createAdminComment(postId, content);
+        prependAdminComment(created);
+        commentTextarea.value = '';
+      } catch {
+        commentFormError.textContent = 'No se pudo publicar el comentario. Intentá de nuevo.';
+        commentFormError.classList.remove('hidden');
+      } finally {
+        commentSubmitButton.disabled = false;
+      }
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    const parsedId = params.get('id')?.trim() || '';
+    if (!parsedId) {
+      window.location.href = '/admin/comunidad';
+    } else {
+      postId = parsedId;
+      loadPost();
+      loadComments(true);
+    }
+  </script>
+</AdminLayout>
+
+<!-- Traceability: implementation by Programmer at 2026-06-29 00:00:00 -->

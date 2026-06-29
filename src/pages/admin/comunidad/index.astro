@@ -1,0 +1,329 @@
+---
+import ConfirmModal from '../../../components/ConfirmModal.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Comunidad | TRAMA Admin">
+  <ConfirmModal />
+
+  <header class="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-black text-on-surface tracking-tighter">Moderación de comunidad</h1>
+      <p class="mt-1 text-sm font-medium text-on-surface-variant">Revisá publicaciones y gestioná contenido por canal.</p>
+    </div>
+
+    <div class="w-full max-w-xs">
+      <label for="channel-filter" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+        Canal
+      </label>
+      <select
+        id="channel-filter"
+        class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-3 py-2.5 text-sm font-medium text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+      >
+        <option value="">Todos los canales</option>
+      </select>
+    </div>
+  </header>
+
+  <p id="posts-inline-error" class="mb-4 hidden rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></p>
+  <p id="posts-inline-success" class="mb-4 hidden rounded-xl border border-success/25 bg-success/10 px-4 py-3 text-sm font-medium text-success"></p>
+
+  <section id="posts-grid" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"></section>
+
+  <div class="mt-6 flex justify-center">
+    <button
+      id="load-more-posts"
+      type="button"
+      class="hidden rounded-xl bg-primary px-6 py-3 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      Cargar más
+    </button>
+  </div>
+
+  <script>
+    import { api } from '../../../services/apiClient';
+    import {
+      deletePost,
+      fetchChannelSlugs,
+      fetchCommunityPosts,
+      type CommunityPost,
+      type PaginatedResponse,
+    } from '../../../services/communityAdminService';
+    import { getRoleFromToken, getToken, isAuthenticated, restoreSession } from '../../../services/authService';
+
+    restoreSession();
+    const token = getToken();
+    if (token) {
+      api.setHeader('Authorization', `Bearer ${token}`);
+    }
+
+    if (!isAuthenticated()) {
+      window.location.href = '/admin/login';
+    } else if (getRoleFromToken() !== 'admin') {
+      window.location.href = '/dashboard';
+    }
+
+    const PAGE_SIZE = 20;
+    let currentPage = 1;
+    let totalPages = 1;
+    let selectedChannel = '';
+    let isLoading = false;
+
+    const channelFilter = document.getElementById('channel-filter') as HTMLSelectElement;
+    const postsGrid = document.getElementById('posts-grid') as HTMLDivElement;
+    const loadMoreButton = document.getElementById('load-more-posts') as HTMLButtonElement;
+    const inlineError = document.getElementById('posts-inline-error') as HTMLParagraphElement;
+    const inlineSuccess = document.getElementById('posts-inline-success') as HTMLParagraphElement;
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function hideInlineMessages(): void {
+      inlineError.classList.add('hidden');
+      inlineSuccess.classList.add('hidden');
+      inlineError.textContent = '';
+      inlineSuccess.textContent = '';
+    }
+
+    function showInlineError(message: string): void {
+      inlineError.textContent = message;
+      inlineError.classList.remove('hidden');
+    }
+
+    function showInlineSuccess(message: string): void {
+      inlineSuccess.textContent = message;
+      inlineSuccess.classList.remove('hidden');
+      window.setTimeout(() => {
+        inlineSuccess.classList.add('hidden');
+      }, 2500);
+    }
+
+    function getAuthor(post: CommunityPost): string {
+      const profileName = post.user?.profile?.name?.trim();
+      if (profileName) return profileName;
+      const email = post.user?.email?.trim();
+      if (email) return email;
+      return 'Usuario';
+    }
+
+    function formatDate(value: string): string {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return date.toLocaleString('es-AR');
+    }
+
+    function toPreview(content: string): string {
+      const plain = content.replace(/\s+/g, ' ').trim();
+      if (plain.length <= 120) return plain;
+      return `${plain.slice(0, 119)}…`;
+    }
+
+    function getPagination(response: PaginatedResponse<CommunityPost>): { page: number; totalPages: number } {
+      const page = response.meta?.page ?? response.page ?? 1;
+      const fromMeta = response.meta?.totalPages;
+      if (typeof fromMeta === 'number' && fromMeta >= 1) {
+        return { page, totalPages: fromMeta };
+      }
+
+      const explicitTotalPages = response.totalPages;
+      if (typeof explicitTotalPages === 'number' && explicitTotalPages >= 1) {
+        return { page, totalPages: explicitTotalPages };
+      }
+
+      const sizePage = response.meta?.sizePage ?? response.sizePage ?? PAGE_SIZE;
+      const total = response.meta?.total ?? response.total ?? response.data.length;
+      return { page, totalPages: Math.max(1, Math.ceil(total / sizePage)) };
+    }
+
+    function setLoadingState(): void {
+      postsGrid.innerHTML = `
+        <div class="col-span-full py-16 text-center text-on-surface-variant">
+          <div class="flex flex-col items-center gap-3">
+            <div class="h-8 w-8 animate-spin rounded-full border-3 border-primary/30 border-t-primary"></div>
+            <span class="text-sm font-medium">Cargando posts...</span>
+          </div>
+        </div>`;
+    }
+
+    function setEmptyState(): void {
+      const message = selectedChannel ? 'No hay posts en este canal.' : 'No hay posts para mostrar.';
+      postsGrid.innerHTML = `
+        <div class="col-span-full rounded-2xl border border-outline-variant/15 bg-surface-container-low p-10 text-center text-on-surface-variant">
+          <span class="material-symbols-outlined mb-2 block text-3xl" aria-hidden="true">forum</span>
+          <p class="text-sm font-medium">${message}</p>
+        </div>`;
+    }
+
+    function renderCards(posts: CommunityPost[], append: boolean): void {
+      if (!append) {
+        postsGrid.innerHTML = '';
+      }
+
+      const cardsHtml = posts
+        .map((post) => {
+          const channel = post.channelSlug || 'sin-canal';
+          return `
+            <article
+              data-post-id="${escapeHtml(post.id)}"
+              class="group cursor-pointer rounded-2xl border border-outline-variant/15 bg-surface-container-low p-4 transition-all hover:border-primary/30 hover:shadow-md"
+            >
+              <header class="mb-3 flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-bold text-on-surface">${escapeHtml(getAuthor(post))}</p>
+                  <p class="mt-0.5 text-[11px] font-semibold uppercase tracking-wider text-primary">${escapeHtml(channel)}</p>
+                </div>
+                <button
+                  type="button"
+                  data-delete-post="${escapeHtml(post.id)}"
+                  class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-error transition-colors hover:bg-error/10"
+                  aria-label="Eliminar post"
+                >
+                  <span class="material-symbols-outlined text-lg" aria-hidden="true">delete</span>
+                </button>
+              </header>
+
+              <p class="mb-4 min-h-[3.5rem] text-sm text-on-surface-variant">${escapeHtml(toPreview(post.content || ''))}</p>
+
+              <footer class="flex items-center justify-between text-xs font-medium text-on-surface-variant">
+                <span>${escapeHtml(formatDate(post.createdAt))}</span>
+                <span class="inline-flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm" aria-hidden="true">chat</span>
+                  ${post.commentCount ?? 0}
+                </span>
+              </footer>
+            </article>`;
+        })
+        .join('');
+
+      postsGrid.insertAdjacentHTML('beforeend', cardsHtml);
+    }
+
+    async function loadChannels(): Promise<void> {
+      try {
+        const slugs = await fetchChannelSlugs();
+        slugs.forEach((slug) => {
+          const option = document.createElement('option');
+          option.value = slug;
+          option.textContent = slug;
+          channelFilter.appendChild(option);
+        });
+      } catch {
+        showInlineError('No se pudieron cargar los canales.');
+      }
+    }
+
+    function updateLoadMoreVisibility(): void {
+      const shouldShow = currentPage < totalPages;
+      loadMoreButton.classList.toggle('hidden', !shouldShow);
+    }
+
+    async function loadPosts(reset: boolean): Promise<void> {
+      if (isLoading) return;
+
+      hideInlineMessages();
+      isLoading = true;
+      loadMoreButton.disabled = true;
+
+      if (reset) {
+        currentPage = 1;
+        totalPages = 1;
+        setLoadingState();
+      }
+
+      try {
+        const response = await fetchCommunityPosts({
+          channelSlug: selectedChannel || undefined,
+          page: currentPage,
+          sizePage: PAGE_SIZE,
+        });
+
+        const pagination = getPagination(response);
+        currentPage = pagination.page;
+        totalPages = pagination.totalPages;
+
+        if (response.data.length === 0 && currentPage === 1) {
+          setEmptyState();
+          updateLoadMoreVisibility();
+          return;
+        }
+
+        renderCards(response.data, !reset && currentPage > 1);
+        updateLoadMoreVisibility();
+      } catch {
+        if (currentPage === 1) {
+          postsGrid.innerHTML = '';
+        }
+        showInlineError('Error al cargar los posts. Intentá de nuevo.');
+      } finally {
+        isLoading = false;
+        loadMoreButton.disabled = false;
+      }
+    }
+
+    function removePostCard(postId: string): void {
+      const card = postsGrid.querySelector<HTMLElement>(`article[data-post-id="${postId}"]`);
+      card?.remove();
+
+      const remainingCards = postsGrid.querySelectorAll('article[data-post-id]').length;
+      if (remainingCards === 0) {
+        setEmptyState();
+      }
+    }
+
+    function askDeletePost(postId: string): void {
+      hideInlineMessages();
+
+      (window as any).openConfirmModal({
+        title: 'Eliminar post',
+        body: '¿Querés eliminar este post? Esta acción no se puede deshacer.',
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        confirmStyle: 'error',
+        onConfirm: async () => {
+          try {
+            await deletePost(postId);
+            removePostCard(postId);
+            showInlineSuccess('Post eliminado correctamente.');
+          } catch {
+            showInlineError('No se pudo eliminar el post. Intentá de nuevo.');
+          }
+        },
+      });
+    }
+
+    channelFilter.addEventListener('change', async () => {
+      selectedChannel = channelFilter.value;
+      await loadPosts(true);
+    });
+
+    loadMoreButton.addEventListener('click', async () => {
+      if (currentPage >= totalPages || isLoading) return;
+      currentPage += 1;
+      await loadPosts(false);
+    });
+
+    postsGrid.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const deleteButton = target.closest<HTMLButtonElement>('[data-delete-post]');
+      if (deleteButton?.dataset.deletePost) {
+        askDeletePost(deleteButton.dataset.deletePost);
+        return;
+      }
+
+      const card = target.closest<HTMLElement>('article[data-post-id]');
+      if (!card?.dataset.postId) return;
+      window.location.href = `/admin/comunidad/post?id=${encodeURIComponent(card.dataset.postId)}`;
+    });
+
+    loadChannels();
+    loadPosts(true);
+  </script>
+</AdminLayout>
+
+<!-- Traceability: implementation by Programmer at 2026-06-29 00:00:00 -->
