@@ -65,6 +65,22 @@ export interface PaginatedAdminUsersResponse {
   sizePage: number;
 }
 
+type AdminUsersResponseRaw =
+  | AdminUser[]
+  | PaginatedAdminUsersResponse
+  | {
+      data?: AdminUser[];
+      total?: number;
+      page?: number;
+      sizePage?: number;
+      meta?: {
+        total?: number;
+        page?: number;
+        sizePage?: number;
+        limit?: number;
+      };
+    };
+
 export interface ProfessionalFilters {
   profileStatus?: string;
   isActive?: boolean;
@@ -160,7 +176,33 @@ export async function fetchAdminUsers(
     params.set('search', normalizedSearch);
   }
 
-  return api.get<PaginatedAdminUsersResponse>(`/admin/users?${params.toString()}`);
+  const response = await api.get<AdminUsersResponseRaw>(`/admin/users?${params.toString()}`);
+
+  if (Array.isArray(response)) {
+    return {
+      data: response,
+      total: response.length,
+      page,
+      sizePage,
+    };
+  }
+
+  const data = Array.isArray(response?.data) ? response.data : [];
+  const totalFromMeta = response?.meta?.total;
+  const pageFromMeta = response?.meta?.page;
+  const sizePageFromMeta = response?.meta?.sizePage ?? response?.meta?.limit;
+
+  return {
+    data,
+    total: typeof response?.total === 'number' ? response.total : typeof totalFromMeta === 'number' ? totalFromMeta : data.length,
+    page: typeof response?.page === 'number' ? response.page : typeof pageFromMeta === 'number' ? pageFromMeta : page,
+    sizePage:
+      typeof response?.sizePage === 'number'
+        ? response.sizePage
+        : typeof sizePageFromMeta === 'number'
+          ? sizePageFromMeta
+          : sizePage,
+  };
 }
 
 export async function validateProfile(id: string, payload: ValidatePayload): Promise<unknown> {

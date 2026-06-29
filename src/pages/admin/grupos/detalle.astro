@@ -637,7 +637,8 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       setMemberSearchLoading(true);
       try {
         const response = await fetchAdminUsers(1, 10, search);
-        renderMemberSearchResults(response.data);
+        const users = Array.isArray(response.data) ? response.data : [];
+        renderMemberSearchResults(users);
       } catch (error) {
         memberSearchError.textContent = getErrorMessage(error, 'No se pudo buscar usuarios.');
         memberSearchError.classList.remove('hidden');
