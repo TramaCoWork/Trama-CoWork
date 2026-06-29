@@ -23,6 +23,18 @@ export interface CommunityChannelPost {
   channelId: string;
   userId: string;
   content: string;
+  status: 'published' | 'paused';
+  createdAt: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
+}
+
+export interface CommunityChannelComment {
+  id: string;
+  channelId: string;
+  postId: string;
+  userId: string;
+  content: string;
   createdAt: string;
   updatedAt?: string;
   deletedAt?: string | null;
@@ -56,7 +68,14 @@ export interface UpdateChannelPayload {
   isActive?: boolean;
 }
 
+export interface CreatePostPayload {
+  userId: string;
+  content: string;
+  status?: 'published' | 'paused';
+}
+
 const ADMIN_CHANNELS_PATH = new URL(apiURL('/admin/channels')).pathname;
+const CHANNELS_PATH = new URL(apiURL('/channels')).pathname;
 
 type AdminError = Error & { status?: number; body?: unknown };
 
@@ -193,6 +212,50 @@ export async function deletePost(channelId: string, postId: string): Promise<{ m
     return await api.del<{ message: string }>(`${ADMIN_CHANNELS_PATH}/${channelId}/posts/${postId}`);
   } catch (error) {
     throw toAdminError(error, 'Error al eliminar publicación');
+  }
+}
+
+export async function createPost(channelId: string, payload: CreatePostPayload): Promise<CommunityChannelPost> {
+  setAuthHeader();
+  try {
+    return await api.post<CommunityChannelPost>(`${ADMIN_CHANNELS_PATH}/${channelId}/posts`, payload);
+  } catch (error) {
+    throw toAdminError(error, 'Error al crear publicación');
+  }
+}
+
+export async function getPost(channelId: string, postId: string): Promise<CommunityChannelPost> {
+  setAuthHeader();
+  try {
+    return await api.get<CommunityChannelPost>(`${ADMIN_CHANNELS_PATH}/${channelId}/posts/${postId}`);
+  } catch (error) {
+    throw toAdminError(error, 'Error al cargar publicación');
+  }
+}
+
+export async function listComments(
+  channelId: string,
+  postId: string,
+  page = 1,
+  limit = 20,
+): Promise<PaginatedResponse<CommunityChannelComment>> {
+  setAuthHeader();
+  try {
+    return await api.get<PaginatedResponse<CommunityChannelComment>>(`${CHANNELS_PATH}/${channelId}/posts/${postId}/comments`, {
+      page,
+      sizePage: limit,
+    });
+  } catch (error) {
+    throw toAdminError(error, 'Error al cargar comentarios');
+  }
+}
+
+export async function deleteComment(channelId: string, commentId: string): Promise<{ message: string }> {
+  setAuthHeader();
+  try {
+    return await api.del<{ message: string }>(`${ADMIN_CHANNELS_PATH}/${channelId}/comments/${commentId}`);
+  } catch (error) {
+    throw toAdminError(error, 'Error al eliminar comentario');
   }
 }
 

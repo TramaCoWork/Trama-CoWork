@@ -49,6 +49,22 @@ export interface PaginatedResponse<T> {
   sizePage: number;
 }
 
+export interface AdminUser {
+  id: string;
+  email: string;
+  role: string;
+  createdAt: string;
+  updatedAt?: string;
+  name?: string;
+}
+
+export interface PaginatedAdminUsersResponse {
+  data: AdminUser[];
+  total: number;
+  page: number;
+  sizePage: number;
+}
+
 export interface ProfessionalFilters {
   profileStatus?: string;
   isActive?: boolean;
@@ -126,6 +142,25 @@ export async function fetchProfessionalDocuments(id: string): Promise<Profession
 
 export async function fetchValidationHistory(id: string): Promise<ValidationRecord[]> {
   return api.get<ValidationRecord[]>(`/admin/professionals/${id}/validation-history`);
+}
+
+export async function fetchAdminUsers(
+  page = 1,
+  sizePage = 15,
+  search?: string,
+): Promise<PaginatedAdminUsersResponse> {
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(sizePage),
+    sizePage: String(sizePage),
+  });
+
+  const normalizedSearch = search?.trim();
+  if (normalizedSearch) {
+    params.set('search', normalizedSearch);
+  }
+
+  return api.get<PaginatedAdminUsersResponse>(`/admin/users?${params.toString()}`);
 }
 
 export async function validateProfile(id: string, payload: ValidatePayload): Promise<unknown> {

@@ -1,0 +1,315 @@
+---
+import ConfirmModal from '../../../components/ConfirmModal.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Post de grupo | TRAMA Admin">
+  <ConfirmModal />
+
+  <header class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-3xl font-black tracking-tighter text-on-surface">Detalle de post</h1>
+      <p class="mt-1 text-sm font-medium text-on-surface-variant">Revisá el contenido y moderá comentarios del grupo.</p>
+    </div>
+
+    <a
+      href="/admin/grupos"
+      class="inline-flex items-center gap-1 rounded-lg bg-surface-container px-3 py-2 text-xs font-bold uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface-container-high"
+    >
+      <span class="material-symbols-outlined text-sm" aria-hidden="true">arrow_back</span>
+      Volver
+    </a>
+  </header>
+
+  <p id="detail-inline-error" class="mb-4 hidden rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></p>
+  <p id="comments-inline-error" class="mb-4 hidden rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></p>
+
+  <section class="grid grid-cols-1 gap-6 xl:grid-cols-[1.1fr_1fr]">
+    <article class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+      <div class="mb-4 flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <p id="post-author" class="truncate text-sm font-bold text-on-surface">—</p>
+          <p id="post-date" class="mt-2 text-xs text-on-surface-variant">—</p>
+        </div>
+        <span id="post-status" class="badge badge-soft-success">Publicado</span>
+      </div>
+
+      <div id="post-content" class="prose prose-sm max-w-none text-on-surface"></div>
+    </article>
+
+    <aside class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+      <h2 class="mb-4 text-lg font-extrabold tracking-tight text-on-surface">Comentarios</h2>
+
+      <div id="comments-list" class="space-y-3"></div>
+
+      <div class="mt-4 flex justify-center">
+        <button
+          id="load-more-comments"
+          type="button"
+          class="hidden rounded-lg bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Cargar más comentarios
+        </button>
+      </div>
+    </aside>
+  </section>
+
+  <script>
+    import { api } from '../../../services/apiClient';
+    import {
+      deleteComment,
+      getPost,
+      listComments,
+      type CommunityChannelComment,
+      type CommunityChannelPost,
+      type PaginatedResponse,
+    } from '../../../services/channelAdminService';
+    import { getRoleFromToken, getToken, isAuthenticated, restoreSession } from '../../../services/authService';
+
+    restoreSession();
+    const token = getToken();
+    if (token) {
+      api.setHeader('Authorization', `Bearer ${token}`);
+    }
+
+    if (!isAuthenticated()) {
+      window.location.href = '/admin/login';
+    } else if (getRoleFromToken() !== 'admin') {
+      window.location.href = '/dashboard';
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const channelId = params.get('channelId')?.trim() || '';
+    const postId = params.get('postId')?.trim() || '';
+    if (!channelId || !postId) {
+      window.location.href = '/admin/grupos';
+    }
+
+    const COMMENTS_PAGE_SIZE = 20;
+    let commentsPage = 1;
+    let commentsTotalPages = 1;
+    let commentsLoading = false;
+
+    const detailInlineError = document.getElementById('detail-inline-error') as HTMLParagraphElement;
+    const commentsInlineError = document.getElementById('comments-inline-error') as HTMLParagraphElement;
+    const postAuthor = document.getElementById('post-author') as HTMLParagraphElement;
+    const postDate = document.getElementById('post-date') as HTMLParagraphElement;
+    const postStatus = document.getElementById('post-status') as HTMLSpanElement;
+    const postContent = document.getElementById('post-content') as HTMLDivElement;
+    const commentsList = document.getElementById('comments-list') as HTMLDivElement;
+    const loadMoreCommentsButton = document.getElementById('load-more-comments') as HTMLButtonElement;
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatDate(value: string): string {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return date.toLocaleString('es-AR');
+    }
+
+    function renderLightMarkdown(raw: string): string {
+      const escaped = escapeHtml(raw || '');
+      const withLinks = escaped.replace(
+        /(https?:\/\/[^\s<]+)/g,
+        '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-primary underline">$1</a>',
+      );
+      const withBold = withLinks.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      const withItalic = withBold.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      return withItalic.replace(/\n/g, '<br>');
+    }
+
+    function parsePagination(response: PaginatedResponse<CommunityChannelComment>): {
+      page: number;
+      totalPages: number;
+    } {
+      const page = response.meta?.page ?? response.page ?? 1;
+      const fromMeta = response.meta?.totalPages;
+      if (typeof fromMeta === 'number' && fromMeta >= 1) {
+        return { page, totalPages: fromMeta };
+      }
+      const total = response.meta?.total ?? response.total ?? response.data.length;
+      const sizePage = response.meta?.sizePage ?? response.sizePage ?? COMMENTS_PAGE_SIZE;
+      return { page, totalPages: Math.max(1, Math.ceil(total / Math.max(1, sizePage))) };
+    }
+
+    function getErrorMessage(error: unknown, fallback: string): string {
+      const err = error as Error & { body?: { message?: string }; message?: string };
+      return err.body?.message || err.message || fallback;
+    }
+
+    function renderPost(post: CommunityChannelPost): void {
+      postAuthor.textContent = post.userId || 'Usuario';
+      postDate.textContent = formatDate(post.createdAt);
+      postStatus.textContent = post.status === 'paused' ? 'Pausado' : 'Publicado';
+      postStatus.className = `badge ${post.status === 'paused' ? 'badge-soft-warning' : 'badge-soft-success'}`;
+      postContent.innerHTML = renderLightMarkdown(post.content || '');
+    }
+
+    function renderPostNotFound(): void {
+      postAuthor.textContent = '—';
+      postDate.textContent = '—';
+      postStatus.textContent = 'No encontrado';
+      postStatus.className = 'badge badge-soft-error';
+      postContent.innerHTML = '<p class="text-sm text-on-surface-variant">Post no encontrado</p>';
+    }
+
+    function renderCommentsEmpty(): void {
+      commentsList.innerHTML = `
+        <div class="rounded-xl border border-outline-variant/15 bg-surface-container-lowest p-5 text-center text-sm text-on-surface-variant">
+          No hay comentarios
+        </div>`;
+    }
+
+    function renderComments(comments: CommunityChannelComment[], append: boolean): void {
+      if (!append) {
+        commentsList.innerHTML = '';
+      }
+
+      if (comments.length === 0 && !append) {
+        renderCommentsEmpty();
+        return;
+      }
+
+      const html = comments
+        .map((comment) => {
+          return `
+            <article data-comment-id="${escapeHtml(comment.id)}" class="rounded-xl border border-outline-variant/15 bg-surface-container-lowest p-3">
+              <div class="mb-2 flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-bold text-on-surface">${escapeHtml(comment.userId || 'Usuario')}</p>
+                  <p class="text-xs text-on-surface-variant">${escapeHtml(formatDate(comment.createdAt))}</p>
+                </div>
+                <button
+                  type="button"
+                  data-delete-comment="${escapeHtml(comment.id)}"
+                  class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-error transition-colors hover:bg-error/10"
+                  aria-label="Eliminar comentario"
+                >
+                  <span class="material-symbols-outlined text-lg" aria-hidden="true">delete</span>
+                </button>
+              </div>
+              <div class="text-sm text-on-surface-variant">${renderLightMarkdown(comment.content || '')}</div>
+            </article>`;
+        })
+        .join('');
+
+      commentsList.insertAdjacentHTML('beforeend', html);
+    }
+
+    function updateLoadMoreCommentsVisibility(): void {
+      loadMoreCommentsButton.classList.toggle('hidden', commentsPage >= commentsTotalPages);
+    }
+
+    async function loadPostDetail(): Promise<boolean> {
+      detailInlineError.classList.add('hidden');
+      detailInlineError.textContent = '';
+      try {
+        const post = await getPost(channelId, postId);
+        renderPost(post);
+        return true;
+      } catch (error) {
+        const err = error as Error & { status?: number };
+        if (err.status === 404) {
+          renderPostNotFound();
+          return false;
+        }
+        detailInlineError.textContent = getErrorMessage(error, 'No se pudo cargar el post.');
+        detailInlineError.classList.remove('hidden');
+        return false;
+      }
+    }
+
+    async function loadComments(reset: boolean): Promise<void> {
+      if (commentsLoading) return;
+
+      commentsLoading = true;
+      loadMoreCommentsButton.disabled = true;
+      commentsInlineError.classList.add('hidden');
+      commentsInlineError.textContent = '';
+
+      if (reset) {
+        commentsPage = 1;
+        commentsTotalPages = 1;
+      }
+
+      try {
+        const response = await listComments(channelId, postId, commentsPage, COMMENTS_PAGE_SIZE);
+        const pagination = parsePagination(response);
+        commentsPage = pagination.page;
+        commentsTotalPages = pagination.totalPages;
+        renderComments(response.data, !reset && commentsPage > 1);
+        updateLoadMoreCommentsVisibility();
+      } catch (error) {
+        commentsInlineError.textContent = getErrorMessage(error, 'Error al cargar comentarios.');
+        commentsInlineError.classList.remove('hidden');
+      } finally {
+        commentsLoading = false;
+        loadMoreCommentsButton.disabled = false;
+      }
+    }
+
+    function removeCommentFromList(commentId: string): void {
+      const node = commentsList.querySelector<HTMLElement>(`article[data-comment-id="${commentId}"]`);
+      node?.remove();
+      if (commentsList.querySelectorAll('article[data-comment-id]').length === 0) {
+        renderCommentsEmpty();
+      }
+    }
+
+    function askDeleteComment(commentId: string): void {
+      commentsInlineError.classList.add('hidden');
+      commentsInlineError.textContent = '';
+
+      (window as any).openConfirmModal({
+        title: 'Eliminar comentario',
+        body: '¿Querés eliminar este comentario?',
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        confirmStyle: 'error',
+        onConfirm: async () => {
+          try {
+            await deleteComment(channelId, commentId);
+            removeCommentFromList(commentId);
+          } catch (error) {
+            commentsInlineError.textContent = getErrorMessage(error, 'No se pudo eliminar el comentario.');
+            commentsInlineError.classList.remove('hidden');
+          }
+        },
+      });
+    }
+
+    loadMoreCommentsButton.addEventListener('click', async () => {
+      if (commentsPage >= commentsTotalPages || commentsLoading) return;
+      commentsPage += 1;
+      await loadComments(false);
+    });
+
+    commentsList.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const button = target.closest<HTMLButtonElement>('[data-delete-comment]');
+      if (!button?.dataset.deleteComment) return;
+      askDeleteComment(button.dataset.deleteComment);
+    });
+
+    async function initializePage(): Promise<void> {
+      const found = await loadPostDetail();
+      if (!found) {
+        renderCommentsEmpty();
+        loadMoreCommentsButton.classList.add('hidden');
+        return;
+      }
+      await loadComments(true);
+    }
+
+    void initializePage();
+  </script>
+</AdminLayout>
+
+<!-- Traceability: implementation by Programmer at 2026-06-29 00:00:00 -->

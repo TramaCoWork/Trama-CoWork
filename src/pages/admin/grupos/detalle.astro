@@ -90,15 +90,13 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <h2 class="text-xl font-extrabold tracking-tight text-on-surface">Miembros</h2>
 
-      <form id="member-add-form" class="flex w-full max-w-sm items-center gap-2">
-        <input
-          id="member-user-id"
-          type="text"
-          placeholder="userId"
-          class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-        />
-        <button type="submit" class="rounded-xl bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90">Agregar</button>
-      </form>
+      <button
+        id="member-add-open"
+        type="button"
+        class="rounded-xl bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90"
+      >
+        Agregar miembro
+      </button>
     </div>
 
     <p id="members-inline-error" class="mb-3 hidden rounded-lg border border-error/20 bg-error/10 px-3 py-2 text-sm font-medium text-error"></p>
@@ -108,7 +106,6 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         <thead class="bg-surface-container">
           <tr>
             <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Usuario</th>
-            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">userId</th>
             <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Aceptado</th>
             <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Creado</th>
             <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Acciones</th>
@@ -119,16 +116,70 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     </div>
   </section>
 
+  <div id="member-search-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4" aria-hidden="true">
+    <div class="w-full max-w-2xl rounded-2xl border border-outline-variant/20 bg-surface-container-low p-5 shadow-lg" role="dialog" aria-modal="true" aria-labelledby="member-search-modal-title">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <h3 id="member-search-modal-title" class="text-lg font-extrabold tracking-tight text-on-surface">Buscar usuario</h3>
+        <button
+          id="member-search-close"
+          type="button"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container-high"
+          aria-label="Cerrar modal"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </div>
+
+      <form id="member-search-form" class="mb-3 flex flex-wrap items-center gap-2">
+        <input
+          id="member-search-input"
+          type="email"
+          placeholder="Email del usuario"
+          class="w-full flex-1 rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+        />
+        <button id="member-search-submit" type="submit" class="rounded-xl bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60">Buscar</button>
+      </form>
+
+      <p id="member-search-error" class="mb-3 hidden rounded-lg border border-error/20 bg-error/10 px-3 py-2 text-sm font-medium text-error"></p>
+
+      <div class="overflow-x-auto rounded-xl border border-outline-variant/15">
+        <table class="min-w-full divide-y divide-outline-variant/15">
+          <thead class="bg-surface-container">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Email</th>
+              <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Nombre</th>
+              <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="member-search-results-body">
+            <tr>
+              <td colspan="3" class="px-4 py-6 text-center text-sm text-on-surface-variant">No se encontraron usuarios</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <section class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
     <div class="mb-4 flex items-center justify-between gap-3">
       <h2 class="text-xl font-extrabold tracking-tight text-on-surface">Publicaciones</h2>
-      <button
-        id="posts-load-more"
-        type="button"
-        class="hidden rounded-xl bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        Cargar más
-      </button>
+      <div class="flex items-center gap-2">
+        <button
+          id="post-create-open"
+          type="button"
+          class="rounded-xl bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90"
+        >
+          Agregar post
+        </button>
+        <button
+          id="posts-load-more"
+          type="button"
+          class="hidden rounded-xl bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Cargar más
+        </button>
+      </div>
     </div>
 
     <p id="posts-inline-error" class="mb-3 hidden rounded-lg border border-error/20 bg-error/10 px-3 py-2 text-sm font-medium text-error"></p>
@@ -150,10 +201,69 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     </div>
   </section>
 
+  <div id="post-create-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4" aria-hidden="true">
+    <div class="w-full max-w-2xl rounded-2xl border border-outline-variant/20 bg-surface-container-low p-5 shadow-lg" role="dialog" aria-modal="true" aria-labelledby="post-create-modal-title">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <h3 id="post-create-modal-title" class="text-lg font-extrabold tracking-tight text-on-surface">Agregar post</h3>
+        <button
+          id="post-create-close"
+          type="button"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container-high"
+          aria-label="Cerrar modal"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </div>
+
+      <form id="post-create-form" class="space-y-3">
+        <div>
+          <label for="post-create-content" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Contenido</label>
+          <textarea
+            id="post-create-content"
+            rows="5"
+            class="w-full resize-y rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-3 py-2.5 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Escribí el contenido del post"
+          ></textarea>
+        </div>
+
+        <div>
+          <label for="post-create-status" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado</label>
+          <select
+            id="post-create-status"
+            class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-3 py-2.5 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="published">Publicado</option>
+            <option value="paused">Pausado</option>
+          </select>
+        </div>
+
+        <p id="post-create-error" class="hidden rounded-lg border border-error/20 bg-error/10 px-3 py-2 text-sm font-medium text-error"></p>
+
+        <div class="flex justify-end gap-2 pt-1">
+          <button
+            id="post-create-cancel"
+            type="button"
+            class="rounded-xl bg-surface-container px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface-container-high"
+          >
+            Cancelar
+          </button>
+          <button
+            id="post-create-submit"
+            type="submit"
+            class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Crear post
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     import { api } from '../../../services/apiClient';
     import {
       addMember,
+      createPost,
       deletePost,
       getChannel,
       listMembers,
@@ -166,9 +276,14 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       type PaginatedResponse,
       type UpdateChannelPayload,
     } from '../../../services/channelAdminService';
-    import { fetchAllProfessionals } from '../../../services/adminService';
-    import { fetchAdminUsers } from '../../../services/adminUsersService';
-    import { getRoleFromToken, getToken, isAuthenticated, restoreSession } from '../../../services/authService';
+    import { fetchAdminUsers, fetchAllProfessionals } from '../../../services/adminService';
+    import {
+      getRoleFromToken,
+      getToken,
+      getUserIdFromToken,
+      isAuthenticated,
+      restoreSession,
+    } from '../../../services/authService';
 
     interface EnrichedMember extends CommunityChannelMember {
       displayName: string;
@@ -216,12 +331,29 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
     const membersError = document.getElementById('members-inline-error') as HTMLParagraphElement;
     const membersTableBody = document.getElementById('members-table-body') as HTMLTableSectionElement;
-    const addMemberForm = document.getElementById('member-add-form') as HTMLFormElement;
-    const memberUserIdInput = document.getElementById('member-user-id') as HTMLInputElement;
+    const memberAddOpen = document.getElementById('member-add-open') as HTMLButtonElement;
+    const memberSearchModal = document.getElementById('member-search-modal') as HTMLDivElement;
+    const memberSearchForm = document.getElementById('member-search-form') as HTMLFormElement;
+    const memberSearchInput = document.getElementById('member-search-input') as HTMLInputElement;
+    const memberSearchSubmit = document.getElementById('member-search-submit') as HTMLButtonElement;
+    const memberSearchClose = document.getElementById('member-search-close') as HTMLButtonElement;
+    const memberSearchError = document.getElementById('member-search-error') as HTMLParagraphElement;
+    const memberSearchResultsBody = document.getElementById('member-search-results-body') as HTMLTableSectionElement;
 
     const postsError = document.getElementById('posts-inline-error') as HTMLParagraphElement;
     const postsTableBody = document.getElementById('posts-table-body') as HTMLTableSectionElement;
     const postsLoadMore = document.getElementById('posts-load-more') as HTMLButtonElement;
+    const postCreateOpen = document.getElementById('post-create-open') as HTMLButtonElement;
+    const postCreateModal = document.getElementById('post-create-modal') as HTMLDivElement;
+    const postCreateClose = document.getElementById('post-create-close') as HTMLButtonElement;
+    const postCreateCancel = document.getElementById('post-create-cancel') as HTMLButtonElement;
+    const postCreateForm = document.getElementById('post-create-form') as HTMLFormElement;
+    const postCreateContent = document.getElementById('post-create-content') as HTMLTextAreaElement;
+    const postCreateStatus = document.getElementById('post-create-status') as HTMLSelectElement;
+    const postCreateError = document.getElementById('post-create-error') as HTMLParagraphElement;
+    const postCreateSubmit = document.getElementById('post-create-submit') as HTMLButtonElement;
+    let memberSearchLoading = false;
+    let postCreateLoading = false;
 
     function escapeHtml(value: string): string {
       return value
@@ -330,14 +462,14 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     function renderMembersLoading(): void {
       membersTableBody.innerHTML = `
         <tr>
-          <td colspan="5" class="px-4 py-10 text-center text-sm text-on-surface-variant">Cargando miembros...</td>
+          <td colspan="4" class="px-4 py-10 text-center text-sm text-on-surface-variant">Cargando miembros...</td>
         </tr>`;
     }
 
     function renderMembersEmpty(): void {
       membersTableBody.innerHTML = `
         <tr>
-          <td colspan="5" class="px-4 py-10 text-center text-sm text-on-surface-variant">Sin miembros</td>
+          <td colspan="4" class="px-4 py-10 text-center text-sm text-on-surface-variant">Sin miembros</td>
         </tr>`;
     }
 
@@ -396,7 +528,6 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
           return `
             <tr data-user-id="${escapeHtml(member.userId)}" class="border-b border-outline-variant/10">
               <td class="px-4 py-3 text-sm font-semibold text-on-surface">${escapeHtml(member.displayName)}</td>
-              <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(member.userId)}</td>
               <td class="px-4 py-3 text-sm text-on-surface-variant">${acceptedLabel}</td>
               <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(formatDate(member.createdAt))}</td>
               <td class="px-4 py-3">
@@ -430,8 +561,111 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       } catch {
         membersTableBody.innerHTML = `
           <tr>
-            <td colspan="5" class="px-4 py-8 text-center text-sm font-medium text-error">No se pudieron cargar los miembros.</td>
+            <td colspan="4" class="px-4 py-8 text-center text-sm font-medium text-error">No se pudieron cargar los miembros.</td>
           </tr>`;
+      }
+    }
+
+    function openMemberSearchModal(): void {
+      memberSearchError.classList.add('hidden');
+      memberSearchError.textContent = '';
+      memberSearchResultsBody.innerHTML = `
+        <tr>
+          <td colspan="3" class="px-4 py-6 text-center text-sm text-on-surface-variant">No se encontraron usuarios</td>
+        </tr>`;
+      memberSearchModal.classList.remove('hidden');
+      memberSearchModal.classList.add('flex');
+      memberSearchModal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('overflow-hidden');
+      window.setTimeout(() => {
+        memberSearchInput.focus();
+      }, 0);
+    }
+
+    function closeMemberSearchModal(): void {
+      memberSearchModal.classList.add('hidden');
+      memberSearchModal.classList.remove('flex');
+      memberSearchModal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('overflow-hidden');
+      memberSearchForm.reset();
+    }
+
+    function setMemberSearchLoading(loading: boolean): void {
+      memberSearchLoading = loading;
+      memberSearchSubmit.disabled = loading;
+      memberSearchSubmit.textContent = loading ? 'Buscando...' : 'Buscar';
+    }
+
+    function renderMemberSearchResults(users: Array<{ id: string; email: string; name?: string }>): void {
+      if (users.length === 0) {
+        memberSearchResultsBody.innerHTML = `
+          <tr>
+            <td colspan="3" class="px-4 py-6 text-center text-sm text-on-surface-variant">No se encontraron usuarios</td>
+          </tr>`;
+        return;
+      }
+
+      memberSearchResultsBody.innerHTML = users
+        .map((user) => {
+          const displayName = user.name?.trim() || '—';
+          return `
+            <tr class="border-b border-outline-variant/10">
+              <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(user.email)}</td>
+              <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(displayName)}</td>
+              <td class="px-4 py-3">
+                <button
+                  type="button"
+                  data-select-user-id="${escapeHtml(user.id)}"
+                  class="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90"
+                >
+                  Seleccionar
+                </button>
+              </td>
+            </tr>`;
+        })
+        .join('');
+    }
+
+    async function searchUsersByEmail(search: string): Promise<void> {
+      memberSearchError.classList.add('hidden');
+      memberSearchError.textContent = '';
+      memberSearchResultsBody.innerHTML = `
+        <tr>
+          <td colspan="3" class="px-4 py-6 text-center text-sm text-on-surface-variant">Buscando usuarios...</td>
+        </tr>`;
+
+      setMemberSearchLoading(true);
+      try {
+        const response = await fetchAdminUsers(1, 10, search);
+        renderMemberSearchResults(response.data);
+      } catch (error) {
+        memberSearchError.textContent = getErrorMessage(error, 'No se pudo buscar usuarios.');
+        memberSearchError.classList.remove('hidden');
+        memberSearchResultsBody.innerHTML = `
+          <tr>
+            <td colspan="3" class="px-4 py-6 text-center text-sm text-on-surface-variant">No se encontraron usuarios</td>
+          </tr>`;
+      } finally {
+        setMemberSearchLoading(false);
+      }
+    }
+
+    async function addSelectedMember(userId: string): Promise<void> {
+      memberSearchError.classList.add('hidden');
+      memberSearchError.textContent = '';
+
+      try {
+        await addMember(channelId, userId);
+        closeMemberSearchModal();
+        await loadMembersSection();
+      } catch (error) {
+        const err = error as Error & { status?: number };
+        if (err.status === 409) {
+          memberSearchError.textContent = 'El usuario ya es miembro';
+        } else {
+          memberSearchError.textContent = getErrorMessage(error, 'No se pudo agregar el miembro.');
+        }
+        memberSearchError.classList.remove('hidden');
       }
     }
 
@@ -466,9 +700,16 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       const rowsHtml = rows
         .map((post) => {
           const isDeleted = post.deletedAt != null;
-          const statusLabel = isDeleted ? 'Eliminado' : 'Activo';
-          const statusClass = isDeleted ? 'badge-soft-error' : 'badge-soft-success';
+          const statusLabel = isDeleted ? 'Eliminado' : post.status === 'paused' ? 'Pausado' : 'Publicado';
+          const statusClass = isDeleted
+            ? 'badge-soft-error'
+            : post.status === 'paused'
+              ? 'badge-soft-warning'
+              : 'badge-soft-success';
           const deletedText = isDeleted ? formatDate(post.deletedAt || '') : '—';
+          const rowClass = isDeleted
+            ? 'border-b border-outline-variant/10'
+            : 'border-b border-outline-variant/10 cursor-pointer hover:bg-surface-container';
           const action = isDeleted
             ? ''
             : `<button
@@ -481,7 +722,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
               </button>`;
 
           return `
-            <tr data-post-id="${escapeHtml(post.id)}" class="border-b border-outline-variant/10">
+            <tr data-post-id="${escapeHtml(post.id)}" data-row-active="${isDeleted ? 'false' : 'true'}" class="${rowClass}">
               <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(postPreview(post.content || ''))}</td>
               <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(post.userId || '—')}</td>
               <td class="px-4 py-3"><span class="badge ${statusClass}">${statusLabel}</span></td>
@@ -546,6 +787,72 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       }
     }
 
+    function openPostCreateModal(): void {
+      postCreateError.classList.add('hidden');
+      postCreateError.textContent = '';
+      postCreateModal.classList.remove('hidden');
+      postCreateModal.classList.add('flex');
+      postCreateModal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('overflow-hidden');
+      window.setTimeout(() => {
+        postCreateContent.focus();
+      }, 0);
+    }
+
+    function closePostCreateModal(): void {
+      postCreateModal.classList.add('hidden');
+      postCreateModal.classList.remove('flex');
+      postCreateModal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('overflow-hidden');
+      postCreateForm.reset();
+      postCreateStatus.value = 'published';
+      postCreateError.classList.add('hidden');
+      postCreateError.textContent = '';
+    }
+
+    function setPostCreateLoading(loading: boolean): void {
+      postCreateLoading = loading;
+      postCreateSubmit.disabled = loading;
+      postCreateSubmit.textContent = loading ? 'Creando...' : 'Crear post';
+    }
+
+    async function submitCreatePost(): Promise<void> {
+      if (postCreateLoading) return;
+
+      postCreateError.classList.add('hidden');
+      postCreateError.textContent = '';
+
+      const content = postCreateContent.value.trim();
+      if (!content) {
+        postCreateError.textContent = 'El contenido es obligatorio.';
+        postCreateError.classList.remove('hidden');
+        return;
+      }
+
+      const userId = getUserIdFromToken();
+      if (!userId) {
+        postCreateError.textContent = 'No se pudo identificar al usuario administrador.';
+        postCreateError.classList.remove('hidden');
+        return;
+      }
+
+      setPostCreateLoading(true);
+      try {
+        await createPost(channelId, {
+          userId,
+          content,
+          status: postCreateStatus.value === 'paused' ? 'paused' : 'published',
+        });
+        closePostCreateModal();
+        await loadPostsSection(true);
+      } catch (error) {
+        postCreateError.textContent = getErrorMessage(error, 'No se pudo crear la publicación.');
+        postCreateError.classList.remove('hidden');
+      } finally {
+        setPostCreateLoading(false);
+      }
+    }
+
     function markPostAsDeleted(postId: string): void {
       const row = postsTableBody.querySelector<HTMLTableRowElement>(`tr[data-post-id="${postId}"]`);
       if (!row) return;
@@ -563,6 +870,9 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       if (actionCell) {
         actionCell.innerHTML = '';
       }
+
+      row.setAttribute('data-row-active', 'false');
+      row.classList.remove('cursor-pointer', 'hover:bg-surface-container');
     }
 
     channelEditToggle.addEventListener('click', () => {
@@ -581,31 +891,75 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       await saveChannelInfo();
     });
 
-    addMemberForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      membersError.classList.add('hidden');
-      membersError.textContent = '';
+    memberAddOpen.addEventListener('click', () => {
+      openMemberSearchModal();
+    });
 
-      const userId = memberUserIdInput.value.trim();
-      if (!userId) {
-        membersError.textContent = 'Ingresá un userId válido.';
-        membersError.classList.remove('hidden');
+    memberSearchClose.addEventListener('click', () => {
+      closeMemberSearchModal();
+    });
+
+    memberSearchModal.addEventListener('click', (event) => {
+      if (event.target === memberSearchModal) {
+        closeMemberSearchModal();
+      }
+    });
+
+    postCreateOpen.addEventListener('click', () => {
+      openPostCreateModal();
+    });
+
+    postCreateClose.addEventListener('click', () => {
+      closePostCreateModal();
+    });
+
+    postCreateCancel.addEventListener('click', () => {
+      closePostCreateModal();
+    });
+
+    postCreateModal.addEventListener('click', (event) => {
+      if (event.target === postCreateModal) {
+        closePostCreateModal();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && memberSearchModal.classList.contains('flex')) {
+        closeMemberSearchModal();
+        return;
+      }
+      if (event.key === 'Escape' && postCreateModal.classList.contains('flex')) {
+        closePostCreateModal();
+      }
+    });
+
+    postCreateForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      await submitCreatePost();
+    });
+
+    memberSearchForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (memberSearchLoading) return;
+      memberSearchError.classList.add('hidden');
+      memberSearchError.textContent = '';
+
+      const search = memberSearchInput.value.trim();
+      if (!search) {
+        memberSearchError.textContent = 'Ingresá un email para buscar.';
+        memberSearchError.classList.remove('hidden');
         return;
       }
 
-      try {
-        await addMember(channelId, userId);
-        memberUserIdInput.value = '';
-        await loadMembersSection();
-      } catch (error) {
-        const err = error as Error & { status?: number };
-        if (err.status === 409) {
-          membersError.textContent = 'El usuario ya es miembro.';
-        } else {
-          membersError.textContent = getErrorMessage(error, 'No se pudo agregar el miembro.');
-        }
-        membersError.classList.remove('hidden');
-      }
+      await searchUsersByEmail(search);
+    });
+
+    memberSearchResultsBody.addEventListener('click', async (event) => {
+      const target = event.target as HTMLElement;
+      const button = target.closest<HTMLButtonElement>('[data-select-user-id]');
+      const userId = button?.dataset.selectUserId;
+      if (!userId) return;
+      await addSelectedMember(userId);
     });
 
     membersTableBody.addEventListener('click', (event) => {
@@ -642,24 +996,31 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       const target = event.target as HTMLElement;
       const button = target.closest<HTMLButtonElement>('[data-delete-post-id]');
       const postId = button?.dataset.deletePostId;
-      if (!postId) return;
+      if (postId) {
+        (window as any).openConfirmModal({
+          title: 'Eliminar publicación',
+          body: '¿Querés eliminar esta publicación? Se marcará como eliminada.',
+          confirmText: 'Eliminar',
+          cancelText: 'Cancelar',
+          confirmStyle: 'error',
+          onConfirm: async () => {
+            try {
+              await deletePost(channelId, postId);
+              markPostAsDeleted(postId);
+            } catch (error) {
+              postsError.textContent = getErrorMessage(error, 'No se pudo eliminar la publicación.');
+              postsError.classList.remove('hidden');
+            }
+          },
+        });
+        return;
+      }
 
-      (window as any).openConfirmModal({
-        title: 'Eliminar publicación',
-        body: '¿Querés eliminar esta publicación? Se marcará como eliminada.',
-        confirmText: 'Eliminar',
-        cancelText: 'Cancelar',
-        confirmStyle: 'error',
-        onConfirm: async () => {
-          try {
-            await deletePost(channelId, postId);
-            markPostAsDeleted(postId);
-          } catch (error) {
-            postsError.textContent = getErrorMessage(error, 'No se pudo eliminar la publicación.');
-            postsError.classList.remove('hidden');
-          }
-        },
-      });
+      const row = target.closest<HTMLTableRowElement>('tr[data-post-id]');
+      if (!row || row.dataset.rowActive !== 'true') return;
+      const activePostId = row.dataset.postId;
+      if (!activePostId) return;
+      window.location.href = `/admin/grupos/post?channelId=${encodeURIComponent(channelId)}&postId=${encodeURIComponent(activePostId)}`;
     });
 
     async function initializePage(): Promise<void> {
