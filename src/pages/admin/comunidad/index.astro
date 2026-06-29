@@ -38,6 +38,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
             <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Autor</th>
             <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Comentarios</th>
             <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Fecha</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado</th>
             <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Acciones</th>
           </tr>
         </thead>
@@ -166,7 +167,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     function setLoadingState(): void {
       postsGrid.innerHTML = `
         <tr>
-          <td colspan="6" class="px-4 py-14 text-center text-on-surface-variant">
+          <td colspan="7" class="px-4 py-14 text-center text-on-surface-variant">
             <div class="flex flex-col items-center gap-3">
               <div class="h-8 w-8 animate-spin rounded-full border-3 border-primary/30 border-t-primary"></div>
               <span class="text-sm font-medium">Cargando posts...</span>
@@ -179,7 +180,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       const message = selectedChannel ? 'No hay posts en este canal.' : 'No hay posts para mostrar.';
       postsGrid.innerHTML = `
         <tr>
-          <td colspan="6" class="px-4 py-10 text-center text-on-surface-variant">
+          <td colspan="7" class="px-4 py-10 text-center text-on-surface-variant">
             <span class="material-symbols-outlined mb-2 block text-3xl" aria-hidden="true">forum</span>
             <p class="text-sm font-medium">${message}</p>
           </td>
@@ -189,7 +190,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     function setErrorState(message: string): void {
       postsGrid.innerHTML = `
         <tr>
-          <td colspan="6" class="px-4 py-8 text-center text-sm font-medium text-error">${escapeHtml(message)}</td>
+          <td colspan="7" class="px-4 py-8 text-center text-sm font-medium text-error">${escapeHtml(message)}</td>
         </tr>`;
     }
 
@@ -198,6 +199,9 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         .map((post) => {
           const channel = post.channelSlug || 'sin-canal';
           const comments = post.commentCount ?? 0;
+          const isPublished = post.status === 'published';
+          const statusLabel = isPublished ? 'Publicado' : 'Pausado';
+          const statusClass = isPublished ? 'badge-soft-success' : 'badge-soft-warning';
           return `
             <tr data-post-id="${escapeHtml(post.id)}" class="cursor-pointer border-b border-outline-variant/10 transition-colors hover:bg-primary/5">
               <td class="px-4 py-3 align-top">
@@ -212,6 +216,9 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
                 </span>
               </td>
               <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(formatDate(post.createdAt))}</td>
+              <td class="px-4 py-3 align-top">
+                <span class="badge ${statusClass}">${statusLabel}</span>
+              </td>
               <td class="px-4 py-3 align-top">
                 <button
                   type="button"
