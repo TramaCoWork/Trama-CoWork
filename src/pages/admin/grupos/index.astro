@@ -1,0 +1,498 @@
+---
+import ConfirmModal from '../../../components/ConfirmModal.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Grupos | TRAMA Admin">
+  <ConfirmModal />
+
+  <header class="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-black tracking-tighter text-on-surface">Grupos de comunidad</h1>
+      <p class="mt-1 text-sm font-medium text-on-surface-variant">Creá, editá y eliminá canales de la comunidad.</p>
+    </div>
+
+    <div class="flex w-full flex-wrap items-end gap-3 sm:w-auto">
+      <div>
+        <label for="groups-filter" class="mb-1 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+          Estado
+        </label>
+        <select
+          id="groups-filter"
+          class="w-44 rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-3 py-2.5 text-sm font-medium text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+        >
+          <option value="">Todos</option>
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>
+      </div>
+
+      <button
+        id="btn-open-create"
+        type="button"
+        class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 active:scale-[0.98]"
+      >
+        Nuevo grupo
+      </button>
+    </div>
+  </header>
+
+  <p id="groups-inline-error" class="mb-4 hidden rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></p>
+  <p id="groups-inline-success" class="mb-4 hidden rounded-xl border border-success/25 bg-success/10 px-4 py-3 text-sm font-medium text-success"></p>
+
+  <section class="overflow-hidden rounded-2xl border border-outline-variant/15 bg-surface-container-low">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-outline-variant/15">
+        <thead class="bg-surface-container">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Nombre</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Descripción</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Creado</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="groups-table-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <div id="groups-pagination" class="mt-4 flex items-center justify-between gap-3"></div>
+
+  <div
+    id="group-modal"
+    class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/30 p-4 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="group-modal-title"
+  >
+    <div class="w-full max-w-xl rounded-2xl border border-outline-variant/15 bg-surface-container-low shadow-2xl">
+      <div class="flex items-center justify-between border-b border-outline-variant/15 px-6 py-4">
+        <h2 id="group-modal-title" class="text-lg font-extrabold tracking-tight text-on-surface">Nuevo grupo</h2>
+        <button id="btn-close-modal" type="button" class="text-on-surface-variant transition-colors hover:text-on-surface" aria-label="Cerrar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="group-form" class="space-y-4 p-6">
+        <div>
+          <label for="group-name" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Nombre</label>
+          <input
+            id="group-name"
+            name="name"
+            type="text"
+            required
+            class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-2.5 text-sm font-medium text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+
+        <div>
+          <label for="group-description" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Descripción</label>
+          <textarea
+            id="group-description"
+            name="description"
+            rows="4"
+            class="w-full resize-y rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-2.5 text-sm font-medium text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          ></textarea>
+        </div>
+
+        <label class="inline-flex items-center gap-2 text-sm font-medium text-on-surface">
+          <input id="group-is-active" type="checkbox" class="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20" checked />
+          Grupo activo
+        </label>
+
+        <p id="group-modal-error" class="hidden rounded-lg border border-error/20 bg-error/10 px-3 py-2 text-sm font-medium text-error"></p>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button id="btn-cancel-modal" type="button" class="rounded-xl bg-surface-container px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface-container-high">Cancelar</button>
+          <button id="btn-submit-modal" type="submit" class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 active:scale-[0.98]">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    import {
+      createChannel,
+      deleteChannel,
+      listChannels,
+      updateChannel,
+      type CommunityChannel,
+      type CreateChannelPayload,
+      type PaginatedResponse,
+      type UpdateChannelPayload,
+    } from '../../../services/channelAdminService';
+    import { getRoleFromToken, isAuthenticated, restoreSession } from '../../../services/authService';
+
+    type ModalMode = 'create' | 'edit';
+
+    restoreSession();
+    if (!isAuthenticated()) {
+      window.location.href = '/admin/login';
+    } else if (getRoleFromToken() !== 'admin') {
+      window.location.href = '/dashboard';
+    }
+
+    const PAGE_SIZE = 10;
+    let currentPage = 1;
+    let totalPages = 1;
+    let totalItems = 0;
+    let currentFilter: '' | 'true' | 'false' = '';
+    let currentRows: CommunityChannel[] = [];
+    let modalMode: ModalMode = 'create';
+    let editingId: string | null = null;
+
+    const tableBody = document.getElementById('groups-table-body') as HTMLTableSectionElement;
+    const pagination = document.getElementById('groups-pagination') as HTMLDivElement;
+    const filterSelect = document.getElementById('groups-filter') as HTMLSelectElement;
+    const inlineError = document.getElementById('groups-inline-error') as HTMLParagraphElement;
+    const inlineSuccess = document.getElementById('groups-inline-success') as HTMLParagraphElement;
+
+    const modal = document.getElementById('group-modal') as HTMLDivElement;
+    const modalTitle = document.getElementById('group-modal-title') as HTMLHeadingElement;
+    const modalError = document.getElementById('group-modal-error') as HTMLParagraphElement;
+    const form = document.getElementById('group-form') as HTMLFormElement;
+    const nameInput = document.getElementById('group-name') as HTMLInputElement;
+    const descriptionInput = document.getElementById('group-description') as HTMLTextAreaElement;
+    const isActiveInput = document.getElementById('group-is-active') as HTMLInputElement;
+    const submitButton = document.getElementById('btn-submit-modal') as HTMLButtonElement;
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function hideInlineMessages(): void {
+      inlineError.classList.add('hidden');
+      inlineError.textContent = '';
+      inlineSuccess.classList.add('hidden');
+      inlineSuccess.textContent = '';
+    }
+
+    function showInlineError(message: string): void {
+      inlineError.textContent = message;
+      inlineError.classList.remove('hidden');
+    }
+
+    function showInlineSuccess(message: string): void {
+      inlineSuccess.textContent = message;
+      inlineSuccess.classList.remove('hidden');
+      window.setTimeout(() => {
+        inlineSuccess.classList.add('hidden');
+      }, 2500);
+    }
+
+    function formatDate(value: string): string {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return date.toLocaleString('es-AR');
+    }
+
+    function getPaginationData(response: PaginatedResponse<CommunityChannel>): {
+      page: number;
+      totalPages: number;
+      total: number;
+    } {
+      const page = response.meta?.page ?? response.page ?? 1;
+      const total = response.meta?.total ?? response.total ?? response.data.length;
+      const sizePage = response.meta?.sizePage ?? response.sizePage ?? PAGE_SIZE;
+      const fromMeta = response.meta?.totalPages;
+      const computedTotalPages =
+        typeof fromMeta === 'number' && fromMeta >= 1
+          ? fromMeta
+          : Math.max(1, Math.ceil(total / Math.max(1, sizePage)));
+      return { page, totalPages: computedTotalPages, total };
+    }
+
+    function renderLoading(): void {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="5" class="px-4 py-14 text-center text-on-surface-variant">
+            <div class="flex flex-col items-center gap-3">
+              <div class="h-8 w-8 animate-spin rounded-full border-3 border-primary/30 border-t-primary"></div>
+              <span class="text-sm font-medium">Cargando grupos...</span>
+            </div>
+          </td>
+        </tr>`;
+    }
+
+    function renderEmpty(): void {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="5" class="px-4 py-10 text-center text-on-surface-variant">
+            <span class="material-symbols-outlined mb-2 block text-3xl" aria-hidden="true">hub</span>
+            <p class="text-sm font-medium">Sin grupos para mostrar.</p>
+          </td>
+        </tr>`;
+    }
+
+    function renderRows(rows: CommunityChannel[]): void {
+      tableBody.innerHTML = rows
+        .map((row) => {
+          const statusClass = row.isActive ? 'badge-soft-success' : 'badge-soft-warning';
+          const statusLabel = row.isActive ? 'Activo' : 'Inactivo';
+          return `
+            <tr data-id="${escapeHtml(row.id)}" class="cursor-pointer border-b border-outline-variant/10 transition-colors hover:bg-primary/5">
+              <td class="px-4 py-3 text-sm font-semibold text-on-surface">${escapeHtml(row.name)}</td>
+              <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(row.description || '—')}</td>
+              <td class="px-4 py-3"><span class="badge ${statusClass}">${statusLabel}</span></td>
+              <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(formatDate(row.createdAt))}</td>
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    data-action="edit"
+                    data-id="${escapeHtml(row.id)}"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                    aria-label="Editar grupo"
+                  >
+                    <span class="material-symbols-outlined text-lg" aria-hidden="true">edit</span>
+                  </button>
+                  <button
+                    type="button"
+                    data-action="delete"
+                    data-id="${escapeHtml(row.id)}"
+                    data-name="${escapeHtml(row.name)}"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-error transition-colors hover:bg-error/10"
+                    aria-label="Eliminar grupo"
+                  >
+                    <span class="material-symbols-outlined text-lg" aria-hidden="true">delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>`;
+        })
+        .join('');
+    }
+
+    function renderPagination(): void {
+      if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+      }
+
+      const start = totalItems > 0 ? (currentPage - 1) * PAGE_SIZE + 1 : 0;
+      const end = Math.min(currentPage * PAGE_SIZE, totalItems);
+
+      pagination.innerHTML = `
+        <span class="text-xs text-on-surface-variant">Mostrando ${start}–${end} de ${totalItems} grupos</span>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            data-page="${currentPage - 1}"
+            ${currentPage === 1 ? 'disabled' : ''}
+            class="rounded-lg bg-surface-container px-3 py-1.5 text-xs font-bold text-on-surface-variant transition-colors hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Anterior
+          </button>
+          <span class="px-1 text-xs font-bold text-on-surface-variant">${currentPage} / ${totalPages}</span>
+          <button
+            type="button"
+            data-page="${currentPage + 1}"
+            ${currentPage >= totalPages ? 'disabled' : ''}
+            class="rounded-lg bg-surface-container px-3 py-1.5 text-xs font-bold text-on-surface-variant transition-colors hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Siguiente
+          </button>
+        </div>`;
+
+      pagination.querySelectorAll<HTMLButtonElement>('button[data-page]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const nextPage = Number(button.dataset.page);
+          if (Number.isNaN(nextPage) || nextPage < 1 || nextPage > totalPages) return;
+          currentPage = nextPage;
+          void loadGroups();
+        });
+      });
+    }
+
+    function closeModal(): void {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.body.style.overflow = '';
+      modalError.classList.add('hidden');
+      modalError.textContent = '';
+      form.reset();
+      modalMode = 'create';
+      editingId = null;
+    }
+
+    function openCreateModal(): void {
+      modalMode = 'create';
+      editingId = null;
+      modalTitle.textContent = 'Nuevo grupo';
+      submitButton.textContent = 'Crear';
+      nameInput.value = '';
+      descriptionInput.value = '';
+      isActiveInput.checked = true;
+      modalError.classList.add('hidden');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function openEditModal(group: CommunityChannel): void {
+      modalMode = 'edit';
+      editingId = group.id;
+      modalTitle.textContent = 'Editar grupo';
+      submitButton.textContent = 'Guardar cambios';
+      nameInput.value = group.name;
+      descriptionInput.value = group.description || '';
+      isActiveInput.checked = group.isActive;
+      modalError.classList.add('hidden');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function getErrorMessage(error: unknown, fallback: string): string {
+      const err = error as Error & { body?: { message?: string }; message?: string };
+      return err.body?.message || err.message || fallback;
+    }
+
+    async function loadGroups(): Promise<void> {
+      hideInlineMessages();
+      renderLoading();
+
+      const filterValue = currentFilter === '' ? undefined : currentFilter === 'true';
+
+      try {
+        const response = await listChannels(currentPage, PAGE_SIZE, filterValue);
+        let rows = response.data;
+
+        if (currentFilter === 'true') {
+          rows = rows.filter((item) => item.isActive);
+        } else if (currentFilter === 'false') {
+          rows = rows.filter((item) => !item.isActive);
+        }
+
+        currentRows = rows;
+        const paginationData = getPaginationData(response);
+        currentPage = paginationData.page;
+        totalPages = paginationData.totalPages;
+        totalItems = paginationData.total;
+
+        if (rows.length === 0) {
+          renderEmpty();
+        } else {
+          renderRows(rows);
+        }
+        renderPagination();
+      } catch (error) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="5" class="px-4 py-8 text-center text-sm font-medium text-error">Error al cargar grupos. Intentá de nuevo.</td>
+          </tr>`;
+        showInlineError(getErrorMessage(error, 'Error al cargar grupos.'));
+        pagination.innerHTML = '';
+      }
+    }
+
+    function askDelete(groupId: string, groupName: string): void {
+      hideInlineMessages();
+      (window as any).openConfirmModal({
+        title: 'Eliminar grupo',
+        body: 'Esta acción eliminará el canal y todos sus miembros, posts y comentarios. No se puede deshacer.',
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        confirmStyle: 'error',
+        onConfirm: async () => {
+          try {
+            await deleteChannel(groupId);
+            showInlineSuccess(`Grupo "${groupName}" eliminado correctamente.`);
+            await loadGroups();
+          } catch (error) {
+            showInlineError(getErrorMessage(error, 'No se pudo eliminar el grupo.'));
+          }
+        },
+      });
+    }
+
+    filterSelect.addEventListener('change', async () => {
+      currentFilter = filterSelect.value as '' | 'true' | 'false';
+      currentPage = 1;
+      await loadGroups();
+    });
+
+    document.getElementById('btn-open-create')?.addEventListener('click', openCreateModal);
+    document.getElementById('btn-close-modal')?.addEventListener('click', closeModal);
+    document.getElementById('btn-cancel-modal')?.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        closeModal();
+      }
+    });
+
+    tableBody.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const actionButton = target.closest<HTMLButtonElement>('button[data-action]');
+      if (actionButton) {
+        const groupId = actionButton.dataset.id;
+        if (!groupId) return;
+
+        if (actionButton.dataset.action === 'edit') {
+          const targetGroup = currentRows.find((item) => item.id === groupId);
+          if (targetGroup) {
+            openEditModal(targetGroup);
+          }
+          return;
+        }
+
+        if (actionButton.dataset.action === 'delete') {
+          const groupName = actionButton.dataset.name || 'grupo';
+          askDelete(groupId, groupName);
+        }
+        return;
+      }
+
+      const row = target.closest<HTMLTableRowElement>('tr[data-id]');
+      if (!row?.dataset.id) return;
+      window.location.href = `/admin/grupos/detalle?id=${encodeURIComponent(row.dataset.id)}`;
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      modalError.classList.add('hidden');
+      modalError.textContent = '';
+
+      const payload: CreateChannelPayload | UpdateChannelPayload = {
+        name: nameInput.value.trim(),
+        description: descriptionInput.value.trim(),
+        isActive: isActiveInput.checked,
+      };
+
+      if (!payload.name) {
+        modalError.textContent = 'El nombre es obligatorio.';
+        modalError.classList.remove('hidden');
+        return;
+      }
+
+      submitButton.disabled = true;
+      try {
+        if (modalMode === 'create') {
+          await createChannel(payload as CreateChannelPayload);
+          showInlineSuccess('Grupo creado correctamente.');
+        } else if (editingId) {
+          await updateChannel(editingId, payload as UpdateChannelPayload);
+          showInlineSuccess('Grupo actualizado correctamente.');
+        }
+        closeModal();
+        await loadGroups();
+      } catch (error) {
+        modalError.textContent = getErrorMessage(error, 'No se pudieron guardar los cambios.');
+        modalError.classList.remove('hidden');
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    void loadGroups();
+  </script>
+</AdminLayout>
+
+<!-- Traceability: implementation by Programmer at 2026-06-29 17:26:00 -->

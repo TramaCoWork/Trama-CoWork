@@ -1,0 +1,675 @@
+---
+import ConfirmModal from '../../../components/ConfirmModal.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Detalle de grupo | TRAMA Admin">
+  <ConfirmModal />
+
+  <header class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-3xl font-black tracking-tighter text-on-surface">Detalle de grupo</h1>
+      <p class="mt-1 text-sm font-medium text-on-surface-variant">Gestioná datos del canal, miembros y publicaciones.</p>
+    </div>
+
+    <a
+      href="/admin/grupos"
+      class="inline-flex items-center gap-1 rounded-lg bg-surface-container px-3 py-2 text-xs font-bold uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface-container-high"
+    >
+      <span class="material-symbols-outlined text-sm" aria-hidden="true">arrow_back</span>
+      Volver
+    </a>
+  </header>
+
+  <p id="detail-inline-error" class="mb-4 hidden rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></p>
+  <p id="detail-inline-success" class="mb-4 hidden rounded-xl border border-success/25 bg-success/10 px-4 py-3 text-sm font-medium text-success"></p>
+
+  <section class="mb-6 rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+    <div class="mb-4 flex items-start justify-between gap-3">
+      <div>
+        <h2 class="text-xl font-extrabold tracking-tight text-on-surface">Información del canal</h2>
+        <p class="text-sm text-on-surface-variant">ID: <span id="channel-id" class="font-semibold">—</span></p>
+      </div>
+      <button
+        id="channel-edit-toggle"
+        type="button"
+        class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container-high"
+        aria-label="Editar canal"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+      </button>
+    </div>
+
+    <form id="channel-form" class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div class="md:col-span-1">
+        <label for="channel-name" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Nombre</label>
+        <input
+          id="channel-name"
+          type="text"
+          disabled
+          class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-2.5 text-sm font-medium text-on-surface disabled:opacity-85"
+        />
+      </div>
+
+      <div class="md:col-span-1">
+        <p class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado</p>
+        <span id="channel-status-badge" class="badge badge-soft-success">Activo</span>
+      </div>
+
+      <div class="md:col-span-2">
+        <label for="channel-description" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Descripción</label>
+        <textarea
+          id="channel-description"
+          rows="3"
+          disabled
+          class="w-full resize-y rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-2.5 text-sm font-medium text-on-surface disabled:opacity-85"
+        ></textarea>
+      </div>
+
+      <div>
+        <label class="inline-flex items-center gap-2 text-sm font-medium text-on-surface">
+          <input id="channel-is-active" type="checkbox" disabled class="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20" />
+          Canal activo
+        </label>
+      </div>
+
+      <div class="text-sm text-on-surface-variant">
+        Creado: <span id="channel-created-at" class="font-medium text-on-surface">—</span>
+      </div>
+
+      <p id="channel-form-error" class="hidden rounded-lg border border-error/20 bg-error/10 px-3 py-2 text-sm font-medium text-error md:col-span-2"></p>
+
+      <div id="channel-form-actions" class="hidden justify-end gap-3 md:col-span-2">
+        <button id="channel-cancel" type="button" class="rounded-xl bg-surface-container px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface-container-high">Cancelar</button>
+        <button id="channel-save" type="submit" class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 active:scale-[0.98]">Guardar cambios</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="mb-6 rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <h2 class="text-xl font-extrabold tracking-tight text-on-surface">Miembros</h2>
+
+      <form id="member-add-form" class="flex w-full max-w-sm items-center gap-2">
+        <input
+          id="member-user-id"
+          type="text"
+          placeholder="userId"
+          class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+        />
+        <button type="submit" class="rounded-xl bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90">Agregar</button>
+      </form>
+    </div>
+
+    <p id="members-inline-error" class="mb-3 hidden rounded-lg border border-error/20 bg-error/10 px-3 py-2 text-sm font-medium text-error"></p>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-outline-variant/15">
+        <thead class="bg-surface-container">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Usuario</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">userId</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Aceptado</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Creado</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="members-table-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+    <div class="mb-4 flex items-center justify-between gap-3">
+      <h2 class="text-xl font-extrabold tracking-tight text-on-surface">Publicaciones</h2>
+      <button
+        id="posts-load-more"
+        type="button"
+        class="hidden rounded-xl bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        Cargar más
+      </button>
+    </div>
+
+    <p id="posts-inline-error" class="mb-3 hidden rounded-lg border border-error/20 bg-error/10 px-3 py-2 text-sm font-medium text-error"></p>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-outline-variant/15">
+        <thead class="bg-surface-container">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Contenido</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Autor</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Creado</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Eliminado</th>
+            <th class="px-4 py-3 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="posts-table-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <script>
+    import { api } from '../../../services/apiClient';
+    import {
+      addMember,
+      deletePost,
+      getChannel,
+      listMembers,
+      listPosts,
+      removeMember,
+      updateChannel,
+      type CommunityChannel,
+      type CommunityChannelMember,
+      type CommunityChannelPost,
+      type PaginatedResponse,
+      type UpdateChannelPayload,
+    } from '../../../services/channelAdminService';
+    import { fetchAllProfessionals } from '../../../services/adminService';
+    import { fetchAdminUsers } from '../../../services/adminUsersService';
+    import { getRoleFromToken, getToken, isAuthenticated, restoreSession } from '../../../services/authService';
+
+    interface EnrichedMember extends CommunityChannelMember {
+      displayName: string;
+    }
+
+    restoreSession();
+    const token = getToken();
+    if (token) {
+      api.setHeader('Authorization', `Bearer ${token}`);
+    }
+
+    if (!isAuthenticated()) {
+      window.location.href = '/admin/login';
+    } else if (getRoleFromToken() !== 'admin') {
+      window.location.href = '/dashboard';
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const channelId = params.get('id')?.trim() || '';
+    if (!channelId) {
+      window.location.href = '/admin/grupos';
+    }
+
+    const POSTS_PAGE_SIZE = 10;
+    let currentChannel: CommunityChannel | null = null;
+    let infoEditMode = false;
+    let postsPage = 1;
+    let postsTotalPages = 1;
+    let postsLoading = false;
+
+    const detailError = document.getElementById('detail-inline-error') as HTMLParagraphElement;
+    const detailSuccess = document.getElementById('detail-inline-success') as HTMLParagraphElement;
+    const channelIdLabel = document.getElementById('channel-id') as HTMLSpanElement;
+    const channelNameInput = document.getElementById('channel-name') as HTMLInputElement;
+    const channelDescriptionInput = document.getElementById('channel-description') as HTMLTextAreaElement;
+    const channelStatusBadge = document.getElementById('channel-status-badge') as HTMLSpanElement;
+    const channelIsActive = document.getElementById('channel-is-active') as HTMLInputElement;
+    const channelCreatedAt = document.getElementById('channel-created-at') as HTMLSpanElement;
+    const channelForm = document.getElementById('channel-form') as HTMLFormElement;
+    const channelEditToggle = document.getElementById('channel-edit-toggle') as HTMLButtonElement;
+    const channelFormActions = document.getElementById('channel-form-actions') as HTMLDivElement;
+    const channelFormError = document.getElementById('channel-form-error') as HTMLParagraphElement;
+    const channelCancel = document.getElementById('channel-cancel') as HTMLButtonElement;
+    const channelSave = document.getElementById('channel-save') as HTMLButtonElement;
+
+    const membersError = document.getElementById('members-inline-error') as HTMLParagraphElement;
+    const membersTableBody = document.getElementById('members-table-body') as HTMLTableSectionElement;
+    const addMemberForm = document.getElementById('member-add-form') as HTMLFormElement;
+    const memberUserIdInput = document.getElementById('member-user-id') as HTMLInputElement;
+
+    const postsError = document.getElementById('posts-inline-error') as HTMLParagraphElement;
+    const postsTableBody = document.getElementById('posts-table-body') as HTMLTableSectionElement;
+    const postsLoadMore = document.getElementById('posts-load-more') as HTMLButtonElement;
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatDate(value: string): string {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return date.toLocaleString('es-AR');
+    }
+
+    function showDetailError(message: string): void {
+      detailError.textContent = message;
+      detailError.classList.remove('hidden');
+    }
+
+    function showDetailSuccess(message: string): void {
+      detailSuccess.textContent = message;
+      detailSuccess.classList.remove('hidden');
+      window.setTimeout(() => {
+        detailSuccess.classList.add('hidden');
+      }, 2500);
+    }
+
+    function hideDetailMessages(): void {
+      detailError.classList.add('hidden');
+      detailError.textContent = '';
+      detailSuccess.classList.add('hidden');
+      detailSuccess.textContent = '';
+    }
+
+    function getErrorMessage(error: unknown, fallback: string): string {
+      const err = error as Error & { body?: { message?: string }; message?: string; status?: number };
+      return err.body?.message || err.message || fallback;
+    }
+
+    function setInfoEditMode(enabled: boolean): void {
+      infoEditMode = enabled;
+      channelNameInput.disabled = !enabled;
+      channelDescriptionInput.disabled = !enabled;
+      channelIsActive.disabled = !enabled;
+      channelFormActions.classList.toggle('hidden', !enabled);
+      channelFormActions.classList.toggle('flex', enabled);
+      channelEditToggle.classList.toggle('hidden', enabled);
+      channelFormError.classList.add('hidden');
+      channelFormError.textContent = '';
+    }
+
+    function syncInfoForm(channel: CommunityChannel): void {
+      channelIdLabel.textContent = channel.id;
+      channelNameInput.value = channel.name;
+      channelDescriptionInput.value = channel.description || '';
+      channelIsActive.checked = channel.isActive;
+      channelCreatedAt.textContent = formatDate(channel.createdAt);
+
+      channelStatusBadge.textContent = channel.isActive ? 'Activo' : 'Inactivo';
+      channelStatusBadge.className = `badge ${channel.isActive ? 'badge-soft-success' : 'badge-soft-warning'}`;
+    }
+
+    async function loadChannelInfo(): Promise<void> {
+      hideDetailMessages();
+      try {
+        const data = await getChannel(channelId);
+        currentChannel = data;
+        syncInfoForm(data);
+      } catch {
+        showDetailError('No se pudo cargar el canal.');
+      }
+    }
+
+    async function saveChannelInfo(): Promise<void> {
+      if (!currentChannel) return;
+
+      const payload: UpdateChannelPayload = {
+        name: channelNameInput.value.trim(),
+        description: channelDescriptionInput.value.trim(),
+        isActive: channelIsActive.checked,
+      };
+
+      if (!payload.name) {
+        channelFormError.textContent = 'El nombre es obligatorio.';
+        channelFormError.classList.remove('hidden');
+        return;
+      }
+
+      channelSave.disabled = true;
+      try {
+        const updated = await updateChannel(channelId, payload);
+        currentChannel = updated;
+        syncInfoForm(updated);
+        setInfoEditMode(false);
+        showDetailSuccess('Canal actualizado correctamente.');
+      } catch (error) {
+        channelFormError.textContent = getErrorMessage(error, 'No se pudo actualizar el canal.');
+        channelFormError.classList.remove('hidden');
+      } finally {
+        channelSave.disabled = false;
+      }
+    }
+
+    function renderMembersLoading(): void {
+      membersTableBody.innerHTML = `
+        <tr>
+          <td colspan="5" class="px-4 py-10 text-center text-sm text-on-surface-variant">Cargando miembros...</td>
+        </tr>`;
+    }
+
+    function renderMembersEmpty(): void {
+      membersTableBody.innerHTML = `
+        <tr>
+          <td colspan="5" class="px-4 py-10 text-center text-sm text-on-surface-variant">Sin miembros</td>
+        </tr>`;
+    }
+
+    async function loadMemberNameMap(): Promise<Map<string, string>> {
+      const nameMap = new Map<string, string>();
+
+      try {
+        const professionals = await fetchAllProfessionals({ page: 1, sizePage: 200, isActive: undefined });
+        professionals.data.forEach((professional) => {
+          const userId = professional.userId;
+          const name = professional.name?.trim();
+          if (userId && name) {
+            nameMap.set(userId, name);
+            return;
+          }
+
+          const email = professional.user?.email?.trim();
+          if (userId && email) {
+            nameMap.set(userId, email);
+          }
+        });
+      } catch {
+        // TODO: enrich with name when endpoint available
+      }
+
+      if (nameMap.size === 0) {
+        try {
+          const adminUsers = await fetchAdminUsers(1, 200);
+          adminUsers.data.forEach((user) => {
+            if (user.id && user.email) {
+              nameMap.set(user.id, user.email);
+            }
+          });
+        } catch {
+          // TODO: enrich with name when endpoint available
+        }
+      }
+
+      return nameMap;
+    }
+
+    function enrichMembers(
+      members: CommunityChannelMember[],
+      nameMap: Map<string, string>,
+    ): EnrichedMember[] {
+      return members.map((member) => ({
+        ...member,
+        displayName: nameMap.get(member.userId) || member.userId,
+      }));
+    }
+
+    function renderMembersRows(rows: EnrichedMember[]): void {
+      membersTableBody.innerHTML = rows
+        .map((member) => {
+          const acceptedLabel = member.accepted ? 'Sí' : 'No';
+          return `
+            <tr data-user-id="${escapeHtml(member.userId)}" class="border-b border-outline-variant/10">
+              <td class="px-4 py-3 text-sm font-semibold text-on-surface">${escapeHtml(member.displayName)}</td>
+              <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(member.userId)}</td>
+              <td class="px-4 py-3 text-sm text-on-surface-variant">${acceptedLabel}</td>
+              <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(formatDate(member.createdAt))}</td>
+              <td class="px-4 py-3">
+                <button
+                  type="button"
+                  data-remove-user-id="${escapeHtml(member.userId)}"
+                  class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-error transition-colors hover:bg-error/10"
+                  aria-label="Eliminar miembro"
+                >
+                  <span class="material-symbols-outlined text-lg" aria-hidden="true">person_remove</span>
+                </button>
+              </td>
+            </tr>`;
+        })
+        .join('');
+    }
+
+    async function loadMembersSection(): Promise<void> {
+      membersError.classList.add('hidden');
+      membersError.textContent = '';
+      renderMembersLoading();
+
+      try {
+        const [members, nameMap] = await Promise.all([listMembers(channelId), loadMemberNameMap()]);
+        if (members.length === 0) {
+          renderMembersEmpty();
+          return;
+        }
+        const enriched = enrichMembers(members, nameMap);
+        renderMembersRows(enriched);
+      } catch {
+        membersTableBody.innerHTML = `
+          <tr>
+            <td colspan="5" class="px-4 py-8 text-center text-sm font-medium text-error">No se pudieron cargar los miembros.</td>
+          </tr>`;
+      }
+    }
+
+    function postPreview(content: string): string {
+      const sanitized = content.replace(/\s+/g, ' ').trim();
+      if (sanitized.length <= 80) return sanitized;
+      return `${sanitized.slice(0, 79)}…`;
+    }
+
+    function parsePostsPagination(response: PaginatedResponse<CommunityChannelPost>): {
+      page: number;
+      totalPages: number;
+    } {
+      const page = response.meta?.page ?? response.page ?? 1;
+      const fromMeta = response.meta?.totalPages;
+      if (typeof fromMeta === 'number' && fromMeta >= 1) {
+        return { page, totalPages: fromMeta };
+      }
+      const total = response.meta?.total ?? response.total ?? response.data.length;
+      const sizePage = response.meta?.sizePage ?? response.sizePage ?? POSTS_PAGE_SIZE;
+      return { page, totalPages: Math.max(1, Math.ceil(total / Math.max(1, sizePage))) };
+    }
+
+    function renderPostsEmpty(): void {
+      postsTableBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="px-4 py-10 text-center text-sm text-on-surface-variant">Sin publicaciones</td>
+        </tr>`;
+    }
+
+    function renderPostsRows(rows: CommunityChannelPost[], append: boolean): void {
+      const rowsHtml = rows
+        .map((post) => {
+          const isDeleted = post.deletedAt != null;
+          const statusLabel = isDeleted ? 'Eliminado' : 'Activo';
+          const statusClass = isDeleted ? 'badge-soft-error' : 'badge-soft-success';
+          const deletedText = isDeleted ? formatDate(post.deletedAt || '') : '—';
+          const action = isDeleted
+            ? ''
+            : `<button
+                type="button"
+                data-delete-post-id="${escapeHtml(post.id)}"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-error transition-colors hover:bg-error/10"
+                aria-label="Eliminar publicación"
+              >
+                <span class="material-symbols-outlined text-lg" aria-hidden="true">delete</span>
+              </button>`;
+
+          return `
+            <tr data-post-id="${escapeHtml(post.id)}" class="border-b border-outline-variant/10">
+              <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(postPreview(post.content || ''))}</td>
+              <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(post.userId || '—')}</td>
+              <td class="px-4 py-3"><span class="badge ${statusClass}">${statusLabel}</span></td>
+              <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(formatDate(post.createdAt))}</td>
+              <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(deletedText)}</td>
+              <td class="px-4 py-3">${action}</td>
+            </tr>`;
+        })
+        .join('');
+
+      if (append) {
+        postsTableBody.insertAdjacentHTML('beforeend', rowsHtml);
+        return;
+      }
+
+      postsTableBody.innerHTML = rowsHtml;
+    }
+
+    function updatePostsLoadMore(): void {
+      const show = postsPage < postsTotalPages;
+      postsLoadMore.classList.toggle('hidden', !show);
+    }
+
+    async function loadPostsSection(reset: boolean): Promise<void> {
+      if (postsLoading) return;
+      postsLoading = true;
+      postsLoadMore.disabled = true;
+      postsError.classList.add('hidden');
+      postsError.textContent = '';
+
+      if (reset) {
+        postsPage = 1;
+        postsTotalPages = 1;
+        postsTableBody.innerHTML = `
+          <tr>
+            <td colspan="6" class="px-4 py-10 text-center text-sm text-on-surface-variant">Cargando publicaciones...</td>
+          </tr>`;
+      }
+
+      try {
+        const response = await listPosts(channelId, postsPage, POSTS_PAGE_SIZE);
+        const paginationData = parsePostsPagination(response);
+        postsPage = paginationData.page;
+        postsTotalPages = paginationData.totalPages;
+
+        if (response.data.length === 0 && postsPage === 1) {
+          renderPostsEmpty();
+          updatePostsLoadMore();
+          return;
+        }
+
+        renderPostsRows(response.data, !reset && postsPage > 1);
+        updatePostsLoadMore();
+      } catch {
+        postsTableBody.innerHTML = `
+          <tr>
+            <td colspan="6" class="px-4 py-8 text-center text-sm font-medium text-error">No se pudieron cargar las publicaciones.</td>
+          </tr>`;
+      } finally {
+        postsLoading = false;
+        postsLoadMore.disabled = false;
+      }
+    }
+
+    function markPostAsDeleted(postId: string): void {
+      const row = postsTableBody.querySelector<HTMLTableRowElement>(`tr[data-post-id="${postId}"]`);
+      if (!row) return;
+
+      const statusCell = row.children[2] as HTMLTableCellElement | undefined;
+      const deletedCell = row.children[4] as HTMLTableCellElement | undefined;
+      const actionCell = row.children[5] as HTMLTableCellElement | undefined;
+
+      if (statusCell) {
+        statusCell.innerHTML = '<span class="badge badge-soft-error">Eliminado</span>';
+      }
+      if (deletedCell) {
+        deletedCell.textContent = formatDate(new Date().toISOString());
+      }
+      if (actionCell) {
+        actionCell.innerHTML = '';
+      }
+    }
+
+    channelEditToggle.addEventListener('click', () => {
+      if (!currentChannel) return;
+      setInfoEditMode(true);
+    });
+
+    channelCancel.addEventListener('click', () => {
+      if (!currentChannel) return;
+      syncInfoForm(currentChannel);
+      setInfoEditMode(false);
+    });
+
+    channelForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      await saveChannelInfo();
+    });
+
+    addMemberForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      membersError.classList.add('hidden');
+      membersError.textContent = '';
+
+      const userId = memberUserIdInput.value.trim();
+      if (!userId) {
+        membersError.textContent = 'Ingresá un userId válido.';
+        membersError.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        await addMember(channelId, userId);
+        memberUserIdInput.value = '';
+        await loadMembersSection();
+      } catch (error) {
+        const err = error as Error & { status?: number };
+        if (err.status === 409) {
+          membersError.textContent = 'El usuario ya es miembro.';
+        } else {
+          membersError.textContent = getErrorMessage(error, 'No se pudo agregar el miembro.');
+        }
+        membersError.classList.remove('hidden');
+      }
+    });
+
+    membersTableBody.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const button = target.closest<HTMLButtonElement>('[data-remove-user-id]');
+      const userId = button?.dataset.removeUserId;
+      if (!userId) return;
+
+      (window as any).openConfirmModal({
+        title: 'Eliminar miembro',
+        body: '¿Querés remover este miembro del canal?',
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        confirmStyle: 'error',
+        onConfirm: async () => {
+          try {
+            await removeMember(channelId, userId);
+            await loadMembersSection();
+          } catch (error) {
+            membersError.textContent = getErrorMessage(error, 'No se pudo remover el miembro.');
+            membersError.classList.remove('hidden');
+          }
+        },
+      });
+    });
+
+    postsLoadMore.addEventListener('click', async () => {
+      if (postsPage >= postsTotalPages || postsLoading) return;
+      postsPage += 1;
+      await loadPostsSection(false);
+    });
+
+    postsTableBody.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const button = target.closest<HTMLButtonElement>('[data-delete-post-id]');
+      const postId = button?.dataset.deletePostId;
+      if (!postId) return;
+
+      (window as any).openConfirmModal({
+        title: 'Eliminar publicación',
+        body: '¿Querés eliminar esta publicación? Se marcará como eliminada.',
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        confirmStyle: 'error',
+        onConfirm: async () => {
+          try {
+            await deletePost(channelId, postId);
+            markPostAsDeleted(postId);
+          } catch (error) {
+            postsError.textContent = getErrorMessage(error, 'No se pudo eliminar la publicación.');
+            postsError.classList.remove('hidden');
+          }
+        },
+      });
+    });
+
+    async function initializePage(): Promise<void> {
+      if (!channelId) return;
+      await loadChannelInfo();
+      await Promise.all([loadMembersSection(), loadPostsSection(true)]);
+    }
+
+    void initializePage();
+  </script>
+</AdminLayout>
+
+<!-- Traceability: implementation by Programmer at 2026-06-29 17:31:00 -->
