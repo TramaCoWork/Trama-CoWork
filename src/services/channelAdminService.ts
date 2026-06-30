@@ -16,6 +16,7 @@ export interface CommunityChannelMember {
   userId: string;
   accepted: boolean;
   createdAt: string;
+  email: string | null;
 }
 
 export interface CommunityChannelPost {

@@ -285,7 +285,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       type PaginatedResponse,
       type UpdateChannelPayload,
     } from '../../../services/channelAdminService';
-    import { fetchAdminUsers, fetchAllProfessionals } from '../../../services/adminService';
+    import { fetchAdminUsers } from '../../../services/adminService';
     import {
       getRoleFromToken,
       getToken,
@@ -293,10 +293,6 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       isAuthenticated,
       restoreSession,
     } from '../../../services/authService';
-
-    interface EnrichedMember extends CommunityChannelMember {
-      displayName: string;
-    }
 
     restoreSession();
     const token = getToken();
@@ -323,7 +319,6 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     let membersPage = 1;
     let membersTotalPages = 1;
     let membersLoading = false;
-    let memberNameMapPromise: Promise<Map<string, string>> | null = null;
     let postsPage = 1;
     let postsTotalPages = 1;
     let postsLoading = false;
@@ -493,61 +488,14 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       membersLoadMore.classList.toggle('hidden', !show);
     }
 
-    async function loadMemberNameMap(): Promise<Map<string, string>> {
-      const nameMap = new Map<string, string>();
-
-      try {
-        const professionals = await fetchAllProfessionals({ page: 1, sizePage: 200, isActive: undefined });
-        professionals.data.forEach((professional) => {
-          const userId = professional.userId;
-          const name = professional.name?.trim();
-          if (userId && name) {
-            nameMap.set(userId, name);
-            return;
-          }
-
-          const email = professional.user?.email?.trim();
-          if (userId && email) {
-            nameMap.set(userId, email);
-          }
-        });
-      } catch {
-        // TODO: enrich with name when endpoint available
-      }
-
-      if (nameMap.size === 0) {
-        try {
-          const adminUsers = await fetchAdminUsers(1, 200);
-          adminUsers.data.forEach((user) => {
-            if (user.id && user.email) {
-              nameMap.set(user.id, user.email);
-            }
-          });
-        } catch {
-          // TODO: enrich with name when endpoint available
-        }
-      }
-
-      return nameMap;
-    }
-
-    function enrichMembers(
-      members: CommunityChannelMember[],
-      nameMap: Map<string, string>,
-    ): EnrichedMember[] {
-      return members.map((member) => ({
-        ...member,
-        displayName: nameMap.get(member.userId) || member.userId,
-      }));
-    }
-
-    function renderMembersRows(rows: EnrichedMember[], append: boolean): void {
+    function renderMembersRows(rows: CommunityChannelMember[], append: boolean): void {
       const rowsHtml = rows
         .map((member) => {
           const acceptedLabel = member.accepted ? 'Sí' : 'No';
+          const userLabel = member.email ?? member.userId;
           return `
             <tr data-user-id="${escapeHtml(member.userId)}" class="border-b border-outline-variant/10">
-              <td class="px-4 py-3 text-sm font-semibold text-on-surface">${escapeHtml(member.displayName)}</td>
+              <td class="px-4 py-3 text-sm font-semibold text-on-surface">${escapeHtml(userLabel)}</td>
               <td class="px-4 py-3 text-sm text-on-surface-variant">${acceptedLabel}</td>
               <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(formatDate(member.createdAt))}</td>
               <td class="px-4 py-3">
@@ -572,13 +520,6 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       membersTableBody.innerHTML = rowsHtml;
     }
 
-    async function getMemberNameMap(): Promise<Map<string, string>> {
-      if (!memberNameMapPromise) {
-        memberNameMapPromise = loadMemberNameMap();
-      }
-      return memberNameMapPromise;
-    }
-
     async function loadMembersSection(reset: boolean): Promise<void> {
       if (membersLoading) return;
       membersLoading = true;
@@ -593,10 +534,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       }
 
       try {
-        const [response, nameMap] = await Promise.all([
-          listMembers(channelId, membersPage, MEMBERS_PAGE_SIZE),
-          getMemberNameMap(),
-        ]);
+        const response = await listMembers(channelId, membersPage, MEMBERS_PAGE_SIZE);
         const members = Array.isArray(response.data) ? response.data : [];
         const responseMeta = response.meta;
         membersPage = responseMeta?.page ?? response.page ?? membersPage;
@@ -608,8 +546,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
           return;
         }
 
-        const enriched = enrichMembers(members, nameMap);
-        renderMembersRows(enriched, !reset && membersPage > 1);
+        renderMembersRows(members, !reset && membersPage > 1);
         updateMembersLoadMore();
       } catch {
         membersTableBody.innerHTML = `
