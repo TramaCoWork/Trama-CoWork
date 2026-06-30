@@ -21,7 +21,6 @@ import { api } from './apiClient';
 export interface Channel {
   slug: string;
   name: string;
-  type: string;
 }
 
 export interface PostUser {
@@ -73,7 +72,8 @@ export interface PaginatedComments {
 
 /** Canales disponibles para el usuario (general + su rubro) */
 export async function fetchChannels(): Promise<Channel[]> {
-  return api.get<Channel[]>('/community/channels');
+  const response = await api.get<Channel[] | { data?: Channel[] }>('/community/channels');
+  return Array.isArray(response) ? response : (response.data ?? []);
 }
 
 /** Posts de un canal */
