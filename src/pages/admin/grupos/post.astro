@@ -145,7 +145,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     }
 
     function renderPost(post: CommunityChannelPost): void {
-      postAuthor.textContent = post.userId || 'Usuario';
+      postAuthor.textContent = (post as any).nombre || (post as any).email || post.userId || 'Usuario';
       postDate.textContent = formatDate(post.createdAt);
       postStatus.textContent = post.status === 'paused' ? 'Pausado' : 'Publicado';
       postStatus.className = `badge ${post.status === 'paused' ? 'badge-soft-warning' : 'badge-soft-success'}`;
