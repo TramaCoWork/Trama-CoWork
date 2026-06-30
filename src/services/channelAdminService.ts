@@ -281,6 +281,19 @@ export async function listComments(
   }
 }
 
+export async function createComment(
+  channelId: string,
+  postId: string,
+  content: string,
+): Promise<CommunityChannelComment> {
+  setAuthHeader();
+  try {
+    return await api.post<CommunityChannelComment>(`${CHANNELS_PATH}/${channelId}/posts/${postId}/comments`, { content });
+  } catch (error) {
+    throw toAdminError(error, 'Error al crear comentario');
+  }
+}
+
 export async function deleteComment(channelId: string, commentId: string): Promise<{ message: string }> {
   setAuthHeader();
   try {

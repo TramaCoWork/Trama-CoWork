@@ -51,12 +51,33 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
           Cargar más comentarios
         </button>
       </div>
+
+      <form id="new-comment-form" class="mt-5 space-y-2 border-t border-outline-variant/15 pt-4">
+        <label for="new-comment-content" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+          Nuevo comentario
+        </label>
+        <textarea
+          id="new-comment-content"
+          rows="3"
+          placeholder="Escribí un comentario..."
+          class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/80 focus:border-primary focus:outline-none"
+        ></textarea>
+        <button
+          id="new-comment-submit"
+          type="submit"
+          class="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Comentar
+        </button>
+        <p id="new-comment-inline-error" class="hidden text-sm font-medium text-error"></p>
+      </form>
     </aside>
   </section>
 
   <script>
     import { api } from '../../../services/apiClient';
     import {
+      createComment,
       deleteComment,
       getPost,
       listComments,
@@ -89,6 +110,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     let commentsPage = 1;
     let commentsTotalPages = 1;
     let commentsLoading = false;
+    let createCommentLoading = false;
 
     const detailInlineError = document.getElementById('detail-inline-error') as HTMLParagraphElement;
     const commentsInlineError = document.getElementById('comments-inline-error') as HTMLParagraphElement;
@@ -98,6 +120,10 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     const postContent = document.getElementById('post-content') as HTMLDivElement;
     const commentsList = document.getElementById('comments-list') as HTMLDivElement;
     const loadMoreCommentsButton = document.getElementById('load-more-comments') as HTMLButtonElement;
+    const newCommentForm = document.getElementById('new-comment-form') as HTMLFormElement;
+    const newCommentContent = document.getElementById('new-comment-content') as HTMLTextAreaElement;
+    const newCommentSubmit = document.getElementById('new-comment-submit') as HTMLButtonElement;
+    const newCommentInlineError = document.getElementById('new-comment-inline-error') as HTMLParagraphElement;
 
     function escapeHtml(value: string): string {
       return value
@@ -177,30 +203,44 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         return;
       }
 
-      const html = comments
-        .map((comment) => {
-          return `
-            <article data-comment-id="${escapeHtml(comment.id)}" class="rounded-xl border border-outline-variant/15 bg-surface-container-lowest p-3">
-              <div class="mb-2 flex items-start justify-between gap-2">
-                <div class="min-w-0">
-                  <p class="truncate text-sm font-bold text-on-surface">${escapeHtml(comment.nombre)}</p>
-                  <p class="text-xs text-on-surface-variant">${escapeHtml(formatDate(comment.createdAt))}</p>
-                </div>
-                <button
-                  type="button"
-                  data-delete-comment="${escapeHtml(comment.id)}"
-                  class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-error transition-colors hover:bg-error/10"
-                  aria-label="Eliminar comentario"
-                >
-                  <span class="material-symbols-outlined text-lg" aria-hidden="true">delete</span>
-                </button>
-              </div>
-              <div class="text-sm text-on-surface-variant">${renderLightMarkdown(comment.content || '')}</div>
-            </article>`;
-        })
-        .join('');
+      const html = comments.map(renderCommentCard).join('');
 
       commentsList.insertAdjacentHTML('beforeend', html);
+    }
+
+    function renderCommentCard(comment: CommunityChannelComment): string {
+      return `
+        <article data-comment-id="${escapeHtml(comment.id)}" class="rounded-xl border border-outline-variant/15 bg-surface-container-lowest p-3">
+          <div class="mb-2 flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <p class="truncate text-sm font-bold text-on-surface">${escapeHtml(comment.nombre)}</p>
+              <p class="text-xs text-on-surface-variant">${escapeHtml(formatDate(comment.createdAt))}</p>
+            </div>
+            <button
+              type="button"
+              data-delete-comment="${escapeHtml(comment.id)}"
+              class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-error transition-colors hover:bg-error/10"
+              aria-label="Eliminar comentario"
+            >
+              <span class="material-symbols-outlined text-lg" aria-hidden="true">delete</span>
+            </button>
+          </div>
+          <div class="text-sm text-on-surface-variant">${renderLightMarkdown(comment.content || '')}</div>
+        </article>`;
+    }
+
+    function prependComment(comment: CommunityChannelComment): void {
+      if (commentsList.querySelectorAll('article[data-comment-id]').length === 0) {
+        commentsList.innerHTML = '';
+      }
+      commentsList.insertAdjacentHTML('afterbegin', renderCommentCard(comment));
+    }
+
+    function setCreateCommentLoading(loading: boolean): void {
+      createCommentLoading = loading;
+      newCommentSubmit.disabled = loading;
+      newCommentContent.disabled = loading;
+      newCommentSubmit.textContent = loading ? 'Enviando...' : 'Comentar';
     }
 
     function updateLoadMoreCommentsVisibility(): void {
@@ -296,6 +336,34 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       const button = target.closest<HTMLButtonElement>('[data-delete-comment]');
       if (!button?.dataset.deleteComment) return;
       askDeleteComment(button.dataset.deleteComment);
+    });
+
+    newCommentForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (createCommentLoading) return;
+
+      const content = newCommentContent.value.trim();
+      newCommentInlineError.classList.add('hidden');
+      newCommentInlineError.textContent = '';
+
+      if (!content) {
+        newCommentInlineError.textContent = 'Escribí un comentario antes de enviar.';
+        newCommentInlineError.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        setCreateCommentLoading(true);
+        const response = await createComment(channelId, postId, content);
+        const comment = { ...response, nombre: (response as any).nombre || 'Admin' };
+        prependComment(comment);
+        newCommentContent.value = '';
+      } catch (error) {
+        newCommentInlineError.textContent = getErrorMessage(error, 'No se pudo crear el comentario.');
+        newCommentInlineError.classList.remove('hidden');
+      } finally {
+        setCreateCommentLoading(false);
+      }
     });
 
     async function initializePage(): Promise<void> {
