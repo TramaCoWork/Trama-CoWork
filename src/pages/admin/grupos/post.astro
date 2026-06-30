@@ -183,7 +183,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
             <article data-comment-id="${escapeHtml(comment.id)}" class="rounded-xl border border-outline-variant/15 bg-surface-container-lowest p-3">
               <div class="mb-2 flex items-start justify-between gap-2">
                 <div class="min-w-0">
-                  <p class="truncate text-sm font-bold text-on-surface">${escapeHtml(comment.userId || 'Usuario')}</p>
+                  <p class="truncate text-sm font-bold text-on-surface">${escapeHtml(comment.nombre)}</p>
                   <p class="text-xs text-on-surface-variant">${escapeHtml(formatDate(comment.createdAt))}</p>
                 </div>
                 <button

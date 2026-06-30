@@ -37,6 +37,8 @@ export interface CommunityChannelComment {
   channelId: string;
   postId: string;
   userId: string;
+  email: string;
+  nombre: string;
   content: string;
   createdAt: string;
   updatedAt?: string;
