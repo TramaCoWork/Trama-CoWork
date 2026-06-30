@@ -718,7 +718,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
           return `
             <tr data-post-id="${escapeHtml(post.id)}" data-row-active="${isDeleted ? 'false' : 'true'}" class="${rowClass}">
               <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(postPreview(post.content || ''))}</td>
-              <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(post.userId || '—')}</td>
+              <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(post.nombre)}</td>
               <td class="px-4 py-3"><span class="badge ${statusClass}">${statusLabel}</span></td>
               <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(formatDate(post.createdAt))}</td>
               <td class="px-4 py-3 text-sm text-on-surface-variant">${escapeHtml(deletedText)}</td>

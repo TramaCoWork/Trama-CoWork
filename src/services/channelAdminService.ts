@@ -23,6 +23,8 @@ export interface CommunityChannelPost {
   id: string;
   channelId: string;
   userId: string;
+  email: string;
+  nombre: string;
   content: string;
   status: 'published' | 'paused';
   createdAt: string;
