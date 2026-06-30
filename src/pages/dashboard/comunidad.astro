@@ -281,12 +281,15 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
   import {
     fetchChannels,
     fetchPosts,
+    fetchChannelPosts,
+    fetchChannelPostComments,
     fetchMyPosts,
     fetchPostComments,
     createPost,
     deletePost,
     updatePostStatus,
     createComment,
+    createChannelComment,
     deleteComment,
     type Channel,
     type Post,
@@ -356,6 +359,7 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
 
   // ─── State ────────────────────────────────────────────────────
   let currentChannel = 'general';
+  let currentChannelObj: Channel | null = null;
   let channels: Channel[] = [];
   let allMyPosts: Post[] = [];
   let myPostsChannelFilter = '';
@@ -375,6 +379,19 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
   let modalSearchResults: Awaited<ReturnType<typeof searchProfessionalsByName>> = [];
   let messageBody = '';
   let pendingDeleteMessageId: string | null = null;
+
+  function resolveChannelBySlug(slug: string): Channel | null {
+    return channels.find(channel => channel.slug === slug) ?? null;
+  }
+
+  function getActiveChannelType(): Channel['type'] {
+    return currentChannelObj?.type ?? 'community';
+  }
+
+  function setActiveChannel(slug: string) {
+    currentChannel = slug;
+    currentChannelObj = resolveChannelBySlug(slug);
+  }
   const mypostsChannelSelect = document.getElementById('myposts-channel-filter') as HTMLSelectElement;
 
   const ACTIVE_BUTTON_CLASS = 'px-4 py-2 rounded-lg text-sm font-bold bg-primary text-on-primary transition-all relative';
@@ -1185,9 +1202,9 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
     // Bind clicks
     channelsList.querySelectorAll('.channel-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        currentChannel = (btn as HTMLElement).dataset.channel!;
+        setActiveChannel((btn as HTMLElement).dataset.channel!);
         renderChannels();
-        channelNameEl.textContent = channels.find(c => c.slug === currentChannel)?.name || currentChannel;
+        channelNameEl.textContent = currentChannelObj?.name || currentChannel;
         loadPosts();
       });
     });
@@ -1312,7 +1329,9 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
       return;
     }
 
-    const newComment = await createComment(postId, content);
+    const newComment = modalChannelObj?.type === 'channel'
+      ? await createChannelComment(modalChannelObj.slug, postId, content)
+      : await createComment(postId, content);
     if (imageIds.length > 0) {
       await associateCommunityImages(imageIds, newComment.id, 'COMMENT');
     }
@@ -1399,9 +1418,14 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
   const modalCommentsWrapper = document.getElementById('modal-comments-wrapper')!;
 
   let modalPostId: string | null = null;
+  let modalChannelObj: Channel | null = null;
   let modalCurrentPage = 1;
   let modalTotalPages = 1;
   let feedPosts: Post[] = [];
+
+  function snapshotModalChannel() {
+    modalChannelObj = currentChannelObj;
+  }
 
   function findPostData(postId: string): Post | undefined {
     return feedPosts.find(p => p.id === postId) || allMyPosts.find(p => p.id === postId);
@@ -1426,6 +1450,7 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
 
     commentsModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+    snapshotModalChannel();
 
     await loadModalComments(1);
   }
@@ -1434,6 +1459,7 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
     commentsModal.classList.add('hidden');
     document.body.style.overflow = '';
     modalPostId = null;
+    modalChannelObj = null;
     modalCommentsList.innerHTML = '';
   }
 
@@ -1441,7 +1467,9 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
     if (!modalPostId) return;
 
     try {
-      const result = await fetchPostComments(modalPostId, page, 10);
+      const result = modalChannelObj?.type === 'channel'
+        ? await fetchChannelPostComments(modalChannelObj.slug, modalPostId, page, 10)
+        : await fetchPostComments(modalPostId, page, 10);
       const comments = result.data || [];
       const meta = result.meta;
       modalCurrentPage = meta.page;
@@ -1558,7 +1586,9 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
       </div>`;
 
     try {
-      const result = await fetchPosts(currentChannel);
+      const result = getActiveChannelType() === 'channel'
+        ? await fetchChannelPosts(currentChannel, 1, 20)
+        : await fetchPosts(currentChannel, 1, 20);
       const posts = Array.isArray(result) ? result : (result as any).data || [];
       feedPosts = posts;
 
@@ -1667,6 +1697,7 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
     postsContainer.querySelectorAll('.btn-open-comment-editor').forEach(btn => {
       btn.addEventListener('click', () => {
         const postId = (btn as HTMLElement).dataset.postId!;
+        snapshotModalChannel();
         openEditorModal({
           title: 'Comentar publicación',
           placeholder: 'Escribí tu comentario...',
@@ -1739,6 +1770,7 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
     mypostsContainer.querySelectorAll('.btn-open-comment-editor').forEach(btn => {
       btn.addEventListener('click', () => {
         const postId = (btn as HTMLElement).dataset.postId!;
+        snapshotModalChannel();
         openEditorModal({
           title: 'Comentar publicación',
           placeholder: 'Escribí tu comentario...',
@@ -1783,6 +1815,7 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
   async function init() {
     try {
       channels = await fetchChannels();
+      setActiveChannel(currentChannel);
       renderChannels();
 
       // Populate my-posts channel filter
@@ -1794,8 +1827,7 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
       });
 
       // Set initial channel name
-      const ch = channels.find(c => c.slug === currentChannel);
-      if (ch) channelNameEl.textContent = ch.name;
+      if (currentChannelObj) channelNameEl.textContent = currentChannelObj.name;
 
       setActiveView('feed');
       setMessageInputEnabled(false);

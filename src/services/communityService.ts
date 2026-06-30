@@ -14,7 +14,8 @@
  *   - DELETE /community/comments/:id     -> Eliminar comentario
  */
 
-import { api } from './apiClient';
+import { api, apiURL } from './apiClient';
+import { getToken } from './authService';
 
 // ─── Tipos ─────────────────────────────────────────────────────
 
@@ -69,6 +70,54 @@ export interface PaginatedComments {
   };
 }
 
+interface FlatUserData {
+  id?: string;
+  userId?: string;
+  email?: string | null;
+  nombre?: string | null;
+  user?: PostUser;
+}
+
+type RawPost = Omit<Post, 'user'> & FlatUserData;
+type RawComment = Omit<Comment, 'user'> & FlatUserData;
+
+const CHANNELS_PATH = new URL(apiURL('/channels')).pathname;
+
+function setAuthHeader(): void {
+  const token = getToken();
+  if (token) {
+    api.setHeader('Authorization', `Bearer ${token}`);
+  }
+}
+
+function mapPostUser(raw: FlatUserData): PostUser {
+  if (raw.user) {
+    return raw.user;
+  }
+
+  return {
+    id: raw.userId || raw.id || '',
+    email: raw.email || '',
+    profile: {
+      name: raw.nombre || '',
+    },
+  };
+}
+
+function adaptPost(raw: RawPost): Post {
+  return {
+    ...raw,
+    user: mapPostUser(raw),
+  };
+}
+
+function adaptComment(raw: RawComment): Comment {
+  return {
+    ...raw,
+    user: mapPostUser(raw),
+  };
+}
+
 // ─── Fetch ─────────────────────────────────────────────────────
 
 /** Canales disponibles para el usuario (general + su rubro) */
@@ -115,4 +164,70 @@ export async function deleteComment(commentId: string): Promise<void> {
 /** Comentarios paginados de un post */
 export async function fetchPostComments(postId: string, page = 1, limit = 10): Promise<PaginatedComments> {
   return api.get<PaginatedComments>(`/community/posts/${postId}/comments`, { page, limit });
+}
+
+export async function fetchChannelPosts(channelId: string, page = 1, limit = 20): Promise<PaginatedPosts> {
+  setAuthHeader();
+  const response = await api.get<RawPost[] | PaginatedPosts | { data?: RawPost[]; total?: number; page?: number; limit?: number }>(
+    `${CHANNELS_PATH}/${channelId}/posts`,
+    { page, limit },
+  );
+
+  if (Array.isArray(response)) {
+    const posts = response.map(adaptPost);
+    return { data: posts, total: posts.length, page, limit };
+  }
+
+  const posts = (response.data ?? []).map(adaptPost);
+  return {
+    data: posts,
+    total: response.total ?? posts.length,
+    page: response.page ?? page,
+    limit: response.limit ?? limit,
+  };
+}
+
+export async function fetchChannelPost(channelId: string, postId: string): Promise<Post> {
+  setAuthHeader();
+  const response = await api.get<RawPost>(`${CHANNELS_PATH}/${channelId}/posts/${postId}`);
+  return adaptPost(response);
+}
+
+export async function fetchChannelPostComments(
+  channelId: string,
+  postId: string,
+  page = 1,
+  limit = 10,
+): Promise<PaginatedComments> {
+  setAuthHeader();
+  const response = await api.get<
+    RawComment[] | PaginatedComments | { data?: RawComment[]; meta?: PaginatedComments['meta']; total?: number; totalPages?: number; page?: number; limit?: number }
+  >(`${CHANNELS_PATH}/${channelId}/posts/${postId}/comments`, { page, limit });
+
+  if (Array.isArray(response)) {
+    const comments = response.map(adaptComment);
+    return {
+      data: comments,
+      meta: { page, limit, total: comments.length, totalPages: 1 },
+    };
+  }
+
+  const comments = (response.data ?? []).map(adaptComment);
+  const meta = response.meta ?? {
+    page: response.page ?? page,
+    limit: response.limit ?? limit,
+    total: response.total ?? comments.length,
+    totalPages: response.totalPages ?? 1,
+  };
+
+  return {
+    data: comments,
+    meta,
+  };
+}
+
+export async function createChannelComment(channelId: string, postId: string, content: string): Promise<Comment> {
+  setAuthHeader();
+  const response = await api.post<RawComment>(`${CHANNELS_PATH}/${channelId}/posts/${postId}/comments`, { content });
+  return adaptComment(response);
 }
