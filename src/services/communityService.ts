@@ -19,6 +19,7 @@ import { api } from './apiClient';
 // ─── Tipos ─────────────────────────────────────────────────────
 
 export interface Channel {
+  type: 'community' | 'channel';
   slug: string;
   name: string;
 }

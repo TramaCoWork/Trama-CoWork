@@ -1167,6 +1167,7 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
   function renderChannels() {
     channelsList.innerHTML = channels.map(ch => {
       const isActive = ch.slug === currentChannel;
+      const channelIcon = ch.type === 'community' ? 'tag' : 'hub';
       return `
         <button
           data-channel="${ch.slug}"
@@ -1176,7 +1177,7 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
               : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
           }"
         >
-          <span class="material-symbols-outlined text-base" aria-hidden="true">tag</span>
+          <span class="material-symbols-outlined text-base" aria-hidden="true">${channelIcon}</span>
           ${escapeHtml(ch.name)}
         </button>`;
     }).join('');
