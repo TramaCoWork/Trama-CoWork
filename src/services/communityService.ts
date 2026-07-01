@@ -145,6 +145,13 @@ export async function createPost(content: string, channelSlug = 'general'): Prom
   return api.post<Post>('/community/posts', { content, channelSlug });
 }
 
+/** Crear un post en canal */
+export async function createChannelPost(channelId: string, content: string): Promise<Post> {
+  setAuthHeader();
+  const response = await api.post<RawPost>(`${CHANNELS_PATH}/${channelId}/posts`, { content });
+  return adaptPost(response);
+}
+
 /** Eliminar un post */
 export async function deletePost(postId: string): Promise<void> {
   return api.del<void>(`/community/posts/${postId}`);

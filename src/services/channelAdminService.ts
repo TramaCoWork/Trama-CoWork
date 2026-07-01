@@ -76,9 +76,9 @@ export interface UpdateChannelPayload {
 }
 
 export interface CreatePostPayload {
-  userId: string;
   content: string;
   status?: 'published' | 'paused';
+  userId?: string;
 }
 
 const ADMIN_CHANNELS_PATH = new URL(apiURL('/admin/channels')).pathname;

@@ -288,7 +288,6 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     import { fetchAdminUsers } from '../../../services/adminService';
     import {
       getToken,
-      getUserIdFromToken,
       isAdmin,
       isAuthenticated,
       restoreSession,
@@ -823,17 +822,9 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         return;
       }
 
-      const userId = getUserIdFromToken();
-      if (!userId) {
-        postCreateError.textContent = 'No se pudo identificar al usuario administrador.';
-        postCreateError.classList.remove('hidden');
-        return;
-      }
-
       setPostCreateLoading(true);
       try {
         await createPost(channelId, {
-          userId,
           content,
           status: postCreateStatus.value === 'paused' ? 'paused' : 'published',
         });
