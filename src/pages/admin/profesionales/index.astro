@@ -9,6 +9,7 @@ const columns = [
   { key: 'location', label: 'Ubicación' },
   { key: 'rubro', label: 'Rubro' },
   { key: 'status', label: 'Estado' },
+  { key: 'lastLogin', label: 'Último login' },
   { key: 'actions', label: 'Acciones' },
 ];
 ---
@@ -106,6 +107,10 @@ const columns = [
     import { fetchRubros } from '../../../services/professionCategoriesService';
     import { fetchCountries, fetchProvinces } from '../../../services/locationService';
 
+    type AdminProfessionalWithLastLogin = AdminProfessional & {
+      lastLoginAt?: string | null;
+    };
+
     const API_BASE = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
     restoreSession();
@@ -198,15 +203,28 @@ const columns = [
       return filters;
     }
 
+    function daysAgo(dateStr: string | null | undefined): string {
+      if (!dateStr) return 'Nunca';
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const days = Math.floor(diff / 86400000);
+      if (days === 0) return 'Hoy';
+      if (days === 1) return 'Ayer';
+      if (days < 30) return `hace ${days} días`;
+      const months = Math.floor(days / 30);
+      if (months < 12) return `hace ${months} mes${months > 1 ? 'es' : ''}`;
+      const years = Math.floor(months / 12);
+      return `hace ${years} año${years > 1 ? 's' : ''}`;
+    }
+
     // ─── Render table ────────────────────────────────────────────
-    function renderTable(data: AdminProfessional[], total: number, page: number, sizePage: number) {
+    function renderTable(data: AdminProfessionalWithLastLogin[], total: number, page: number, sizePage: number) {
       const tbody = document.getElementById('table-body')!;
       totalPages = Math.ceil(total / sizePage) || 1;
 
       if (data.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="5" class="text-center py-16 text-on-surface-variant">
+            <td colspan="6" class="text-center py-16 text-on-surface-variant">
               <span class="material-symbols-outlined text-4xl mb-3 block text-[var(--color-neutral-400)]" aria-hidden="true">search_off</span>
               <p class="text-sm font-medium">No se encontraron profesionales con los filtros aplicados.</p>
             </td>
@@ -260,6 +278,10 @@ const columns = [
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${statusClass}">${statusLabel}</span>
               <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${accessBadge}">${accessLabel}</span>
               ${trialBadge}
+            </td>
+            <td class="px-5 py-3 text-xs text-on-surface-variant">
+              <span class="material-symbols-outlined text-sm align-middle mr-1">schedule</span>
+              ${daysAgo(p.lastLoginAt)}
             </td>
             <td class="px-5 py-3">
               <div class="flex items-center gap-1.5">
@@ -380,7 +402,7 @@ const columns = [
       const tbody = document.getElementById('table-body')!;
       tbody.innerHTML = `
         <tr>
-          <td colspan="5" class="text-center py-12 text-on-surface-variant">
+          <td colspan="6" class="text-center py-12 text-on-surface-variant">
             <div class="flex flex-col items-center gap-3">
               <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
               <span class="text-sm font-medium">Cargando...</span>
@@ -396,7 +418,7 @@ const columns = [
       } catch (err: any) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="5" class="text-center py-12 text-error">
+            <td colspan="6" class="text-center py-12 text-error">
               <span class="material-symbols-outlined text-3xl mb-2 block" aria-hidden="true">error</span>
               <p class="text-sm font-bold">Error al cargar profesionales</p>
               <p class="text-xs mt-1">${err?.message || 'Error desconocido'}</p>
