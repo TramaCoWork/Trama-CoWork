@@ -89,11 +89,11 @@ import '../../styles/global.css';
     </main>
 
     <script>
-      import { adminLogin, isAuthenticated, getRoleFromToken, restoreSession } from '../../services/authService';
+      import { adminLogin, isAdmin, isAuthenticated, restoreSession } from '../../services/authService';
 
       // If already authenticated as admin, redirect
       restoreSession();
-      if (isAuthenticated() && getRoleFromToken() === 'admin') {
+      if (isAuthenticated() && isAdmin()) {
         window.location.href = '/admin';
       }
 

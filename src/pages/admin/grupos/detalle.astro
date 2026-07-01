@@ -287,9 +287,9 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     } from '../../../services/channelAdminService';
     import { fetchAdminUsers } from '../../../services/adminService';
     import {
-      getRoleFromToken,
       getToken,
       getUserIdFromToken,
+      isAdmin,
       isAuthenticated,
       restoreSession,
     } from '../../../services/authService';
@@ -302,7 +302,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
     if (!isAuthenticated()) {
       window.location.href = '/admin/login';
-    } else if (getRoleFromToken() !== 'admin') {
+    } else if (!isAdmin()) {
       window.location.href = '/dashboard';
     }
 

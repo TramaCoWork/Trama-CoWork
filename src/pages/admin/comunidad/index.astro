@@ -66,7 +66,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       type CommunityPost,
       type PaginatedResponse,
     } from '../../../services/communityAdminService';
-    import { getRoleFromToken, getToken, isAuthenticated, restoreSession } from '../../../services/authService';
+    import { getToken, isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
 
     restoreSession();
     const token = getToken();
@@ -76,7 +76,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
     if (!isAuthenticated()) {
       window.location.href = '/admin/login';
-    } else if (getRoleFromToken() !== 'admin') {
+    } else if (!isAdmin()) {
       window.location.href = '/dashboard';
     }
 

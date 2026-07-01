@@ -99,8 +99,8 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     } from '../../../services/communityAdminService';
     import {
       getEmailFromToken,
-      getRoleFromToken,
       getToken,
+      isAdmin,
       isAuthenticated,
       restoreSession,
     } from '../../../services/authService';
@@ -113,7 +113,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
     if (!isAuthenticated()) {
       window.location.href = '/admin/login';
-    } else if (getRoleFromToken() !== 'admin') {
+    } else if (!isAdmin()) {
       window.location.href = '/dashboard';
     }
 

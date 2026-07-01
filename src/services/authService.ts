@@ -21,6 +21,19 @@ export interface LoginError {
   error: string;
 }
 
+export type JwtRole = {
+  name: string;
+  type: 'admin' | 'professional' | 'other';
+};
+
+export interface JwtPayload {
+  sub?: string;
+  email?: string;
+  exp?: number;
+  roles: JwtRole[];
+  permissions: string[];
+}
+
 const TOKEN_KEY = 'trama_access_token';
 
 function parseJwtPayload(token: string): Record<string, unknown> | null {
@@ -38,6 +51,42 @@ function isTokenExpired(token: string): boolean {
   const payload = parseJwtPayload(token);
   if (!payload || typeof payload.exp !== 'number') return true;
   return Date.now() >= payload.exp * 1000;
+}
+
+function normalizeJwtRole(raw: unknown): JwtRole | null {
+  if (!raw || typeof raw !== 'object') return null;
+
+  const role = raw as { name?: unknown; type?: unknown };
+  if (typeof role.name !== 'string') return null;
+
+  if (role.type === 'admin' || role.type === 'professional' || role.type === 'other') {
+    return { name: role.name, type: role.type };
+  }
+
+  return { name: role.name, type: 'other' };
+}
+
+function getSafePayloadFromToken(token: string | null): JwtPayload | null {
+  if (!token || isTokenExpired(token)) return null;
+
+  const payload = parseJwtPayload(token);
+  if (!payload) return null;
+
+  const roles = Array.isArray(payload.roles)
+    ? payload.roles.map(normalizeJwtRole).filter((role): role is JwtRole => role !== null)
+    : [];
+
+  const permissions = Array.isArray(payload.permissions)
+    ? payload.permissions.filter((permission): permission is string => typeof permission === 'string')
+    : [];
+
+  return {
+    sub: typeof payload.sub === 'string' ? payload.sub : undefined,
+    email: typeof payload.email === 'string' ? payload.email : undefined,
+    exp: typeof payload.exp === 'number' ? payload.exp : undefined,
+    roles,
+    permissions,
+  };
 }
 
 export async function login(credentials: LoginRequest): Promise<LoginResponse> {
@@ -74,27 +123,48 @@ export function logout(redirectTo = '/login'): void {
 }
 
 export function getUserIdFromToken(): string | null {
-  const token = getToken();
-  if (!token) return null;
-  const payload = parseJwtPayload(token);
-  if (!payload || typeof payload.sub !== 'string') return null;
+  const payload = getSafePayloadFromToken(getToken());
+  if (!payload?.sub) return null;
   return payload.sub;
 }
 
 export function getEmailFromToken(): string | null {
-  const token = getToken();
-  if (!token) return null;
-  const payload = parseJwtPayload(token);
-  if (!payload || typeof payload.email !== 'string') return null;
+  const payload = getSafePayloadFromToken(getToken());
+  if (!payload?.email) return null;
   return payload.email;
 }
 
-export function getRoleFromToken(): string | null {
-  const token = getToken();
-  if (!token) return null;
-  const payload = parseJwtPayload(token);
-  if (!payload || typeof payload.role !== 'string') return null;
-  return payload.role;
+export function getRolesFromToken(): JwtRole[] {
+  const payload = getSafePayloadFromToken(getToken());
+  return payload?.roles ?? [];
+}
+
+export function getPermissionsFromToken(): string[] {
+  const payload = getSafePayloadFromToken(getToken());
+  return payload?.permissions ?? [];
+}
+
+export function isAdmin(): boolean {
+  try {
+    const roles = getRolesFromToken();
+    return roles.some((role) => role.type === 'admin' || role.name === 'admin');
+  } catch {
+    return false;
+  }
+}
+
+export function isProfessional(): boolean {
+  try {
+    const roles = getRolesFromToken();
+    return roles.some((role) => role.type === 'professional' || role.name === 'professional');
+  } catch {
+    return false;
+  }
+}
+
+/** @deprecated Use getRolesFromToken() or isAdmin()/isProfessional(). */
+export function getRoleFromToken(): string {
+  return getRolesFromToken()[0]?.name ?? '';
 }
 
 export function restoreSession(): void {

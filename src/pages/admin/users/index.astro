@@ -86,7 +86,7 @@ const columns = [
   </div>
 
   <script>
-    import { getRoleFromToken, getUserIdFromToken, isAuthenticated, restoreSession } from '../../../services/authService';
+    import { getUserIdFromToken, isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
     import {
       createAdminUser,
       deleteAdminUser,
@@ -103,7 +103,7 @@ const columns = [
 
     if (!isAuthenticated()) {
       window.location.href = '/admin/login';
-    } else if (getRoleFromToken() !== 'admin') {
+    } else if (!isAdmin()) {
       window.location.href = '/dashboard';
     }
 

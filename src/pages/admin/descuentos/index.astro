@@ -205,7 +205,7 @@ const columns = [
   </div>
 
   <script>
-    import { getRoleFromToken, isAuthenticated, restoreSession } from '../../../services/authService';
+    import { isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
     import {
       createDiscountPlan,
       deleteDiscountPlan,
@@ -673,7 +673,7 @@ const columns = [
         return;
       }
 
-      if (getRoleFromToken() !== 'admin') {
+      if (!isAdmin()) {
         window.location.href = '/dashboard';
         return;
       }

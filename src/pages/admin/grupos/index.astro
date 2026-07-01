@@ -122,14 +122,14 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       type PaginatedResponse,
       type UpdateChannelPayload,
     } from '../../../services/channelAdminService';
-    import { getRoleFromToken, isAuthenticated, restoreSession } from '../../../services/authService';
+    import { isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
 
     type ModalMode = 'create' | 'edit';
 
     restoreSession();
     if (!isAuthenticated()) {
       window.location.href = '/admin/login';
-    } else if (getRoleFromToken() !== 'admin') {
+    } else if (!isAdmin()) {
       window.location.href = '/dashboard';
     }
 

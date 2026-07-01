@@ -28,13 +28,13 @@ const { title, description = 'TRAMA - Panel de administración' } = Astro.props;
     </div>
 
     <script>
-      import { isAuthenticated, restoreSession, getRoleFromToken } from '../services/authService';
+      import { isAdmin, isAuthenticated, restoreSession } from '../services/authService';
 
       restoreSession();
 
       if (!isAuthenticated()) {
         window.location.href = '/admin/login';
-      } else if (getRoleFromToken() !== 'admin') {
+      } else if (!isAdmin()) {
         window.location.href = '/dashboard';
       }
     </script>
