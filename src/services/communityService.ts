@@ -45,7 +45,10 @@ export interface Post {
   id: string;
   userId: string;
   content: string;
+  type?: 'community' | 'channel';
   channelSlug?: string;
+  channelId?: string;
+  channelName?: string;
   status?: 'published' | 'paused';
   createdAt: string;
   updatedAt: string;
