@@ -123,7 +123,11 @@ function adaptComment(raw: RawComment): Comment {
 /** Canales disponibles para el usuario (general + su rubro) */
 export async function fetchChannels(): Promise<Channel[]> {
   const response = await api.get<Channel[] | { data?: Channel[] }>('/community/channels');
-  return Array.isArray(response) ? response : (response.data ?? []);
+  const raw = Array.isArray(response) ? response : (response.data ?? []);
+  return raw.map(ch => ({
+    ...ch,
+    type: ch.type ?? 'community',
+  }));
 }
 
 /** Posts de un canal */
