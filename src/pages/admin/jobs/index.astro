@@ -1,0 +1,417 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="TRAMA Admin - Jobs">
+  <header class="mb-8">
+    <h1 class="text-3xl font-black text-on-surface tracking-tighter">Jobs</h1>
+    <p class="text-on-surface-variant font-medium mt-1 text-sm">Ejecuciones de tareas programadas.</p>
+  </header>
+
+  <section class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+      <div>
+        <label for="f-job-name" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">
+          Job
+        </label>
+        <select
+          id="f-job-name"
+          class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer"
+        >
+          <option value="">Todos los jobs</option>
+          <option value="expiredTrials">expiredTrials</option>
+          <option value="expiredCancelledSubs">expiredCancelledSubs</option>
+          <option value="subscriptionRenewals">subscriptionRenewals</option>
+          <option value="applyDiscounts">applyDiscounts</option>
+          <option value="restoreDiscounts">restoreDiscounts</option>
+          <option value="trial-expiring-reminder">trial-expiring-reminder</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <div class="flex items-center justify-between mb-4 gap-3 flex-wrap">
+    <p id="results-info" class="text-sm text-on-surface-variant font-medium">Cargando...</p>
+    <div id="pagination" class="flex items-center gap-2"></div>
+  </div>
+
+  <section class="bg-surface-container-low rounded-2xl overflow-hidden border border-outline-variant/10">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-outline-variant/15 bg-surface-container">
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Job</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Inicio</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Duración</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Procesados</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Error</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="jobs-table-body">
+          <tr>
+            <td colspan="7" class="text-center py-12 text-on-surface-variant">
+              <div class="flex flex-col items-center gap-3">
+                <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                <span class="text-sm font-medium">Cargando jobs...</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div
+    id="job-error-modal"
+    class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/30 backdrop-blur-sm p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="job-error-title"
+  >
+    <div class="w-full max-w-3xl rounded-2xl bg-surface-container-low border border-outline-variant/15 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-outline-variant/15 px-6 py-4">
+        <h2 id="job-error-title" class="text-lg font-extrabold text-on-surface tracking-tight">Detalle de error</h2>
+        <button id="job-error-close" type="button" class="text-on-surface-variant hover:text-on-surface" aria-label="Cerrar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-3">
+        <p id="job-error-name" class="text-sm font-bold text-on-surface"></p>
+        <pre id="job-error-content" class="max-h-[50vh] overflow-auto rounded-xl bg-surface-container-lowest border border-outline-variant/20 p-4 text-xs text-on-surface-variant whitespace-pre-wrap"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import { api, apiURL } from '../../../services/apiClient';
+    import { getToken, isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
+
+    type JobStatus = 'running' | 'completed' | 'failed';
+
+    type JobExecution = {
+      jobName: string;
+      startedAt: string | null;
+      durationMs: number | null;
+      status: JobStatus;
+      processedCount: number | null;
+      errorMessage: string | null;
+      errorStack: string | null;
+    };
+
+    type JobsResponse = {
+      data: JobExecution[];
+      total: number;
+      page: number;
+      sizePage: number;
+    };
+
+    const PAGE_SIZE = 20;
+    let currentPage = 1;
+    let totalPages = 1;
+    let currentJobFilter = '';
+    let isLoading = false;
+
+    const tableBody = document.getElementById('jobs-table-body') as HTMLTableSectionElement;
+    const pagination = document.getElementById('pagination') as HTMLDivElement;
+    const resultsInfo = document.getElementById('results-info') as HTMLParagraphElement;
+    const jobFilter = document.getElementById('f-job-name') as HTMLSelectElement;
+    const errorModal = document.getElementById('job-error-modal') as HTMLDivElement;
+    const errorName = document.getElementById('job-error-name') as HTMLParagraphElement;
+    const errorContent = document.getElementById('job-error-content') as HTMLPreElement;
+
+    const JOB_NAME_BADGE_CLASS: Record<string, string> = {
+      expiredTrials: 'bg-blue-100 text-blue-800',
+      expiredCancelledSubs: 'bg-purple-100 text-purple-800',
+      subscriptionRenewals: 'bg-teal-100 text-teal-800',
+      applyDiscounts: 'bg-orange-100 text-orange-800',
+      restoreDiscounts: 'bg-pink-100 text-pink-800',
+      'trial-expiring-reminder': 'bg-yellow-100 text-yellow-800',
+    };
+
+    const STATUS_BADGE_CLASS: Record<JobStatus, string> = {
+      completed: 'badge-soft-success',
+      failed: 'badge-soft-error',
+      running: 'badge-soft-warning',
+    };
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatDuration(durationMs: number | null): string {
+      if (durationMs === null) return '—';
+      if (durationMs === 0) return '0ms';
+      if (durationMs < 1000) return `${durationMs}ms`;
+      if (durationMs < 60000) return `${(durationMs / 1000).toFixed(1)}s`;
+      const minutes = Math.floor(durationMs / 60000);
+      const seconds = Math.floor((durationMs % 60000) / 1000);
+      return `${minutes}m ${seconds}s`;
+    }
+
+    function formatStartedAt(startedAt: string | null): string {
+      if (!startedAt) return '—';
+      const date = new Date(startedAt);
+      if (Number.isNaN(date.getTime())) return '—';
+      return date.toLocaleString('es-AR');
+    }
+
+    function formatProcessedCount(processedCount: number | null): string {
+      if (processedCount === null) return '—';
+      if (processedCount === 0) return '0';
+      return String(processedCount);
+    }
+
+    function formatErrorPreview(errorMessage: string | null): string {
+      if (errorMessage === null) return '—';
+      return errorMessage.length > 40 ? `${errorMessage.slice(0, 40)}...` : errorMessage;
+    }
+
+    function renderLoadingRow(): void {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center py-12 text-on-surface-variant">
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+              <span class="text-sm font-medium">Cargando jobs...</span>
+            </div>
+          </td>
+        </tr>`;
+    }
+
+    function renderEmptyRow(): void {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center py-16 text-on-surface-variant">
+            <p class="text-sm font-medium">No se encontraron ejecuciones</p>
+          </td>
+        </tr>`;
+    }
+
+    function renderErrorRow(): void {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center py-12 text-error">
+            <span class="material-symbols-outlined text-3xl mb-2 block" aria-hidden="true">error</span>
+            <p class="text-sm font-bold">Error al cargar los jobs</p>
+          </td>
+        </tr>`;
+    }
+
+    function renderRows(items: JobExecution[]): void {
+      if (items.length === 0) {
+        renderEmptyRow();
+        return;
+      }
+
+      tableBody.innerHTML = items
+        .map((job, index) => {
+          const safeJobName = escapeHtml(job.jobName);
+          const jobBadgeClass = JOB_NAME_BADGE_CLASS[job.jobName] || 'bg-surface-container text-on-surface-variant';
+          const statusClass = STATUS_BADGE_CLASS[job.status] || 'badge-soft-warning';
+          const safeDuration = escapeHtml(formatDuration(job.durationMs));
+          const safeStartedAt = escapeHtml(formatStartedAt(job.startedAt));
+          const safeProcessedCount = escapeHtml(formatProcessedCount(job.processedCount));
+          const safeErrorPreview = escapeHtml(formatErrorPreview(job.errorMessage));
+          const safeErrorMessage = escapeHtml(job.errorMessage ?? '—');
+          const safeErrorStack = escapeHtml(job.errorStack ?? '—');
+
+          return `
+            <tr class="border-b border-outline-variant/10 hover:bg-surface-container/50 transition-colors">
+              <td class="px-5 py-3.5">
+                <span class="inline-block px-2.5 py-1 rounded-lg text-[11px] font-bold tracking-wide ${jobBadgeClass}">${safeJobName}</span>
+              </td>
+              <td class="px-5 py-3.5 text-on-surface-variant text-xs">${safeStartedAt}</td>
+              <td class="px-5 py-3.5 text-on-surface-variant text-xs">${safeDuration}</td>
+              <td class="px-5 py-3.5">
+                <span class="badge ${statusClass}">${escapeHtml(job.status)}</span>
+              </td>
+              <td class="px-5 py-3.5 text-on-surface-variant text-xs">${safeProcessedCount}</td>
+              <td class="px-5 py-3.5 text-on-surface-variant text-xs">${safeErrorPreview}</td>
+              <td class="px-5 py-3.5">
+                ${
+                  job.errorMessage !== null
+                    ? `<button
+                        type="button"
+                        data-action="show-error"
+                        data-row-index="${index}"
+                        data-job-name="${safeJobName}"
+                        data-error-message="${safeErrorMessage}"
+                        data-error-stack="${safeErrorStack}"
+                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors"
+                      >
+                        Ver error
+                      </button>`
+                    : ''
+                }
+              </td>
+            </tr>`;
+        })
+        .join('');
+    }
+
+    function setPaginationDisabled(disabled: boolean): void {
+      pagination.querySelectorAll<HTMLButtonElement>('button').forEach((button) => {
+        button.disabled = disabled;
+      });
+    }
+
+    function renderPagination(): void {
+      pagination.innerHTML = `
+        <button
+          type="button"
+          data-action="prev"
+          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          ${currentPage <= 1 || isLoading ? 'disabled' : ''}
+        >
+          <span class="material-symbols-outlined text-sm" aria-hidden="true">chevron_left</span>
+          Prev
+        </button>
+        <span class="text-xs font-bold text-on-surface-variant px-1">${currentPage} / ${totalPages}</span>
+        <button
+          type="button"
+          data-action="next"
+          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          ${currentPage >= totalPages || isLoading ? 'disabled' : ''}
+        >
+          Next
+          <span class="material-symbols-outlined text-sm" aria-hidden="true">chevron_right</span>
+        </button>`;
+    }
+
+    function updateSummary(total: number): void {
+      if (total === 0) {
+        resultsInfo.textContent = 'Mostrando 0–0 de 0 ejecuciones encontradas';
+        return;
+      }
+
+      const start = (currentPage - 1) * PAGE_SIZE + 1;
+      const end = Math.min(currentPage * PAGE_SIZE, total);
+      resultsInfo.textContent = `Mostrando ${start}–${end} de ${total} ejecuciones encontradas`;
+    }
+
+    function openErrorModal(jobName: string, errorMessage: string, errorStack: string): void {
+      errorName.textContent = `Job: ${jobName}`;
+      errorContent.textContent = `Error: ${errorMessage}\n\nStack:\n${errorStack}`;
+      errorModal.classList.remove('hidden');
+      errorModal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeErrorModal(): void {
+      errorModal.classList.add('hidden');
+      errorModal.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+
+    async function loadJobs(): Promise<void> {
+      const endpoint = apiURL('/admin/jobs');
+      const query: Record<string, string | number> = {
+        page: currentPage,
+        sizePage: PAGE_SIZE,
+      };
+
+      if (currentJobFilter) {
+        query.jobName = currentJobFilter;
+      }
+
+      isLoading = true;
+      renderPagination();
+      renderLoadingRow();
+
+      try {
+        const response = await api.get<JobsResponse>(endpoint, query);
+        const total = Number(response.total || 0);
+        const sizePage = Number(response.sizePage || PAGE_SIZE);
+        totalPages = Math.max(1, Math.ceil(total / sizePage));
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        renderRows(response.data || []);
+        updateSummary(total);
+      } catch {
+        totalPages = 1;
+        renderErrorRow();
+        resultsInfo.textContent = 'Error al cargar los jobs';
+      } finally {
+        isLoading = false;
+        renderPagination();
+      }
+    }
+
+    function setupAuthGuard(): boolean {
+      restoreSession();
+
+      if (!isAuthenticated() || !isAdmin()) {
+        window.location.href = '/admin';
+        return false;
+      }
+
+      const token = getToken();
+      if (token) {
+        api.setHeader('Authorization', `Bearer ${token}`);
+      }
+
+      return true;
+    }
+
+    pagination.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const button = target.closest<HTMLButtonElement>('button[data-action]');
+      if (!button || isLoading) return;
+
+      const action = button.dataset.action;
+      if (action === 'prev' && currentPage > 1) {
+        currentPage -= 1;
+        loadJobs();
+      }
+
+      if (action === 'next' && currentPage < totalPages) {
+        currentPage += 1;
+        loadJobs();
+      }
+    });
+
+    jobFilter.addEventListener('change', () => {
+      currentJobFilter = jobFilter.value;
+      currentPage = 1;
+      loadJobs();
+    });
+
+    tableBody.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const button = target.closest<HTMLButtonElement>('button[data-action="show-error"]');
+      if (!button) return;
+
+      const jobName = button.dataset.jobName || '';
+      const errorMessage = button.dataset.errorMessage || '—';
+      const errorStack = button.dataset.errorStack || '—';
+      openErrorModal(jobName, errorMessage, errorStack);
+    });
+
+    document.getElementById('job-error-close')?.addEventListener('click', closeErrorModal);
+    errorModal.addEventListener('click', (event) => {
+      if (event.target === errorModal) {
+        closeErrorModal();
+      }
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !errorModal.classList.contains('hidden')) {
+        closeErrorModal();
+      }
+    });
+
+    if (setupAuthGuard()) {
+      setPaginationDisabled(false);
+      loadJobs();
+    }
+  </script>
+</AdminLayout>
+
+<!-- Traceability: implementation by Programmer at 2026-07-02 20:05:00 -->
