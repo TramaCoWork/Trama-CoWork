@@ -9,6 +9,7 @@ const columns = [
   { key: 'location', label: 'Ubicación' },
   { key: 'rubro', label: 'Rubro' },
   { key: 'status', label: 'Estado' },
+  { key: 'trial', label: 'Trial' },
   { key: 'lastLogin', label: 'Último login' },
   { key: 'actions', label: 'Acciones' },
 ];
@@ -224,7 +225,7 @@ const columns = [
       if (data.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6" class="text-center py-16 text-on-surface-variant">
+            <td colspan="7" class="text-center py-16 text-on-surface-variant">
               <span class="material-symbols-outlined text-4xl mb-3 block text-[var(--color-neutral-400)]" aria-hidden="true">search_off</span>
               <p class="text-sm font-medium">No se encontraron profesionales con los filtros aplicados.</p>
             </td>
@@ -242,10 +243,9 @@ const columns = [
             ? 'bg-teal-100 text-teal-800'
             : 'bg-neutral-100 text-neutral-600';
           const accessLabel = p.isActive ? 'Activo' : 'Inactivo';
-          const isTrial = p.trialEndDate && new Date(p.trialEndDate) > new Date();
-          const trialBadge = isTrial
-            ? `<span class="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border border-gray-400 text-gray-500">TRIAL</span>`
-            : '';
+          const trialDisplay = p.trialEndDate && new Date(p.trialEndDate) > new Date()
+            ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border border-gray-400 text-gray-500">TRIAL · ${new Date(p.trialEndDate).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>`
+            : '—';
           // Email verification: button only when the user exists and is NOT verified.
           const verifyEmail = p.user?.email || emailDisplay;
           const resendHtml = p.user && p.user.emailVerified === false
@@ -277,7 +277,9 @@ const columns = [
             <td class="px-5 py-3">
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${statusClass}">${statusLabel}</span>
               <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${accessBadge}">${accessLabel}</span>
-              ${trialBadge}
+            </td>
+            <td class="px-5 py-3 text-xs text-[var(--color-neutral-600)]">
+              ${trialDisplay}
             </td>
             <td class="px-5 py-3 text-xs text-on-surface-variant">
               <span class="material-symbols-outlined text-sm align-middle mr-1">schedule</span>
@@ -402,7 +404,7 @@ const columns = [
       const tbody = document.getElementById('table-body')!;
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" class="text-center py-12 text-on-surface-variant">
+          <td colspan="7" class="text-center py-12 text-on-surface-variant">
             <div class="flex flex-col items-center gap-3">
               <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
               <span class="text-sm font-medium">Cargando...</span>
@@ -418,7 +420,7 @@ const columns = [
       } catch (err: any) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="6" class="text-center py-12 text-error">
+            <td colspan="7" class="text-center py-12 text-error">
               <span class="material-symbols-outlined text-3xl mb-2 block" aria-hidden="true">error</span>
               <p class="text-sm font-bold">Error al cargar profesionales</p>
               <p class="text-xs mt-1">${err?.message || 'Error desconocido'}</p>
