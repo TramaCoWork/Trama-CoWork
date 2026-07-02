@@ -1,5 +1,6 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
+import ConfirmModal from '../../../components/ConfirmModal.astro';
 ---
 
 <AdminLayout title="TRAMA Admin - Jobs">
@@ -34,6 +35,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     <p id="results-info" class="text-sm text-on-surface-variant font-medium">Cargando...</p>
     <div id="pagination" class="flex items-center gap-2"></div>
   </div>
+  <p id="job-run-status" class="mb-4 hidden text-sm font-semibold" aria-live="polite"></p>
 
   <section class="bg-surface-container-low rounded-2xl overflow-hidden border border-outline-variant/10">
     <div class="overflow-x-auto">
@@ -62,6 +64,8 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       </table>
     </div>
   </section>
+
+  <ConfirmModal />
 
   <div
     id="job-error-modal"
@@ -121,6 +125,9 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     const errorModal = document.getElementById('job-error-modal') as HTMLDivElement;
     const errorName = document.getElementById('job-error-name') as HTMLParagraphElement;
     const errorContent = document.getElementById('job-error-content') as HTMLPreElement;
+    const jobRunStatus = document.getElementById('job-run-status') as HTMLParagraphElement;
+    let runStatusTimeoutId: number | null = null;
+    let runReloadTimeoutId: number | null = null;
 
     const JOB_NAME_BADGE_CLASS: Record<string, string> = {
       expiredTrials: 'bg-blue-100 text-blue-800',
@@ -172,6 +179,69 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     function formatErrorPreview(errorMessage: string | null): string {
       if (errorMessage === null) return '—';
       return errorMessage.length > 40 ? `${errorMessage.slice(0, 40)}...` : errorMessage;
+    }
+
+    function showJobRunStatus(message: string, tone: 'success' | 'error'): void {
+      if (runStatusTimeoutId !== null) {
+        window.clearTimeout(runStatusTimeoutId);
+      }
+
+      jobRunStatus.textContent = message;
+      jobRunStatus.classList.remove('hidden', 'text-success', 'text-error');
+      jobRunStatus.classList.add(tone === 'success' ? 'text-success' : 'text-error');
+
+      runStatusTimeoutId = window.setTimeout(() => {
+        jobRunStatus.classList.add('hidden');
+        jobRunStatus.textContent = '';
+        runStatusTimeoutId = null;
+      }, 3000);
+    }
+
+    async function runJob(jobName: string, triggerButton: HTMLButtonElement): Promise<void> {
+      const originalContent = triggerButton.innerHTML;
+      triggerButton.disabled = true;
+
+      try {
+        const token = getToken();
+        const response = await fetch(apiURL(`/admin/jobs/${encodeURIComponent(jobName)}/run`), {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token || ''}`,
+          },
+        });
+
+        if (response.status === 404) {
+          showJobRunStatus('Job no encontrado', 'error');
+          triggerButton.disabled = false;
+          return;
+        }
+
+        if (!response.ok) {
+          showJobRunStatus('Error al iniciar el job', 'error');
+          triggerButton.disabled = false;
+          return;
+        }
+
+        triggerButton.innerHTML = '<span class="material-symbols-outlined text-sm">check</span> Iniciado';
+        showJobRunStatus('Job iniciado', 'success');
+
+        window.setTimeout(() => {
+          triggerButton.disabled = false;
+          triggerButton.innerHTML = originalContent;
+        }, 2000);
+
+        if (runReloadTimeoutId !== null) {
+          window.clearTimeout(runReloadTimeoutId);
+        }
+
+        runReloadTimeoutId = window.setTimeout(() => {
+          loadJobs();
+          runReloadTimeoutId = null;
+        }, 3000);
+      } catch {
+        showJobRunStatus('Error al iniciar el job', 'error');
+        triggerButton.disabled = false;
+      }
     }
 
     function renderLoadingRow(): void {
@@ -236,21 +306,32 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
               <td class="px-5 py-3.5 text-on-surface-variant text-xs">${safeProcessedCount}</td>
               <td class="px-5 py-3.5 text-on-surface-variant text-xs">${safeErrorPreview}</td>
               <td class="px-5 py-3.5">
-                ${
-                  job.errorMessage !== null
-                    ? `<button
-                        type="button"
-                        data-action="show-error"
-                        data-row-index="${index}"
-                        data-job-name="${safeJobName}"
-                        data-error-message="${safeErrorMessage}"
-                        data-error-stack="${safeErrorStack}"
-                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors"
-                      >
-                        Ver error
-                      </button>`
-                    : ''
-                }
+                <div class="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    data-action="run-job"
+                    data-job-name="${safeJobName}"
+                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-primary text-on-primary hover:opacity-90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    <span class="material-symbols-outlined text-sm" aria-hidden="true">play_arrow</span>
+                    Ejecutar
+                  </button>
+                  ${
+                    job.errorMessage !== null
+                      ? `<button
+                          type="button"
+                          data-action="show-error"
+                          data-row-index="${index}"
+                          data-job-name="${safeJobName}"
+                          data-error-message="${safeErrorMessage}"
+                          data-error-stack="${safeErrorStack}"
+                          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors"
+                        >
+                          Ver error
+                        </button>`
+                      : ''
+                  }
+                </div>
               </td>
             </tr>`;
         })
@@ -386,8 +467,36 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
     tableBody.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
-      const button = target.closest<HTMLButtonElement>('button[data-action="show-error"]');
+      const button = target.closest<HTMLButtonElement>('button[data-action]');
       if (!button) return;
+
+      const action = button.dataset.action;
+
+      if (action === 'run-job') {
+        const jobName = button.dataset.jobName || '';
+        if (!jobName) return;
+
+        (window as any).openConfirmModal({
+          title: 'Ejecutar job',
+          body: `¿Querés ejecutar manualmente el job ${jobName}? Esta acción corre inmediatamente en background.`,
+          buttons: [
+            {
+              text: 'Ejecutar',
+              variant: 'primary',
+              onClick: () => {
+                void runJob(jobName, button);
+              },
+            },
+            {
+              text: 'Cancelar',
+              variant: 'ghost',
+            },
+          ],
+        });
+        return;
+      }
+
+      if (action !== 'show-error') return;
 
       const jobName = button.dataset.jobName || '';
       const errorMessage = button.dataset.errorMessage || '—';
