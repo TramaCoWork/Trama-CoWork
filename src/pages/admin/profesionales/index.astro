@@ -281,7 +281,7 @@ const columns = [
             </td>
             <td class="px-5 py-3 text-xs text-on-surface-variant">
               <span class="material-symbols-outlined text-sm align-middle mr-1">schedule</span>
-              ${daysAgo(p.lastLoginAt)}
+              ${daysAgo(p.user?.lastLoginAt ?? p.lastLoginAt)}
             </td>
             <td class="px-5 py-3">
               <div class="flex items-center gap-1.5">

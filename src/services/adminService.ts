@@ -39,7 +39,7 @@ export interface AdminProfessional {
   country?: { id: number; name: string; code: string } | null;
   province?: { id: number; name: string } | null;
   professionCategories?: { id: number; slug: string; name: string; level: number }[];
-  user?: { id: string; email: string; role: string; emailVerified?: boolean };
+  user?: { id: string; email: string; role: string; emailVerified?: boolean; lastLoginAt?: string | null };
 }
 
 export interface PaginatedResponse<T> {
