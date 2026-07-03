@@ -245,3 +245,31 @@ export async function createChannelComment(channelId: string, postId: string, co
   const response = await api.post<RawComment>(`${CHANNELS_PATH}/${channelId}/posts/${postId}/comments`, { content });
   return adaptComment(response);
 }
+
+export async function markSeen(channel: Channel): Promise<void> {
+  const path = channel.type === 'channel'
+    ? `${CHANNELS_PATH}/${channel.slug}/seen`
+    : `/community/channels/${channel.slug}/seen`;
+
+  try {
+    setAuthHeader();
+    await api.post<void>(path);
+  } catch {
+    // fire-and-forget safe
+  }
+}
+
+export async function getUnreadCount(channel: Channel): Promise<number> {
+  const path = channel.type === 'channel'
+    ? `${CHANNELS_PATH}/${channel.slug}/unread-count`
+    : `/community/channels/${channel.slug}/unread-count`;
+
+  try {
+    setAuthHeader();
+    const response = await api.get<{ count?: number | string }>(path);
+    const count = Number(response.count ?? 0);
+    return Number.isFinite(count) && count > 0 ? count : 0;
+  } catch {
+    return 0;
+  }
+}

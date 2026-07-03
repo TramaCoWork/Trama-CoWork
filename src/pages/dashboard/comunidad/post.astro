@@ -1,0 +1,401 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="Post">
+  <div class="space-y-5">
+    <div class="flex items-center justify-between gap-3">
+      <h1 class="text-2xl font-extrabold tracking-tight text-on-surface">Post</h1>
+      <a
+        href="/dashboard/comunidad"
+        class="inline-flex items-center gap-1 rounded-lg bg-surface-container-low px-3 py-2 text-xs font-bold uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface-container"
+      >
+        <span class="material-symbols-outlined text-sm" aria-hidden="true">arrow_back</span>
+        Volver
+      </a>
+    </div>
+
+    <div id="page-error" class="hidden rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></div>
+
+    <section class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <article id="post-panel" class="xl:col-span-1 rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+        <div id="post-loading" class="flex items-center justify-center py-10">
+          <span class="material-symbols-outlined text-2xl text-primary animate-spin" aria-hidden="true">schedule</span>
+        </div>
+        <div id="post-content-wrapper" class="hidden">
+          <div class="mb-4 flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p id="post-author" class="truncate text-sm font-bold text-on-surface">—</p>
+              <p id="post-date" class="mt-1 text-xs text-on-surface-variant">—</p>
+            </div>
+            <span id="post-status" class="hidden rounded-full bg-warning/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-warning">
+              Pausado
+            </span>
+          </div>
+          <div id="post-content" class="text-sm leading-relaxed text-on-surface"></div>
+        </div>
+        <div id="post-not-found" class="hidden rounded-xl border border-outline-variant/15 bg-surface-container-lowest p-5 text-sm text-on-surface-variant">
+          <p class="font-semibold text-on-surface">Post no encontrado</p>
+          <a href="/dashboard/comunidad" class="mt-2 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-primary hover:opacity-80">
+            <span class="material-symbols-outlined text-sm" aria-hidden="true">arrow_back</span>
+            Volver a comunidad
+          </a>
+        </div>
+      </article>
+
+      <aside class="xl:col-span-1 rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+        <h2 class="mb-4 text-lg font-extrabold tracking-tight text-on-surface">Comentarios</h2>
+        <div id="comments-list" class="space-y-3"></div>
+        <div class="mt-4 flex justify-center">
+          <button
+            id="comments-load-more"
+            type="button"
+            class="hidden rounded-lg bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Cargar más comentarios
+          </button>
+        </div>
+
+        <form id="comment-form" class="mt-5 space-y-2 border-t border-outline-variant/15 pt-4">
+          <label for="comment-input" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Nuevo comentario</label>
+          <textarea
+            id="comment-input"
+            rows="4"
+            placeholder="Escribí tu comentario..."
+            class="w-full resize-y rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/80 focus:border-primary focus:outline-none"
+          ></textarea>
+          <button
+            id="comment-submit"
+            type="submit"
+            class="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Comentar
+          </button>
+          <p id="comment-error" class="hidden text-sm font-medium text-error"></p>
+        </form>
+      </aside>
+    </section>
+  </div>
+
+  <script>
+    import { apiURL } from '../../../services/apiClient';
+    import {
+      createChannelComment,
+      createComment,
+      fetchChannelPost,
+      fetchChannelPostComments,
+      fetchPostComments,
+      markSeen,
+      type Channel,
+      type Comment,
+      type Post,
+    } from '../../../services/communityService';
+    import { getToken, isAuthenticated, restoreSession } from '../../../services/authService';
+
+    type ReaderType = 'community' | 'channel';
+
+    const pageError = document.getElementById('page-error') as HTMLDivElement;
+    const postLoading = document.getElementById('post-loading') as HTMLDivElement;
+    const postWrapper = document.getElementById('post-content-wrapper') as HTMLDivElement;
+    const postNotFound = document.getElementById('post-not-found') as HTMLDivElement;
+    const postAuthor = document.getElementById('post-author') as HTMLParagraphElement;
+    const postDate = document.getElementById('post-date') as HTMLParagraphElement;
+    const postStatus = document.getElementById('post-status') as HTMLSpanElement;
+    const postContent = document.getElementById('post-content') as HTMLDivElement;
+    const commentsList = document.getElementById('comments-list') as HTMLDivElement;
+    const commentsLoadMore = document.getElementById('comments-load-more') as HTMLButtonElement;
+    const commentForm = document.getElementById('comment-form') as HTMLFormElement;
+    const commentInput = document.getElementById('comment-input') as HTMLTextAreaElement;
+    const commentSubmit = document.getElementById('comment-submit') as HTMLButtonElement;
+    const commentError = document.getElementById('comment-error') as HTMLParagraphElement;
+
+    const COMMENTS_LIMIT = 20;
+
+    let readerType: ReaderType = 'community';
+    let postId = '';
+    let slug = '';
+    let channelId = '';
+    let commentsPage = 1;
+    let commentsTotalPages = 1;
+    let isCommentsLoading = false;
+    let isSubmittingComment = false;
+    let postFound = false;
+
+    restoreSession();
+    if (!isAuthenticated()) {
+      window.location.href = '/login';
+    }
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderLightMarkdown(raw: string): string {
+      const escaped = escapeHtml(raw || '');
+      const withLinks = escaped.replace(
+        /(https?:\/\/[^\s<]+)/g,
+        '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-primary underline">$1</a>',
+      );
+      const withBold = withLinks.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      const withItalic = withBold.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      return withItalic.replace(/\n/g, '<br>');
+    }
+
+    function formatDate(value: string): string {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return date.toLocaleString('es-AR');
+    }
+
+    function showPageError(message: string): void {
+      pageError.textContent = message;
+      pageError.classList.remove('hidden');
+    }
+
+    function hidePageError(): void {
+      pageError.textContent = '';
+      pageError.classList.add('hidden');
+    }
+
+    function parseParams(): boolean {
+      const params = new URLSearchParams(window.location.search);
+      const parsedType = params.get('type')?.trim();
+      const parsedPostId = params.get('postId')?.trim() || '';
+      const parsedSlug = params.get('slug')?.trim() || '';
+      const parsedChannelId = params.get('channelId')?.trim() || '';
+
+      if (parsedType !== 'community' && parsedType !== 'channel') {
+        return false;
+      }
+      if (!parsedPostId) {
+        return false;
+      }
+      if (parsedType === 'community' && !parsedSlug) {
+        return false;
+      }
+      if (parsedType === 'channel' && !parsedChannelId) {
+        return false;
+      }
+
+      readerType = parsedType;
+      postId = parsedPostId;
+      slug = parsedSlug;
+      channelId = parsedChannelId;
+      return true;
+    }
+
+    async function fetchCommunityPostDetail(targetPostId: string): Promise<Post> {
+      const token = getToken();
+      const response = await fetch(apiURL(`/community/posts/${targetPostId}`), {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!response.ok) {
+        const error = new Error('community post detail failed') as Error & { status?: number };
+        error.status = response.status;
+        throw error;
+      }
+
+      return response.json() as Promise<Post>;
+    }
+
+    function getPostAuthor(post: Post): string {
+      const anyPost = post as Post & { nombre?: string | null };
+      return anyPost.nombre || post.user?.profile?.name || post.user?.email || 'Usuario';
+    }
+
+    function renderPostDetail(post: Post): void {
+      postAuthor.textContent = getPostAuthor(post);
+      postDate.textContent = formatDate(post.createdAt);
+      postContent.innerHTML = renderLightMarkdown(post.content || '');
+      if (post.status === 'paused') {
+        postStatus.classList.remove('hidden');
+      } else {
+        postStatus.classList.add('hidden');
+      }
+
+      postLoading.classList.add('hidden');
+      postNotFound.classList.add('hidden');
+      postWrapper.classList.remove('hidden');
+      postFound = true;
+    }
+
+    function renderPostNotFoundState(): void {
+      postLoading.classList.add('hidden');
+      postWrapper.classList.add('hidden');
+      postNotFound.classList.remove('hidden');
+      postFound = false;
+    }
+
+    function updateLoadMoreState(): void {
+      const hasMore = commentsPage < commentsTotalPages;
+      commentsLoadMore.classList.toggle('hidden', !hasMore || !postFound);
+      commentsLoadMore.disabled = isCommentsLoading;
+    }
+
+    function getCommentAuthor(comment: Comment): string {
+      const anyComment = comment as Comment & { nombre?: string | null; email?: string | null };
+      return anyComment.nombre || anyComment.email || comment.user?.profile?.name || comment.user?.email || comment.userId || 'Usuario';
+    }
+
+    function renderCommentCard(comment: Comment): string {
+      return `
+        <article class="rounded-xl border border-outline-variant/15 bg-surface-container-lowest p-3">
+          <div class="mb-2 min-w-0">
+            <p class="truncate text-sm font-bold text-on-surface">${escapeHtml(getCommentAuthor(comment))}</p>
+            <p class="text-xs text-on-surface-variant">${escapeHtml(formatDate(comment.createdAt))}</p>
+          </div>
+          <div class="text-sm text-on-surface-variant">${renderLightMarkdown(comment.content || '')}</div>
+        </article>`;
+    }
+
+    function renderCommentsEmpty(): void {
+      commentsList.innerHTML = `
+        <div class="rounded-xl border border-outline-variant/15 bg-surface-container-lowest p-5 text-center text-sm text-on-surface-variant">
+          Todavía no hay comentarios
+        </div>`;
+    }
+
+    function appendComments(comments: Comment[], replace: boolean): void {
+      if (replace) {
+        commentsList.innerHTML = '';
+      }
+
+      if (comments.length === 0 && replace) {
+        renderCommentsEmpty();
+        return;
+      }
+
+      commentsList.insertAdjacentHTML('beforeend', comments.map(renderCommentCard).join(''));
+    }
+
+    async function loadComments(page: number, replace: boolean): Promise<void> {
+      if (!postFound || isCommentsLoading) {
+        return;
+      }
+
+      isCommentsLoading = true;
+      updateLoadMoreState();
+      hidePageError();
+
+      try {
+        const result = readerType === 'community'
+          ? await fetchPostComments(postId, page, COMMENTS_LIMIT)
+          : await fetchChannelPostComments(channelId, postId, page, COMMENTS_LIMIT);
+
+        commentsPage = result.meta.page;
+        commentsTotalPages = result.meta.totalPages;
+        appendComments(result.data || [], replace);
+      } catch {
+        if (replace) {
+          commentsList.innerHTML = '<p class="text-sm text-error">No se pudieron cargar los comentarios.</p>';
+        }
+      } finally {
+        isCommentsLoading = false;
+        updateLoadMoreState();
+      }
+    }
+
+    async function loadPost(): Promise<void> {
+      hidePageError();
+      try {
+        const post = readerType === 'community'
+          ? await fetchCommunityPostDetail(postId)
+          : await fetchChannelPost(channelId, postId);
+        renderPostDetail(post);
+      } catch (error) {
+        const err = error as Error & { status?: number };
+        if (err.status === 404) {
+          renderPostNotFoundState();
+          return;
+        }
+        renderPostNotFoundState();
+        showPageError('No se pudo cargar el post.');
+      }
+    }
+
+    function prependCreatedComment(comment: Comment): void {
+      const emptyCard = commentsList.querySelector('div');
+      if (emptyCard && emptyCard.textContent?.includes('Todavía no hay comentarios')) {
+        commentsList.innerHTML = '';
+      }
+
+      commentsList.insertAdjacentHTML('afterbegin', renderCommentCard(comment));
+    }
+
+    commentForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!postFound || isSubmittingComment) {
+        return;
+      }
+
+      const content = commentInput.value.trim();
+      commentError.classList.add('hidden');
+      commentError.textContent = '';
+
+      if (!content) {
+        commentError.textContent = 'Escribí un comentario antes de enviar.';
+        commentError.classList.remove('hidden');
+        return;
+      }
+
+      isSubmittingComment = true;
+      commentSubmit.disabled = true;
+
+      try {
+        const created = readerType === 'community'
+          ? await createComment(postId, content)
+          : await createChannelComment(channelId, postId, content);
+        prependCreatedComment(created);
+        commentInput.value = '';
+      } catch {
+        commentError.textContent = 'No se pudo crear el comentario. Intentá de nuevo.';
+        commentError.classList.remove('hidden');
+      } finally {
+        isSubmittingComment = false;
+        commentSubmit.disabled = false;
+      }
+    });
+
+    commentsLoadMore.addEventListener('click', async () => {
+      if (isCommentsLoading || commentsPage >= commentsTotalPages) {
+        return;
+      }
+      await loadComments(commentsPage + 1, false);
+    });
+
+    async function init(): Promise<void> {
+      if (!parseParams()) {
+        window.location.href = '/dashboard/comunidad';
+        return;
+      }
+
+      const seenChannel: Channel = readerType === 'community'
+        ? { type: 'community', slug, name: slug }
+        : { type: 'channel', slug: channelId, name: channelId };
+      void markSeen(seenChannel).catch(() => {});
+
+      await loadPost();
+      if (!postFound) {
+        updateLoadMoreState();
+        return;
+      }
+
+      await loadComments(1, true);
+      updateLoadMoreState();
+    }
+
+    void init();
+  </script>
+</DashboardLayout>
+
+<!-- Traceability: implementation by Programmer at 2026-07-03 00:00:00 -->

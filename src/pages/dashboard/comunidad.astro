@@ -293,6 +293,8 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
     fetchPostComments,
     createPost,
     createChannelPost,
+    getUnreadCount,
+    markSeen,
     deletePost,
     updatePostStatus,
     createComment,
@@ -371,6 +373,7 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
   let currentChannel = 'general';
   let currentChannelObj: Channel | null = null;
   let channels: Channel[] = [];
+  const unreadMap = new Map<string, number>();
   let allMyPosts: Post[] = [];
   let myPostsChannelFilter = '';
   let currentView: 'feed' | 'myposts' | 'messages' = 'feed';
@@ -401,6 +404,11 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
   function setActiveChannel(slug: string) {
     currentChannel = slug;
     currentChannelObj = resolveChannelBySlug(slug);
+    if (currentChannelObj) {
+      void markSeen(currentChannelObj).catch(() => {});
+      unreadMap.set(currentChannelObj.slug, 0);
+      renderChannels();
+    }
     if (channelIconEl) {
       channelIconEl.textContent = currentChannelObj?.type === 'channel' ? 'hub' : 'tag';
     }
@@ -1198,6 +1206,10 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
     channelsList.innerHTML = channels.map(ch => {
       const isActive = ch.slug === currentChannel;
       const channelIcon = ch.type === 'community' ? 'tag' : 'hub';
+      const count = unreadMap.get(ch.slug) ?? 0;
+      const badge = count > 0
+        ? `<span class="ml-auto text-[10px] font-bold bg-error text-on-error rounded-full px-1.5 py-0.5 min-w-[18px] text-center">${count > 99 ? '99+' : count}</span>`
+        : '';
       return `
         <button
           data-channel="${ch.slug}"
@@ -1209,6 +1221,7 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
         >
           <span class="material-symbols-outlined text-base" aria-hidden="true">${channelIcon}</span>
           ${escapeHtml(ch.name)}
+          ${badge}
         </button>`;
     }).join('');
 
@@ -1216,7 +1229,6 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
     channelsList.querySelectorAll('.channel-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         setActiveChannel((btn as HTMLElement).dataset.channel!);
-        renderChannels();
         channelNameEl.textContent = currentChannelObj?.name || currentChannel;
         if (channelIconEl) {
           channelIconEl.textContent = currentChannelObj?.type === 'channel' ? 'hub' : 'tag';
@@ -1231,9 +1243,10 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
     const isOwner = post.userId === userId;
     const commentCount = post.commentCount ?? 0;
     const authorName = post.user?.profile?.name || post.user?.email || 'Usuario';
+    const postType = post.type || (getActiveChannelType() === 'channel' ? 'channel' : 'community');
 
     return `
-      <article class="bg-surface-container-lowest rounded-xl border border-outline-variant/10 p-4 hover:border-outline-variant/25 transition-all" data-post-id="${post.id}" data-post-type="${post.type || 'community'}">
+      <article class="bg-surface-container-lowest rounded-xl border border-outline-variant/10 p-4 hover:border-outline-variant/25 transition-all cursor-pointer" data-post-id="${post.id}" data-post-type="${postType}" role="link" tabindex="0">
         <div class="flex items-start justify-between gap-3">
           <div class="flex items-center gap-3 mb-2">
             <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
@@ -1829,6 +1842,55 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
     renderFilteredMyPosts();
   });
 
+  function navigateToPostReader(postId: string, type: Channel['type']) {
+    const query = type === 'community'
+      ? `type=community&slug=${encodeURIComponent(currentChannel)}&postId=${encodeURIComponent(postId)}`
+      : `type=channel&channelId=${encodeURIComponent(currentChannel)}&postId=${encodeURIComponent(postId)}`;
+
+    window.location.href = `/dashboard/comunidad/post?${query}`;
+  }
+
+  function shouldIgnorePostNavigation(target: HTMLElement): boolean {
+    return Boolean(target.closest(
+      '.btn-delete-post, .btn-toggle-status, .btn-delete-mypost, .btn-open-comment-editor, .btn-open-comments, button, a, input, textarea, select, label',
+    ));
+  }
+
+  postsContainer.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement;
+    if (shouldIgnorePostNavigation(target)) {
+      return;
+    }
+
+    const card = target.closest<HTMLElement>('article[data-post-id][data-post-type]');
+    if (!card?.dataset.postId || !card.dataset.postType) {
+      return;
+    }
+
+    const type = card.dataset.postType === 'channel' ? 'channel' : 'community';
+    navigateToPostReader(card.dataset.postId, type);
+  });
+
+  postsContainer.addEventListener('keydown', (event) => {
+    const keyboardEvent = event as KeyboardEvent;
+    if (keyboardEvent.key !== 'Enter' && keyboardEvent.key !== ' ') {
+      return;
+    }
+
+    const target = keyboardEvent.target as HTMLElement;
+    if (shouldIgnorePostNavigation(target)) {
+      return;
+    }
+    const card = target.closest<HTMLElement>('article[data-post-id][data-post-type]');
+    if (!card?.dataset.postId || !card.dataset.postType) {
+      return;
+    }
+
+    keyboardEvent.preventDefault();
+    const type = card.dataset.postType === 'channel' ? 'channel' : 'community';
+    navigateToPostReader(card.dataset.postId, type);
+  });
+
   // ─── Bind actions on feed posts ───────────────────────────────
   function bindPostActions() {
     // Delete post
@@ -2010,8 +2072,11 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
   async function init() {
     try {
       channels = await fetchChannels();
+      await Promise.all(channels.map(async (ch) => {
+        const count = await getUnreadCount(ch);
+        unreadMap.set(ch.slug, count);
+      }));
       setActiveChannel(currentChannel);
-      renderChannels();
 
       populateMyPostsChannelFilterOptions();
 
