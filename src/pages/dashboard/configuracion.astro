@@ -3,7 +3,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
 ---
 
 <DashboardLayout title="Configuración | TRAMA">
-  <div id="configuration-root" class="mx-auto max-w-5xl space-y-6 hidden">
+  <div id="configuration-root" class="space-y-6 hidden">
     <header class="space-y-2">
       <h1 class="text-2xl font-bold text-on-surface">Configuración</h1>
       <p class="text-sm text-on-surface-variant">Administrá tus notificaciones y tu seguridad de cuenta.</p>
@@ -37,9 +37,6 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
     </div>
 
     <section id="panel-notificaciones" role="tabpanel" aria-labelledby="tab-notificaciones" class="space-y-4 hidden">
-      <div id="prefs-warning" class="hidden rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm font-medium text-on-surface">
-        No se pudieron cargar tus preferencias — se muestran valores por defecto
-      </div>
       <div id="prefs-fetch-error" class="hidden rounded-xl border border-error/30 bg-error/10 px-4 py-3 text-sm font-medium text-error"></div>
       <div id="prefs-inline-error" class="hidden rounded-xl border border-error/30 bg-error/10 px-4 py-3 text-sm font-medium text-error"></div>
 
@@ -164,7 +161,6 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
   const prefsEmpty = document.getElementById('prefs-empty');
   const prefsTableWrapper = document.getElementById('prefs-table-wrapper');
   const prefsTableBody = document.getElementById('prefs-table-body');
-  const prefsWarning = document.getElementById('prefs-warning');
   const prefsFetchError = document.getElementById('prefs-fetch-error');
   const prefsInlineError = document.getElementById('prefs-inline-error');
 
@@ -236,10 +232,20 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
   function updateSwitchButtonAppearance(button: HTMLButtonElement, enabled: boolean): void {
     button.setAttribute('aria-checked', enabled ? 'true' : 'false');
     button.classList.toggle('bg-primary', enabled);
-    button.classList.toggle('text-on-primary', enabled);
-    button.classList.toggle('bg-surface-container', !enabled);
-    button.classList.toggle('text-on-surface-variant', !enabled);
-    button.textContent = enabled ? 'Activado' : 'Silenciado';
+    button.classList.toggle('bg-surface-container-high', !enabled);
+
+    const thumb = button.querySelector('span');
+    thumb?.classList.toggle('translate-x-6', enabled);
+    thumb?.classList.toggle('translate-x-1', !enabled);
+
+    const prefLabel = button.dataset.prefType === 'push' ? 'Push' : 'Email';
+    const statusLabel = enabled ? 'activado' : 'silenciado';
+    button.title = `${prefLabel}: ${statusLabel}`;
+
+    const srLabel = button.querySelector('.sr-only');
+    if (srLabel) {
+      srLabel.textContent = `${prefLabel} ${statusLabel}`;
+    }
   }
 
   function setInlinePreferenceError(message: string): void {
@@ -349,9 +355,11 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
             data-source-id="${sourceId}"
             data-source-type="${sourceType}"
             data-pref-type="email"
-            class="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${effective.email ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}"
+            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${effective.email ? 'bg-primary' : 'bg-surface-container-high'}"
+            title="Email: ${effective.email ? 'activado' : 'silenciado'}"
           >
-            ${effective.email ? 'Activado' : 'Silenciado'}
+            <span class="inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow transition-transform ${effective.email ? 'translate-x-6' : 'translate-x-1'}"></span>
+            <span class="sr-only">Email ${effective.email ? 'activado' : 'silenciado'}</span>
           </button>
         </td>
         <td class="px-4 py-3">
@@ -362,9 +370,11 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
             data-source-id="${sourceId}"
             data-source-type="${sourceType}"
             data-pref-type="push"
-            class="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${effective.push ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant'}"
+            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${effective.push ? 'bg-primary' : 'bg-surface-container-high'}"
+            title="Push: ${effective.push ? 'activado' : 'silenciado'}"
           >
-            ${effective.push ? 'Activado' : 'Silenciado'}
+            <span class="inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow transition-transform ${effective.push ? 'translate-x-6' : 'translate-x-1'}"></span>
+            <span class="sr-only">Push ${effective.push ? 'activado' : 'silenciado'}</span>
           </button>
         </td>
       </tr>
@@ -376,7 +386,6 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
 
     notificationsLoaded = true;
     clearInlinePreferenceError();
-    hideElement(prefsWarning);
     hideElement(prefsFetchError);
     hideElement(prefsEmpty);
     hideElement(prefsTableWrapper);
@@ -429,8 +438,6 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       prefs.forEach((pref) => {
         prefsBySource.set(getSourceKey(pref.sourceId, pref.sourceType), pref);
       });
-    } else {
-      showElement(prefsWarning);
     }
 
     if (channels.length === 0) {
