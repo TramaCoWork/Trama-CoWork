@@ -32,7 +32,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
               Pausado
             </span>
           </div>
-          <div id="post-content" class="text-sm leading-relaxed text-on-surface"></div>
+          <div id="post-content" class="markdown-content text-sm leading-relaxed text-on-surface"></div>
         </div>
         <div id="post-not-found" class="hidden rounded-xl border border-outline-variant/15 bg-surface-container-lowest p-5 text-sm text-on-surface-variant">
           <p class="font-semibold text-on-surface">Post no encontrado</p>
@@ -79,6 +79,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 
   <script>
     import { apiURL } from '../../../services/apiClient';
+    import { renderMarkdown } from '../../../utils/markdown';
     import {
       createChannelComment,
       createComment,
@@ -136,14 +137,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
     }
 
     function renderLightMarkdown(raw: string): string {
-      const escaped = escapeHtml(raw || '');
-      const withLinks = escaped.replace(
-        /(https?:\/\/[^\s<]+)/g,
-        '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-primary underline">$1</a>',
-      );
-      const withBold = withLinks.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-      const withItalic = withBold.replace(/\*(.+?)\*/g, '<em>$1</em>');
-      return withItalic.replace(/\n/g, '<br>');
+      return renderMarkdown(raw || '');
     }
 
     function formatDate(value: string): string {
@@ -254,7 +248,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
             <p class="truncate text-sm font-bold text-on-surface">${escapeHtml(getCommentAuthor(comment))}</p>
             <p class="text-xs text-on-surface-variant">${escapeHtml(formatDate(comment.createdAt))}</p>
           </div>
-          <div class="text-sm text-on-surface-variant">${renderLightMarkdown(comment.content || '')}</div>
+          <div class="markdown-content text-sm text-on-surface-variant">${renderLightMarkdown(comment.content || '')}</div>
         </article>`;
     }
 
