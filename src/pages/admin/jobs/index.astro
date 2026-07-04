@@ -429,11 +429,20 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       button.setAttribute('aria-checked', String(isActive));
     }
 
-    function showConfigRowError(jobId: string, message: string): void {
+    function showConfigRowMessage(jobId: string, message: string, tone: 'error' | 'info'): void {
       const rowError = configTableBody.querySelector<HTMLParagraphElement>(`[data-row-error="${CSS.escape(jobId)}"]`);
       if (!rowError) return;
       rowError.textContent = message;
-      rowError.classList.remove('hidden');
+      rowError.classList.remove('hidden', 'text-error', 'text-on-surface-variant');
+      rowError.classList.add(tone === 'error' ? 'text-error' : 'text-on-surface-variant');
+    }
+
+    function showConfigRowError(jobId: string, message: string): void {
+      showConfigRowMessage(jobId, message, 'error');
+    }
+
+    function showConfigRowInfo(jobId: string, message: string): void {
+      showConfigRowMessage(jobId, message, 'info');
     }
 
     function clearConfigRowError(jobId: string): void {
@@ -441,6 +450,17 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       if (!rowError) return;
       rowError.textContent = '';
       rowError.classList.add('hidden');
+      rowError.classList.remove('text-on-surface-variant');
+      rowError.classList.add('text-error');
+    }
+
+    function getCronJobByKey(jobKey: string): EnrichedCronJob | null {
+      for (const job of enrichedCronJobsMap.values()) {
+        if (job.key === jobKey) {
+          return job;
+        }
+      }
+      return null;
     }
 
     function renderConfigRows(rows: EnrichedCronJob[]): void {
@@ -505,14 +525,24 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
               </td>
               <td class="px-5 py-3.5 align-top text-xs text-on-surface-variant">${escapeHtml(formatNextRun(job.nextRun))}</td>
               <td class="px-5 py-3.5 align-top">
-                <button
-                  type="button"
-                  data-config-run="${safeKey}"
-                  class="inline-flex items-center gap-1 rounded-lg bg-surface-container px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant hover:bg-surface-container-high transition-colors"
-                >
-                  <span class="material-symbols-outlined text-sm">play_arrow</span>
-                  Ejecutar
-                </button>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    data-config-run="${safeKey}"
+                    class="inline-flex items-center gap-1 rounded-lg bg-surface-container px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant hover:bg-surface-container-high transition-colors"
+                  >
+                    <span class="material-symbols-outlined text-sm">play_arrow</span>
+                    Ejecutar
+                  </button>
+                  <button
+                    type="button"
+                    data-config-restart="${safeKey}"
+                    class="inline-flex items-center gap-1 rounded-lg border border-outline-variant px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant hover:bg-surface-container transition-colors"
+                  >
+                    <span class="material-symbols-outlined text-sm">restart_alt</span>
+                    Restart
+                  </button>
+                </div>
               </td>
             </tr>`;
         })
@@ -666,7 +696,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
 
       try {
         const token = getToken();
-        const response = await fetch(apiURL('/admin/jobs/available'), {
+        const response = await fetch(apiURL('/admin/cron-jobs'), {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token || ''}`,
@@ -777,8 +807,8 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       }
     }
 
-    async function loadConfigTab(): Promise<void> {
-      if (configLoaded || isConfigLoading) {
+    async function loadConfigTab(forceReload = false): Promise<void> {
+      if (isConfigLoading || (configLoaded && !forceReload)) {
         return;
       }
 
@@ -820,6 +850,82 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       } finally {
         isConfigLoading = false;
       }
+    }
+
+    async function reloadConfigTab(): Promise<void> {
+      await loadConfigTab(true);
+    }
+
+    async function restartJob(jobKey: string, triggerButton: HTMLButtonElement): Promise<void> {
+      const cronJob = getCronJobByKey(jobKey);
+      const jobDisplayName = cronJob?.name || jobKey;
+      const rowId = cronJob?.id || '';
+
+      (window as any).openConfirmModal({
+        title: 'Reiniciar job',
+        body: `¿Reiniciar el job '${jobDisplayName}'? El timer se detendrá y se re-registrará con el schedule actual de la DB. Útil después de cambiar el schedule sin reiniciar la app.`,
+        confirmText: 'Reiniciar',
+        cancelText: 'Cancelar',
+        onConfirm: async () => {
+          if (rowId) {
+            clearConfigRowError(rowId);
+          }
+
+          const originalContent = triggerButton.innerHTML;
+          triggerButton.disabled = true;
+
+          try {
+            const token = getToken();
+            const response = await fetch(apiURL(`/admin/jobs/${encodeURIComponent(jobKey)}/restart`), {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${token || ''}`,
+              },
+            });
+
+            if (response.status === 400) {
+              if (rowId) {
+                showConfigRowInfo(rowId, 'El job estaba inactivo y se detuvo');
+              }
+
+              window.setTimeout(() => {
+                triggerButton.disabled = false;
+                triggerButton.innerHTML = originalContent;
+                void reloadConfigTab();
+              }, 1200);
+              return;
+            }
+
+            if (response.status === 404) {
+              if (rowId) {
+                showConfigRowError(rowId, 'Job no encontrado');
+              }
+              triggerButton.disabled = false;
+              return;
+            }
+
+            if (!response.ok) {
+              if (rowId) {
+                showConfigRowError(rowId, 'Error al reiniciar el job');
+              }
+              triggerButton.disabled = false;
+              return;
+            }
+
+            triggerButton.innerHTML = '<span class="material-symbols-outlined text-sm">check</span> ✓ Reiniciado';
+            window.setTimeout(() => {
+              triggerButton.disabled = false;
+              triggerButton.innerHTML = originalContent;
+              void reloadConfigTab();
+            }, 2000);
+          } catch {
+            if (rowId) {
+              showConfigRowError(rowId, 'Error al reiniciar el job');
+            }
+            triggerButton.disabled = false;
+          }
+        },
+      });
     }
 
     function startInlineEdit(cellButton: HTMLButtonElement): void {
@@ -1057,6 +1163,15 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         const jobKey = runButton.dataset.configRun;
         if (jobKey) {
           void runJob(jobKey, runButton);
+        }
+        return;
+      }
+
+      const restartButton = target.closest<HTMLButtonElement>('button[data-config-restart]');
+      if (restartButton) {
+        const jobKey = restartButton.dataset.configRestart;
+        if (jobKey) {
+          void restartJob(jobKey, restartButton);
         }
         return;
       }
