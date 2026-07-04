@@ -293,7 +293,6 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
     fetchPostComments,
     createPost,
     createChannelPost,
-    getUnreadCount,
     markSeen,
     deletePost,
     updatePostStatus,
@@ -2072,10 +2071,12 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
   async function init() {
     try {
       channels = await fetchChannels();
-      await Promise.all(channels.map(async (ch) => {
-        const count = await getUnreadCount(ch);
-        unreadMap.set(ch.slug, count);
-      }));
+      unreadMap.clear();
+      channels.forEach((ch) => {
+        if ((ch.unreadCount ?? 0) > 0) {
+          unreadMap.set(ch.slug, ch.unreadCount!);
+        }
+      });
       setActiveChannel(currentChannel);
 
       populateMyPostsChannelFilterOptions();

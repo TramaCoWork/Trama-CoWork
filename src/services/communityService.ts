@@ -23,6 +23,7 @@ export interface Channel {
   type: 'community' | 'channel';
   slug: string;
   name: string;
+  unreadCount?: number;
 }
 
 export interface PostUser {
