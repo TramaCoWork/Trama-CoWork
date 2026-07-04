@@ -20,12 +20,6 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
           class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer"
         >
           <option value="">Todos los jobs</option>
-          <option value="expiredTrials">expiredTrials</option>
-          <option value="expiredCancelledSubs">expiredCancelledSubs</option>
-          <option value="subscriptionRenewals">subscriptionRenewals</option>
-          <option value="applyDiscounts">applyDiscounts</option>
-          <option value="restoreDiscounts">restoreDiscounts</option>
-          <option value="trial-expiring-reminder">trial-expiring-reminder</option>
         </select>
       </div>
       <div class="flex flex-col gap-1">
@@ -116,6 +110,13 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       errorStack: string | null;
     };
 
+    type JobMetadata = {
+      key: string;
+      name: string;
+      schedule: string | null;
+      active: boolean;
+    };
+
     type JobsResponse = {
       data: JobExecution[];
       total: number;
@@ -142,14 +143,19 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     let runStatusTimeoutId: number | null = null;
     let runReloadTimeoutId: number | null = null;
 
-    const JOB_NAME_BADGE_CLASS: Record<string, string> = {
-      expiredTrials: 'bg-blue-100 text-blue-800',
-      expiredCancelledSubs: 'bg-purple-100 text-purple-800',
-      subscriptionRenewals: 'bg-teal-100 text-teal-800',
-      applyDiscounts: 'bg-orange-100 text-orange-800',
-      restoreDiscounts: 'bg-pink-100 text-pink-800',
-      'trial-expiring-reminder': 'bg-yellow-100 text-yellow-800',
-    };
+    const BADGE_PALETTE = [
+      'bg-blue-100 text-blue-800',
+      'bg-purple-100 text-purple-800',
+      'bg-teal-100 text-teal-800',
+      'bg-orange-100 text-orange-800',
+      'bg-pink-100 text-pink-800',
+      'bg-yellow-100 text-yellow-800',
+      'bg-indigo-100 text-indigo-800',
+      'bg-green-100 text-green-800',
+    ] as const;
+
+    const jobMetaMap = new Map<string, JobMetadata>();
+    const jobBadgeClassMap = new Map<string, string>();
 
     const STATUS_BADGE_CLASS: Record<JobStatus, string> = {
       completed: 'badge-soft-success',
@@ -218,6 +224,41 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     function clearInlineHint(): void {
       jobRunInlineHint.textContent = '';
       jobRunInlineHint.classList.add('hidden');
+    }
+
+    async function loadAvailableJobs(): Promise<void> {
+      jobFilter.innerHTML = '<option value="">Todos los jobs</option>';
+
+      try {
+        const token = getToken();
+        const response = await fetch(apiURL('/admin/jobs/available'), {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token || ''}`,
+          },
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const availableJobs = (await response.json()) as JobMetadata[];
+
+        jobMetaMap.clear();
+        jobBadgeClassMap.clear();
+
+        availableJobs.forEach((job, index) => {
+          jobMetaMap.set(job.key, job);
+          jobBadgeClassMap.set(job.key, BADGE_PALETTE[index % BADGE_PALETTE.length]);
+
+          const option = document.createElement('option');
+          option.value = job.key;
+          option.textContent = job.name;
+          jobFilter.append(option);
+        });
+      } catch {
+        // Keep default option only if available jobs cannot be loaded.
+      }
     }
 
     async function runJob(jobName: string, triggerButton: HTMLButtonElement): Promise<void> {
@@ -306,8 +347,9 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
 
       tableBody.innerHTML = items
         .map((job, index) => {
-          const safeJobName = escapeHtml(job.jobName);
-          const jobBadgeClass = JOB_NAME_BADGE_CLASS[job.jobName] || 'bg-surface-container text-on-surface-variant';
+          const jobMeta = jobMetaMap.get(job.jobName);
+          const safeJobName = escapeHtml(jobMeta?.name || job.jobName);
+          const jobBadgeClass = jobBadgeClassMap.get(job.jobName) || 'bg-surface-container text-on-surface-variant';
           const statusClass = STATUS_BADGE_CLASS[job.status] || 'badge-soft-warning';
           const safeDuration = escapeHtml(formatDuration(job.durationMs));
           const safeStartedAt = escapeHtml(formatStartedAt(job.startedAt));
@@ -488,9 +530,10 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       }
 
       clearInlineHint();
+      const jobDisplayName = jobMetaMap.get(jobName)?.name || jobName;
       (window as any).openConfirmModal({
         title: 'Ejecutar job',
-        body: `¿Querés ejecutar manualmente el job ${jobName}? Esta acción corre inmediatamente en background.`,
+        body: `¿Querés ejecutar manualmente el job "${jobDisplayName}"? Esta acción corre inmediatamente en background.`,
         buttons: [
           {
             text: 'Ejecutar',
@@ -536,6 +579,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
 
     if (setupAuthGuard()) {
       setPaginationDisabled(false);
+      void loadAvailableJobs();
       loadJobs();
     }
   </script>
