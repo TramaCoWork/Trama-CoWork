@@ -1,0 +1,382 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="Trabajos | TRAMA">
+  <header class="mb-8">
+    <h1 class="text-3xl font-black text-on-surface tracking-tighter">Trabajos</h1>
+    <p class="text-on-surface-variant font-medium mt-1 text-sm">Descubrí oportunidades y gestioná tus postulaciones.</p>
+  </header>
+
+  <section class="mb-6 border-b border-outline-variant/15">
+    <div class="flex items-center gap-6">
+      <button id="tab-disponibles" type="button" class="border-b-2 border-primary px-1 py-3 text-sm font-bold text-primary transition-colors">Disponibles</button>
+      <button id="tab-postulaciones" type="button" class="border-b-2 border-transparent px-1 py-3 text-sm font-medium text-on-surface-variant transition-colors">Mis postulaciones</button>
+    </div>
+  </section>
+
+  <section id="panel-disponibles" class="space-y-4">
+    <div class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-4">
+      <label for="jobs-category-filter" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Rubro (opcional)</label>
+      <select id="jobs-category-filter" class="w-full md:max-w-xs bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium">
+        <option value="">Todos</option>
+      </select>
+    </div>
+
+    <div id="jobs-available-loading" class="flex items-center justify-center py-16 hidden">
+      <div class="flex flex-col items-center gap-3 text-on-surface-variant">
+        <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+        <span class="text-sm font-medium">Cargando trabajos...</span>
+      </div>
+    </div>
+
+    <p id="jobs-available-error" class="hidden rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></p>
+
+    <div id="jobs-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+
+    <div id="jobs-empty" class="hidden rounded-2xl border border-outline-variant/10 bg-surface-container-low p-10 text-center text-on-surface-variant">
+      <span class="material-symbols-outlined text-4xl mb-2 block" aria-hidden="true">work_off</span>
+      <p id="jobs-empty-message" class="text-sm font-medium"></p>
+    </div>
+
+    <div class="flex justify-center">
+      <button id="jobs-load-more" type="button" class="hidden px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors">
+        Cargar más
+      </button>
+    </div>
+  </section>
+
+  <section id="panel-postulaciones" class="hidden space-y-4">
+    <div id="applications-loading" class="flex items-center justify-center py-16 hidden">
+      <div class="flex flex-col items-center gap-3 text-on-surface-variant">
+        <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+        <span class="text-sm font-medium">Cargando postulaciones...</span>
+      </div>
+    </div>
+
+    <p id="applications-error" class="hidden rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></p>
+
+    <div id="applications-list" class="space-y-3"></div>
+
+    <div id="applications-empty" class="hidden rounded-2xl border border-outline-variant/10 bg-surface-container-low p-10 text-center text-on-surface-variant">
+      <span class="material-symbols-outlined text-4xl mb-2 block" aria-hidden="true">person_search</span>
+      <p class="text-sm font-medium">Todavía no te postulaste a ningún trabajo</p>
+    </div>
+
+    <div class="flex justify-center">
+      <button id="applications-load-more" type="button" class="hidden px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors">
+        Cargar más
+      </button>
+    </div>
+  </section>
+
+  <script>
+    import { getRubros, type ProfessionCategory } from '../../services/adminProfessionCategoriesService';
+    import { getToken, isAuthenticated, restoreSession } from '../../services/authService';
+    import { api } from '../../services/apiClient';
+    import { listJobs, getMyApplications, type Job, type JobApplication } from '../../services/jobsService';
+
+    const PAGE_SIZE = 20;
+    let jobsPage = 1;
+    let jobsTotalPages = 1;
+    let applicationsPage = 1;
+    let applicationsTotalPages = 1;
+    let selectedCategoryId: number | undefined;
+    let jobsLoaded = false;
+    let applicationsLoaded = false;
+    let rubros: ProfessionCategory[] = [];
+    let currentTab: 'disponibles' | 'postulaciones' = 'disponibles';
+
+    const tabDisponibles = document.getElementById('tab-disponibles') as HTMLButtonElement;
+    const tabPostulaciones = document.getElementById('tab-postulaciones') as HTMLButtonElement;
+    const panelDisponibles = document.getElementById('panel-disponibles') as HTMLElement;
+    const panelPostulaciones = document.getElementById('panel-postulaciones') as HTMLElement;
+
+    const categoryFilter = document.getElementById('jobs-category-filter') as HTMLSelectElement;
+    const jobsLoading = document.getElementById('jobs-available-loading') as HTMLDivElement;
+    const jobsError = document.getElementById('jobs-available-error') as HTMLParagraphElement;
+    const jobsGrid = document.getElementById('jobs-grid') as HTMLDivElement;
+    const jobsEmpty = document.getElementById('jobs-empty') as HTMLDivElement;
+    const jobsEmptyMessage = document.getElementById('jobs-empty-message') as HTMLParagraphElement;
+    const jobsLoadMore = document.getElementById('jobs-load-more') as HTMLButtonElement;
+
+    const applicationsLoading = document.getElementById('applications-loading') as HTMLDivElement;
+    const applicationsError = document.getElementById('applications-error') as HTMLParagraphElement;
+    const applicationsList = document.getElementById('applications-list') as HTMLDivElement;
+    const applicationsEmpty = document.getElementById('applications-empty') as HTMLDivElement;
+    const applicationsLoadMore = document.getElementById('applications-load-more') as HTMLButtonElement;
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function truncate(text: string, max: number): string {
+      if (text.length <= max) return text;
+      return `${text.slice(0, max - 1)}…`;
+    }
+
+    function formatDate(value: string): string {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return new Intl.DateTimeFormat('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }).format(date);
+    }
+
+    function renderTabs(): void {
+      const isDisponibles = currentTab === 'disponibles';
+      tabDisponibles.className = isDisponibles
+        ? 'border-b-2 border-primary px-1 py-3 text-sm font-bold text-primary transition-colors'
+        : 'border-b-2 border-transparent px-1 py-3 text-sm font-medium text-on-surface-variant transition-colors';
+      tabPostulaciones.className = isDisponibles
+        ? 'border-b-2 border-transparent px-1 py-3 text-sm font-medium text-on-surface-variant transition-colors'
+        : 'border-b-2 border-primary px-1 py-3 text-sm font-bold text-primary transition-colors';
+
+      panelDisponibles.classList.toggle('hidden', !isDisponibles);
+      panelPostulaciones.classList.toggle('hidden', isDisponibles);
+    }
+
+    function setTab(tab: 'disponibles' | 'postulaciones', pushHistory: boolean): void {
+      currentTab = tab;
+      renderTabs();
+      if (pushHistory) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', tab);
+        window.history.pushState({}, '', `${url.pathname}${url.search}${url.hash}`);
+      }
+
+      if (tab === 'disponibles' && !jobsLoaded) {
+        void loadJobs(false);
+      }
+      if (tab === 'postulaciones' && !applicationsLoaded) {
+        void loadApplications(false);
+      }
+    }
+
+    function getTabFromUrl(): 'disponibles' | 'postulaciones' {
+      const tab = new URLSearchParams(window.location.search).get('tab');
+      return tab === 'postulaciones' ? 'postulaciones' : 'disponibles';
+    }
+
+    function renderCategoryOptions(): void {
+      categoryFilter.innerHTML = '<option value="">Todos</option>';
+      rubros.forEach((rubro) => {
+        const option = document.createElement('option');
+        option.value = String(rubro.id);
+        option.textContent = rubro.name;
+        categoryFilter.appendChild(option);
+      });
+    }
+
+    function getLogoHtml(job: Job): string {
+      const fallback = '<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center"><span class="material-symbols-outlined text-on-surface-variant" aria-hidden="true">business</span></div>';
+      if (!job.companyLogo) return fallback;
+      return `<img src="${escapeHtml(job.companyLogo)}" alt="Logo empresa" class="w-12 h-12 rounded-full object-cover border border-outline-variant/20" onerror="this.outerHTML='${fallback.replace(/'/g, '&apos;')}'" />`;
+    }
+
+    function getVigenciaBadge(job: Job): string {
+      if (!job.validUntil) return '';
+      return `<span class="inline-flex items-center px-2 py-1 rounded-lg text-[11px] font-bold bg-primary/10 text-primary">Válido hasta ${formatDate(job.validUntil)}</span>`;
+    }
+
+    function renderJobsCards(items: Job[], append: boolean): void {
+      if (!append && items.length === 0) {
+        jobsGrid.innerHTML = '';
+        jobsEmpty.classList.remove('hidden');
+        jobsEmptyMessage.textContent = selectedCategoryId
+          ? 'No hay trabajos disponibles para tu perfil con ese filtro'
+          : 'No hay trabajos disponibles para tu perfil';
+        return;
+      }
+
+      jobsEmpty.classList.add('hidden');
+
+      const html = items
+        .map(
+          (job) => `
+            <article data-job-id="${job.id}" class="job-card cursor-pointer rounded-2xl border border-outline-variant/10 bg-surface-container-low p-4 hover:bg-surface-container transition-colors">
+              <div class="flex items-start gap-3 mb-3">
+                ${getLogoHtml(job)}
+                <div class="min-w-0">
+                  <h3 class="text-base font-extrabold text-on-surface truncate">${escapeHtml(job.title)}</h3>
+                  <p class="text-sm text-on-surface-variant truncate">${escapeHtml(job.companyName || 'Empresa no especificada')}</p>
+                </div>
+              </div>
+              <p class="text-sm text-on-surface-variant leading-relaxed">${escapeHtml(truncate(job.description, 120))}</p>
+              <div class="mt-3 flex items-center justify-between gap-2 flex-wrap">
+                ${getVigenciaBadge(job)}
+                <span class="inline-flex items-center px-2 py-1 rounded-lg text-[11px] font-bold bg-surface-container-high text-on-surface-variant">${job.categoryIds.length} categorías</span>
+              </div>
+            </article>`,
+        )
+        .join('');
+
+      if (append) {
+        jobsGrid.insertAdjacentHTML('beforeend', html);
+      } else {
+        jobsGrid.innerHTML = html;
+      }
+    }
+
+    async function loadJobs(append: boolean): Promise<void> {
+      jobsError.classList.add('hidden');
+      jobsError.textContent = '';
+      if (!append) {
+        jobsLoading.classList.remove('hidden');
+        jobsEmpty.classList.add('hidden');
+      }
+      jobsLoadMore.disabled = true;
+
+      try {
+        const response = await listJobs(jobsPage, PAGE_SIZE, selectedCategoryId);
+        jobsTotalPages = response.meta.totalPages;
+        renderJobsCards(response.data, append);
+        jobsLoaded = true;
+
+        if (jobsPage < jobsTotalPages) {
+          jobsLoadMore.classList.remove('hidden');
+          jobsLoadMore.disabled = false;
+        } else {
+          jobsLoadMore.classList.add('hidden');
+        }
+      } catch {
+        if (!append) {
+          jobsGrid.innerHTML = '';
+          jobsEmpty.classList.add('hidden');
+        }
+        jobsError.textContent = 'No se pudieron cargar los trabajos disponibles.';
+        jobsError.classList.remove('hidden');
+      } finally {
+        jobsLoading.classList.add('hidden');
+      }
+    }
+
+    function renderApplications(items: JobApplication[], append: boolean): void {
+      if (!append && items.length === 0) {
+        applicationsList.innerHTML = '';
+        applicationsEmpty.classList.remove('hidden');
+        return;
+      }
+
+      applicationsEmpty.classList.add('hidden');
+
+      const html = items
+        .map((application) => {
+          const coverLetter = application.coverLetter
+            ? truncate(application.coverLetter, 80)
+            : 'Sin carta de presentación';
+          const title = application.job?.title || 'Trabajo';
+          const company = application.job?.companyName || 'Empresa no especificada';
+
+          return `
+            <article class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-4">
+              <h3 class="text-base font-bold text-on-surface">${escapeHtml(title)}</h3>
+              <p class="text-sm text-on-surface-variant mt-0.5">${escapeHtml(company)}</p>
+              <p class="text-xs font-medium text-on-surface-variant mt-2">Postulado el ${escapeHtml(formatDate(application.createdAt))}</p>
+              <p class="text-sm text-on-surface mt-2">${escapeHtml(coverLetter)}</p>
+            </article>`;
+        })
+        .join('');
+
+      if (append) {
+        applicationsList.insertAdjacentHTML('beforeend', html);
+      } else {
+        applicationsList.innerHTML = html;
+      }
+    }
+
+    async function loadApplications(append: boolean): Promise<void> {
+      applicationsError.classList.add('hidden');
+      applicationsError.textContent = '';
+      if (!append) {
+        applicationsLoading.classList.remove('hidden');
+      }
+      applicationsLoadMore.disabled = true;
+
+      try {
+        const response = await getMyApplications(applicationsPage, PAGE_SIZE);
+        applicationsTotalPages = response.meta.totalPages;
+        renderApplications(response.data, append);
+        applicationsLoaded = true;
+
+        if (applicationsPage < applicationsTotalPages) {
+          applicationsLoadMore.classList.remove('hidden');
+          applicationsLoadMore.disabled = false;
+        } else {
+          applicationsLoadMore.classList.add('hidden');
+        }
+      } catch {
+        if (!append) {
+          applicationsList.innerHTML = '';
+          applicationsEmpty.classList.add('hidden');
+        }
+        applicationsError.textContent = 'No se pudieron cargar tus postulaciones.';
+        applicationsError.classList.remove('hidden');
+      } finally {
+        applicationsLoading.classList.add('hidden');
+      }
+    }
+
+    async function init(): Promise<void> {
+      restoreSession();
+      if (!isAuthenticated()) {
+        window.location.href = '/login';
+        return;
+      }
+
+      const token = getToken();
+      if (token) {
+        api.setHeader('Authorization', `Bearer ${token}`);
+      }
+
+      try {
+        rubros = await getRubros();
+        renderCategoryOptions();
+      } catch {
+        rubros = [];
+      }
+
+      setTab(getTabFromUrl(), false);
+    }
+
+    tabDisponibles.addEventListener('click', () => setTab('disponibles', true));
+    tabPostulaciones.addEventListener('click', () => setTab('postulaciones', true));
+
+    categoryFilter.addEventListener('change', () => {
+      selectedCategoryId = categoryFilter.value ? Number(categoryFilter.value) : undefined;
+      jobsPage = 1;
+      jobsLoaded = false;
+      void loadJobs(false);
+    });
+
+    jobsGrid.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      const card = target.closest<HTMLElement>('.job-card[data-job-id]');
+      if (!card?.dataset.jobId) return;
+      window.location.href = `/dashboard/trabajos/detalle?id=${encodeURIComponent(card.dataset.jobId)}`;
+    });
+
+    jobsLoadMore.addEventListener('click', async () => {
+      if (jobsPage >= jobsTotalPages) return;
+      jobsPage += 1;
+      await loadJobs(true);
+    });
+
+    applicationsLoadMore.addEventListener('click', async () => {
+      if (applicationsPage >= applicationsTotalPages) return;
+      applicationsPage += 1;
+      await loadApplications(true);
+    });
+
+    init();
+  </script>
+</DashboardLayout>
+
+<!-- Traceability: implementation by Programmer at 2026-07-04 20:00:00 -->

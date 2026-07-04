@@ -1,0 +1,299 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="Detalle del trabajo | TRAMA">
+  <a
+    href="/dashboard/trabajos"
+    class="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors mb-6"
+  >
+    <span class="material-symbols-outlined text-base" aria-hidden="true">arrow_back</span>
+    Volver a trabajos
+  </a>
+
+  <div id="job-loading" class="flex items-center justify-center py-16">
+    <div class="flex flex-col items-center gap-3 text-on-surface-variant">
+      <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      <span class="text-sm font-medium">Cargando detalle del trabajo...</span>
+    </div>
+  </div>
+
+  <section id="job-not-found" class="hidden rounded-2xl border border-outline-variant/10 bg-surface-container-low p-8 text-center">
+    <span class="material-symbols-outlined text-4xl text-on-surface-variant mb-2 block" aria-hidden="true">work_off</span>
+    <p class="text-sm font-medium text-on-surface">Este trabajo no está disponible</p>
+    <a href="/dashboard/trabajos" class="inline-flex items-center gap-2 text-sm font-semibold text-primary mt-3 hover:text-primary/80">Volver</a>
+  </section>
+
+  <p id="job-error" class="hidden rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></p>
+
+  <section id="job-content" class="hidden space-y-6">
+    <article class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-6">
+      <div class="flex items-start gap-4">
+        <div id="job-logo" class="shrink-0"></div>
+        <div class="min-w-0">
+          <p id="job-company" class="text-sm text-on-surface-variant font-medium"></p>
+          <h1 id="job-title" class="text-2xl font-black tracking-tight text-on-surface mt-1"></h1>
+        </div>
+      </div>
+
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Vigencia</p>
+          <p id="job-vigencia" class="text-on-surface"></p>
+        </div>
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Estado</p>
+          <div id="job-status"></div>
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Descripción</p>
+        <p id="job-description" class="text-sm text-on-surface whitespace-pre-wrap leading-relaxed"></p>
+      </div>
+
+      <div class="mt-6">
+        <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Categorías</p>
+        <div id="job-categories" class="flex flex-wrap gap-2"></div>
+      </div>
+
+      <div class="mt-8 flex items-center gap-3">
+        <button
+          id="btn-open-apply"
+          type="button"
+          class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all"
+        >
+          Postularme
+        </button>
+        <span id="apply-success" class="hidden inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-success/15 text-success">
+          Postulación enviada ✓
+        </span>
+      </div>
+    </article>
+  </section>
+
+  <div
+    id="apply-modal"
+    class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/30 backdrop-blur-sm p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="apply-modal-title"
+  >
+    <div class="w-full max-w-xl rounded-2xl bg-surface-container-low border border-outline-variant/15 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-outline-variant/15 px-6 py-4">
+        <h2 id="apply-modal-title" class="text-lg font-extrabold text-on-surface tracking-tight">Postularme a este trabajo</h2>
+        <button id="apply-modal-close" type="button" class="text-on-surface-variant hover:text-on-surface" aria-label="Cerrar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="apply-form" class="p-6 space-y-4">
+        <div>
+          <label for="cover-letter" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Carta de presentación (opcional)</label>
+          <textarea id="cover-letter" rows="6" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm"></textarea>
+        </div>
+
+        <p id="apply-inline-error" class="hidden rounded-lg border border-error/20 bg-error/10 px-3 py-2 text-sm font-medium text-error"></p>
+
+        <div class="flex justify-end gap-3">
+          <button id="apply-cancel" type="button" class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors">Cancelar</button>
+          <button id="apply-submit" type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all">Enviar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    import { getToken, isAuthenticated, restoreSession } from '../../../services/authService';
+    import { api } from '../../../services/apiClient';
+    import { getJob, applyToJob, type Job } from '../../../services/jobsService';
+
+    let currentJobId = '';
+    let currentJob: Job | null = null;
+    let hasApplied = false;
+
+    const loadingEl = document.getElementById('job-loading') as HTMLDivElement;
+    const notFoundEl = document.getElementById('job-not-found') as HTMLElement;
+    const errorEl = document.getElementById('job-error') as HTMLParagraphElement;
+    const contentEl = document.getElementById('job-content') as HTMLElement;
+    const applyButton = document.getElementById('btn-open-apply') as HTMLButtonElement;
+    const applySuccess = document.getElementById('apply-success') as HTMLSpanElement;
+
+    const modal = document.getElementById('apply-modal') as HTMLDivElement;
+    const form = document.getElementById('apply-form') as HTMLFormElement;
+    const coverLetterInput = document.getElementById('cover-letter') as HTMLTextAreaElement;
+    const inlineError = document.getElementById('apply-inline-error') as HTMLParagraphElement;
+    const submitButton = document.getElementById('apply-submit') as HTMLButtonElement;
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatDate(value: string | null): string {
+      if (!value) return '—';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return new Intl.DateTimeFormat('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }).format(date);
+    }
+
+    function statusBadge(status: 'active' | 'paused'): string {
+      if (status === 'active') {
+        return '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-success/15 text-success">Activo</span>';
+      }
+      return '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-warning/15 text-warning">Pausado</span>';
+    }
+
+    function getLogoHtml(job: Job): string {
+      const fallback = '<div class="w-[50px] h-[50px] rounded-full bg-surface-container flex items-center justify-center"><span class="material-symbols-outlined text-on-surface-variant" aria-hidden="true">business</span></div>';
+      if (!job.companyLogo) return fallback;
+      return `<img src="${escapeHtml(job.companyLogo)}" alt="Logo empresa" class="w-[50px] h-[50px] rounded-full object-cover border border-outline-variant/20" onerror="this.outerHTML='${fallback.replace(/'/g, '&apos;')}'" />`;
+    }
+
+    function renderCategories(job: Job): void {
+      const categoriesEl = document.getElementById('job-categories') as HTMLDivElement;
+      if (!job.categoryIds || job.categoryIds.length === 0) {
+        categoriesEl.innerHTML = '<span class="inline-flex items-center px-2 py-1 rounded-lg text-[11px] font-bold bg-surface-container-high text-on-surface-variant">Sin categorías</span>';
+        return;
+      }
+
+      categoriesEl.innerHTML = job.categoryIds
+        .map((id) => `<span class="inline-flex items-center px-2 py-1 rounded-lg text-[11px] font-bold bg-primary/10 text-primary">Categoría #${id}</span>`)
+        .join('');
+    }
+
+    function renderJob(job: Job): void {
+      (document.getElementById('job-logo') as HTMLElement).innerHTML = getLogoHtml(job);
+      (document.getElementById('job-company') as HTMLElement).textContent = job.companyName || 'Empresa no especificada';
+      (document.getElementById('job-title') as HTMLElement).textContent = job.title;
+
+      const vigencia = !job.validFrom && !job.validUntil
+        ? 'Sin límite de vigencia'
+        : `${formatDate(job.validFrom)} – ${formatDate(job.validUntil)}`;
+
+      (document.getElementById('job-vigencia') as HTMLElement).textContent = vigencia;
+      (document.getElementById('job-status') as HTMLElement).innerHTML = statusBadge(job.status);
+      (document.getElementById('job-description') as HTMLElement).textContent = job.description;
+
+      renderCategories(job);
+    }
+
+    function setAppliedState(applied: boolean): void {
+      hasApplied = applied;
+      applyButton.disabled = applied;
+      applyButton.classList.toggle('opacity-50', applied);
+      applyButton.classList.toggle('cursor-not-allowed', applied);
+      applySuccess.classList.toggle('hidden', !applied);
+    }
+
+    function openModal(): void {
+      inlineError.classList.add('hidden');
+      inlineError.textContent = '';
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(): void {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.body.style.overflow = '';
+      inlineError.classList.add('hidden');
+      inlineError.textContent = '';
+    }
+
+    async function submitApplication(event: Event): Promise<void> {
+      event.preventDefault();
+      if (!currentJobId || hasApplied) return;
+
+      inlineError.classList.add('hidden');
+      inlineError.textContent = '';
+      submitButton.disabled = true;
+
+      try {
+        const coverLetter = coverLetterInput.value.trim();
+        await applyToJob(currentJobId, coverLetter || undefined);
+        closeModal();
+        setAppliedState(true);
+      } catch (err: unknown) {
+        const error = err as Error & { status?: number };
+        if (error.status === 409) {
+          inlineError.textContent = 'Ya te postulaste a este trabajo';
+          inlineError.classList.remove('hidden');
+          return;
+        }
+
+        inlineError.textContent = 'No se pudo enviar la postulación. Intentá de nuevo.';
+        inlineError.classList.remove('hidden');
+      } finally {
+        submitButton.disabled = false;
+      }
+    }
+
+    async function init(): Promise<void> {
+      restoreSession();
+      if (!isAuthenticated()) {
+        window.location.href = '/login';
+        return;
+      }
+
+      const token = getToken();
+      if (token) {
+        api.setHeader('Authorization', `Bearer ${token}`);
+      }
+
+      const id = new URLSearchParams(window.location.search).get('id');
+      if (!id) {
+        window.location.href = '/dashboard/trabajos';
+        return;
+      }
+      currentJobId = id;
+
+      try {
+        const job = await getJob(currentJobId);
+        currentJob = job;
+        renderJob(job);
+        setAppliedState(false);
+
+        loadingEl.classList.add('hidden');
+        contentEl.classList.remove('hidden');
+      } catch (err: unknown) {
+        loadingEl.classList.add('hidden');
+        const error = err as Error & { status?: number };
+        if (error.status === 404) {
+          notFoundEl.classList.remove('hidden');
+          return;
+        }
+
+        errorEl.textContent = 'No se pudo cargar el detalle del trabajo.';
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    applyButton.addEventListener('click', () => {
+      if (hasApplied) return;
+      openModal();
+    });
+
+    document.getElementById('apply-modal-close')?.addEventListener('click', closeModal);
+    document.getElementById('apply-cancel')?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        closeModal();
+      }
+    });
+    form.addEventListener('submit', submitApplication);
+
+    init();
+  </script>
+</DashboardLayout>
+
+<!-- Traceability: implementation by Programmer at 2026-07-04 20:00:00 -->

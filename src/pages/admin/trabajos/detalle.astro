@@ -1,0 +1,514 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Detalle del trabajo | TRAMA Admin">
+  <a
+    href="/admin/trabajos"
+    class="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors mb-6"
+  >
+    <span class="material-symbols-outlined text-base" aria-hidden="true">arrow_back</span>
+    Volver a trabajos
+  </a>
+
+  <div id="job-loading" class="flex items-center justify-center py-16">
+    <div class="flex flex-col items-center gap-3 text-on-surface-variant">
+      <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      <span class="text-sm font-medium">Cargando detalle del trabajo...</span>
+    </div>
+  </div>
+
+  <div id="job-error" class="hidden rounded-2xl border border-error/20 bg-error/10 p-6 text-error mb-6"></div>
+
+  <section id="job-content" class="hidden space-y-6">
+    <article class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-6">
+      <div class="flex items-start justify-between gap-4 mb-5">
+        <div>
+          <h1 id="job-title" class="text-2xl font-black tracking-tight text-on-surface"></h1>
+          <p id="job-company" class="text-sm text-on-surface-variant font-medium mt-1"></p>
+        </div>
+        <button
+          id="btn-open-edit"
+          type="button"
+          class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all"
+        >
+          Editar
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Descripción</p>
+          <p id="job-description" class="text-on-surface whitespace-pre-wrap"></p>
+        </div>
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Email</p>
+          <p id="job-email" class="text-on-surface"></p>
+        </div>
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Estado</p>
+          <div id="job-status"></div>
+        </div>
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Vigencia</p>
+          <p id="job-vigencia" class="text-on-surface"></p>
+        </div>
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Empresa</p>
+          <p id="job-company-name" class="text-on-surface"></p>
+        </div>
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Logo</p>
+          <div id="job-logo-wrapper"></div>
+        </div>
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Categorías asignadas</p>
+          <p id="job-categories-count" class="text-on-surface"></p>
+        </div>
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Clicks</p>
+          <p id="job-click-count" class="text-on-surface"></p>
+        </div>
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Creado</p>
+          <p id="job-created-at" class="text-on-surface"></p>
+        </div>
+      </div>
+    </article>
+
+    <section class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-6">
+      <div class="flex items-center justify-between gap-3 mb-4">
+        <h2 class="text-xl font-extrabold tracking-tight text-on-surface">Postulaciones</h2>
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-outline-variant/10">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-outline-variant/15 bg-surface-container">
+              <th class="text-left px-4 py-3 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Usuario</th>
+              <th class="text-left px-4 py-3 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Carta</th>
+              <th class="text-left px-4 py-3 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="applications-table-body"></tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 flex justify-center">
+        <button
+          id="applications-load-more"
+          type="button"
+          class="hidden px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors"
+        >
+          Cargar más
+        </button>
+      </div>
+    </section>
+  </section>
+
+  <div
+    id="job-modal"
+    class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/30 backdrop-blur-sm p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="job-modal-title"
+  >
+    <div class="w-full max-w-3xl rounded-2xl bg-surface-container-low border border-outline-variant/15 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-outline-variant/15 px-6 py-4 sticky top-0 bg-surface-container-low">
+        <h2 id="job-modal-title" class="text-lg font-extrabold text-on-surface tracking-tight">Editar trabajo</h2>
+        <button id="job-modal-close" type="button" class="text-on-surface-variant hover:text-on-surface" aria-label="Cerrar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="job-form" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="md:col-span-2">
+          <label for="job-title-input" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Título *</label>
+          <input id="job-title-input" type="text" required class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm" />
+        </div>
+
+        <div class="md:col-span-2">
+          <label for="job-description-input" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Descripción *</label>
+          <textarea id="job-description-input" required rows="5" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm"></textarea>
+        </div>
+
+        <div>
+          <label for="job-email-input" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Email *</label>
+          <input id="job-email-input" type="email" required class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm" />
+        </div>
+
+        <div>
+          <label for="job-status-input" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Estado</label>
+          <select id="job-status-input" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm">
+            <option value="active">Activo</option>
+            <option value="paused">Pausado</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="job-valid-from-input" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Válido desde</label>
+          <input id="job-valid-from-input" type="date" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm" />
+        </div>
+
+        <div>
+          <label for="job-valid-until-input" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Válido hasta</label>
+          <input id="job-valid-until-input" type="date" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm" />
+        </div>
+
+        <div>
+          <label for="job-company-name-input" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Empresa</label>
+          <input id="job-company-name-input" type="text" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm" />
+        </div>
+
+        <div>
+          <label for="job-company-logo-input" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Logo (URL)</label>
+          <input id="job-company-logo-input" type="url" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm" />
+        </div>
+
+        <div class="md:col-span-2">
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Rubros</p>
+          <div id="job-category-checkboxes" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2"></div>
+        </div>
+
+        <div id="job-modal-error" class="hidden md:col-span-2 rounded-lg border border-error/20 bg-error/10 px-3 py-2 text-sm font-medium text-error"></div>
+
+        <div class="md:col-span-2 flex justify-end gap-3">
+          <button id="job-modal-cancel" type="button" class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors">Cancelar</button>
+          <button id="job-modal-submit" type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    import { isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
+    import { getRubros, type ProfessionCategory } from '../../../services/adminProfessionCategoriesService';
+    import { getJob, updateJob, listApplications, type Job, type JobApplication, type UpdateJobPayload } from '../../../services/jobsAdminService';
+
+    const APPLICATIONS_PAGE_SIZE = 20;
+    let currentJobId = '';
+    let currentJob: Job | null = null;
+    let rubros: ProfessionCategory[] = [];
+    let applicationsPage = 1;
+    let applicationsTotalPages = 1;
+    let isLoadingApplications = false;
+
+    const loadingEl = document.getElementById('job-loading') as HTMLDivElement;
+    const errorEl = document.getElementById('job-error') as HTMLDivElement;
+    const contentEl = document.getElementById('job-content') as HTMLElement;
+
+    const applicationsBody = document.getElementById('applications-table-body') as HTMLTableSectionElement;
+    const loadMoreButton = document.getElementById('applications-load-more') as HTMLButtonElement;
+
+    const modal = document.getElementById('job-modal') as HTMLDivElement;
+    const form = document.getElementById('job-form') as HTMLFormElement;
+    const submitButton = document.getElementById('job-modal-submit') as HTMLButtonElement;
+    const modalError = document.getElementById('job-modal-error') as HTMLDivElement;
+    const categoryCheckboxes = document.getElementById('job-category-checkboxes') as HTMLDivElement;
+
+    const titleInput = document.getElementById('job-title-input') as HTMLInputElement;
+    const descriptionInput = document.getElementById('job-description-input') as HTMLTextAreaElement;
+    const emailInput = document.getElementById('job-email-input') as HTMLInputElement;
+    const statusInput = document.getElementById('job-status-input') as HTMLSelectElement;
+    const validFromInput = document.getElementById('job-valid-from-input') as HTMLInputElement;
+    const validUntilInput = document.getElementById('job-valid-until-input') as HTMLInputElement;
+    const companyNameInput = document.getElementById('job-company-name-input') as HTMLInputElement;
+    const companyLogoInput = document.getElementById('job-company-logo-input') as HTMLInputElement;
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatDate(value: string | null): string {
+      if (!value) return '—';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return new Intl.DateTimeFormat('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(date);
+    }
+
+    function toInputDate(value: string | null): string {
+      if (!value) return '';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      return date.toISOString().slice(0, 10);
+    }
+
+    function toIsoDate(value: string): string {
+      return `${value}T00:00:00.000Z`;
+    }
+
+    function statusBadge(status: 'active' | 'paused'): string {
+      if (status === 'active') {
+        return '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-success/15 text-success">Activo</span>';
+      }
+      return '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-warning/15 text-warning">Pausado</span>';
+    }
+
+    function truncate(value: string, max = 80): string {
+      if (value.length <= max) return value;
+      return `${value.slice(0, max - 1)}…`;
+    }
+
+    function renderError(message: string): void {
+      loadingEl.classList.add('hidden');
+      contentEl.classList.add('hidden');
+      errorEl.textContent = message;
+      errorEl.classList.remove('hidden');
+    }
+
+    function renderCategoryCheckboxes(selectedIds: number[]): void {
+      if (rubros.length === 0) {
+        categoryCheckboxes.innerHTML = '<p class="text-sm text-on-surface-variant">No hay rubros disponibles.</p>';
+        return;
+      }
+
+      categoryCheckboxes.innerHTML = rubros
+        .map(
+          (rubro) => `
+            <label class="flex items-center gap-2 rounded-lg border border-outline-variant/20 px-3 py-2 text-sm text-on-surface">
+              <input
+                type="checkbox"
+                value="${rubro.id}"
+                ${selectedIds.includes(rubro.id) ? 'checked' : ''}
+                class="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20"
+              />
+              <span>${escapeHtml(rubro.name)}</span>
+            </label>`,
+        )
+        .join('');
+    }
+
+    function renderJobInfo(job: Job): void {
+      const vigencia = !job.validFrom && !job.validUntil
+        ? 'Sin límite'
+        : `${formatDate(job.validFrom)} – ${formatDate(job.validUntil)}`;
+
+      (document.getElementById('job-title') as HTMLElement).textContent = job.title;
+      (document.getElementById('job-company') as HTMLElement).textContent = job.companyName || 'Sin empresa';
+      (document.getElementById('job-description') as HTMLElement).textContent = job.description;
+      (document.getElementById('job-email') as HTMLElement).textContent = job.email;
+      (document.getElementById('job-status') as HTMLElement).innerHTML = statusBadge(job.status);
+      (document.getElementById('job-vigencia') as HTMLElement).textContent = vigencia;
+      (document.getElementById('job-company-name') as HTMLElement).textContent = job.companyName || '—';
+      (document.getElementById('job-categories-count') as HTMLElement).textContent = String(job.categoryIds.length);
+      (document.getElementById('job-click-count') as HTMLElement).textContent = String(job.clickCount);
+      (document.getElementById('job-created-at') as HTMLElement).textContent = formatDate(job.createdAt);
+
+      const logoWrapper = document.getElementById('job-logo-wrapper') as HTMLElement;
+      if (job.companyLogo) {
+        logoWrapper.innerHTML = `<img src="${escapeHtml(job.companyLogo)}" alt="Logo empresa" class="w-12 h-12 rounded-lg object-cover border border-outline-variant/20" />`;
+      } else {
+        logoWrapper.innerHTML = '<span class="text-on-surface-variant">—</span>';
+      }
+    }
+
+    function renderApplicationsRows(items: JobApplication[], append = false): void {
+      if (!append && items.length === 0) {
+        applicationsBody.innerHTML = `
+          <tr>
+            <td colspan="3" class="text-center py-10 text-on-surface-variant text-sm">No hay postulaciones todavía.</td>
+          </tr>`;
+        return;
+      }
+
+      const html = items
+        .map((application) => {
+          const coverLetter = application.coverLetter ? truncate(application.coverLetter) : 'Sin carta';
+          return `
+            <tr class="border-b border-outline-variant/10">
+              <td class="px-4 py-3 text-on-surface-variant">${escapeHtml(application.userId)}</td>
+              <td class="px-4 py-3 text-on-surface">${escapeHtml(coverLetter)}</td>
+              <td class="px-4 py-3 text-on-surface-variant">${escapeHtml(formatDate(application.createdAt))}</td>
+            </tr>`;
+        })
+        .join('');
+
+      if (append) {
+        applicationsBody.insertAdjacentHTML('beforeend', html);
+      } else {
+        applicationsBody.innerHTML = html;
+      }
+    }
+
+    async function loadApplications(append = false): Promise<void> {
+      if (isLoadingApplications || !currentJobId) return;
+      isLoadingApplications = true;
+      loadMoreButton.disabled = true;
+      try {
+        const response = await listApplications(currentJobId, applicationsPage, APPLICATIONS_PAGE_SIZE);
+        applicationsTotalPages = response.meta.totalPages;
+        renderApplicationsRows(response.data, append);
+
+        if (applicationsPage < applicationsTotalPages) {
+          loadMoreButton.classList.remove('hidden');
+          loadMoreButton.disabled = false;
+        } else {
+          loadMoreButton.classList.add('hidden');
+        }
+      } catch {
+        if (!append) {
+          applicationsBody.innerHTML = `
+            <tr>
+              <td colspan="3" class="text-center py-10 text-error text-sm font-semibold">No se pudieron cargar las postulaciones.</td>
+            </tr>`;
+        }
+      } finally {
+        isLoadingApplications = false;
+      }
+    }
+
+    function openModal(): void {
+      if (!currentJob) return;
+      modalError.classList.add('hidden');
+      modalError.textContent = '';
+
+      titleInput.value = currentJob.title;
+      descriptionInput.value = currentJob.description;
+      emailInput.value = currentJob.email;
+      statusInput.value = currentJob.status;
+      validFromInput.value = toInputDate(currentJob.validFrom);
+      validUntilInput.value = toInputDate(currentJob.validUntil);
+      companyNameInput.value = currentJob.companyName || '';
+      companyLogoInput.value = currentJob.companyLogo || '';
+      renderCategoryCheckboxes(currentJob.categoryIds);
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(): void {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.body.style.overflow = '';
+      modalError.classList.add('hidden');
+      modalError.textContent = '';
+    }
+
+    function getCheckedCategoryIds(): number[] {
+      return Array.from(categoryCheckboxes.querySelectorAll<HTMLInputElement>('input[type="checkbox"]:checked'))
+        .map((input) => Number(input.value))
+        .filter((value) => Number.isFinite(value));
+    }
+
+    function buildPayload(): UpdateJobPayload {
+      return {
+        title: titleInput.value.trim(),
+        description: descriptionInput.value.trim(),
+        email: emailInput.value.trim(),
+        status: statusInput.value as 'active' | 'paused',
+        validFrom: validFromInput.value ? toIsoDate(validFromInput.value) : null,
+        validUntil: validUntilInput.value ? toIsoDate(validUntilInput.value) : null,
+        companyName: companyNameInput.value.trim() || null,
+        companyLogo: companyLogoInput.value.trim() || null,
+        categoryIds: getCheckedCategoryIds(),
+      };
+    }
+
+    function validatePayload(payload: UpdateJobPayload): string | null {
+      if (!payload.title) return 'El título es obligatorio.';
+      if (!payload.description) return 'La descripción es obligatoria.';
+      if (!payload.email) return 'El email es obligatorio.';
+      if (payload.validFrom && payload.validUntil && new Date(payload.validFrom) >= new Date(payload.validUntil)) {
+        return 'La fecha de inicio debe ser anterior a la de fin';
+      }
+      return null;
+    }
+
+    async function submitEdit(event: Event): Promise<void> {
+      event.preventDefault();
+      if (!currentJobId) return;
+
+      const payload = buildPayload();
+      const validationError = validatePayload(payload);
+      if (validationError) {
+        modalError.textContent = validationError;
+        modalError.classList.remove('hidden');
+        return;
+      }
+
+      submitButton.disabled = true;
+      try {
+        await updateJob(currentJobId, payload);
+        const refreshed = await getJob(currentJobId);
+        currentJob = refreshed;
+        renderJobInfo(refreshed);
+        closeModal();
+      } catch {
+        modalError.textContent = 'No se pudo guardar el trabajo.';
+        modalError.classList.remove('hidden');
+      } finally {
+        submitButton.disabled = false;
+      }
+    }
+
+    async function init(): Promise<void> {
+      restoreSession();
+      if (!isAuthenticated()) {
+        window.location.href = '/admin/login';
+        return;
+      }
+      if (!isAdmin()) {
+        window.location.href = '/dashboard';
+        return;
+      }
+
+      const id = new URLSearchParams(window.location.search).get('id');
+      if (!id) {
+        window.location.href = '/admin/trabajos';
+        return;
+      }
+      currentJobId = id;
+
+      try {
+        rubros = await getRubros();
+      } catch {
+        rubros = [];
+      }
+
+      try {
+        const job = await getJob(currentJobId);
+        currentJob = job;
+        renderJobInfo(job);
+        loadingEl.classList.add('hidden');
+        contentEl.classList.remove('hidden');
+
+        applicationsPage = 1;
+        await loadApplications(false);
+      } catch {
+        renderError('No se pudo cargar el detalle del trabajo.');
+      }
+    }
+
+    document.getElementById('btn-open-edit')?.addEventListener('click', openModal);
+    document.getElementById('job-modal-close')?.addEventListener('click', closeModal);
+    document.getElementById('job-modal-cancel')?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        closeModal();
+      }
+    });
+    form.addEventListener('submit', submitEdit);
+
+    loadMoreButton.addEventListener('click', async () => {
+      if (applicationsPage >= applicationsTotalPages) return;
+      applicationsPage += 1;
+      await loadApplications(true);
+    });
+
+    init();
+  </script>
+</AdminLayout>
+
+<!-- Traceability: implementation by Programmer at 2026-07-04 20:00:00 -->
