@@ -9,96 +9,164 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     <p class="text-on-surface-variant font-medium mt-1 text-sm">Ejecuciones de tareas programadas.</p>
   </header>
 
-  <section class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-6 mb-6">
-    <div class="flex flex-col gap-3 md:flex-row md:items-end md:gap-4">
-      <div class="w-full md:max-w-sm">
-        <label for="f-job-name" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">
-          Job
-        </label>
-        <select
-          id="f-job-name"
-          class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer"
-        >
-          <option value="">Todos los jobs</option>
-        </select>
+  <div class="mb-6 border-b border-outline-variant/20">
+    <div class="flex items-center gap-6">
+      <button
+        id="tab-ejecuciones"
+        type="button"
+        data-tab="ejecuciones"
+        class="border-b-2 border-primary px-1 py-3 text-sm font-bold text-primary transition-colors"
+      >
+        Ejecuciones
+      </button>
+      <button
+        id="tab-configuracion"
+        type="button"
+        data-tab="configuracion"
+        class="border-b-2 border-transparent px-1 py-3 text-sm font-medium text-on-surface-variant transition-colors"
+      >
+        Configuración
+      </button>
+    </div>
+  </div>
+
+  <section id="panel-ejecuciones">
+    <section class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-6 mb-6">
+      <div class="flex flex-col gap-3 md:flex-row md:items-end md:gap-4">
+        <div class="w-full md:max-w-sm">
+          <label for="f-job-name" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">
+            Job
+          </label>
+          <select
+            id="f-job-name"
+            class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer"
+          >
+            <option value="">Todos los jobs</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-1">
+          <button
+            id="run-selected-job"
+            type="button"
+            class="inline-flex items-center gap-1 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider bg-primary text-on-primary hover:opacity-90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <span class="material-symbols-outlined text-sm" aria-hidden="true">play_arrow</span>
+            Ejecutar
+          </button>
+          <p id="job-run-inline-hint" class="hidden text-xs font-semibold text-error" aria-live="polite"></p>
+        </div>
       </div>
-      <div class="flex flex-col gap-1">
-        <button
-          id="run-selected-job"
-          type="button"
-          class="inline-flex items-center gap-1 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider bg-primary text-on-primary hover:opacity-90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          <span class="material-symbols-outlined text-sm" aria-hidden="true">play_arrow</span>
-          Ejecutar
-        </button>
-        <p id="job-run-inline-hint" class="hidden text-xs font-semibold text-error" aria-live="polite"></p>
+    </section>
+
+    <div class="flex items-center justify-between mb-4 gap-3 flex-wrap">
+      <p id="results-info" class="text-sm text-on-surface-variant font-medium">Cargando...</p>
+      <div id="pagination" class="flex items-center gap-2"></div>
+    </div>
+    <p id="job-run-status" class="mb-4 hidden text-sm font-semibold" aria-live="polite"></p>
+
+    <section class="bg-surface-container-low rounded-2xl overflow-hidden border border-outline-variant/10">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-outline-variant/15 bg-surface-container">
+              <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Job</th>
+              <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Inicio</th>
+              <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Duración</th>
+              <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado</th>
+              <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Procesados</th>
+              <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Error</th>
+              <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="jobs-table-body">
+            <tr>
+              <td colspan="7" class="text-center py-12 text-on-surface-variant">
+                <div class="flex flex-col items-center gap-3">
+                  <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                  <span class="text-sm font-medium">Cargando jobs...</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div
+      id="job-error-modal"
+      class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/30 backdrop-blur-sm p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="job-error-title"
+    >
+      <div class="w-full max-w-3xl rounded-2xl bg-surface-container-low border border-outline-variant/15 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-outline-variant/15 px-6 py-4">
+          <h2 id="job-error-title" class="text-lg font-extrabold text-on-surface tracking-tight">Detalle de error</h2>
+          <button id="job-error-close" type="button" class="text-on-surface-variant hover:text-on-surface" aria-label="Cerrar">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="p-6 space-y-3">
+          <p id="job-error-name" class="text-sm font-bold text-on-surface"></p>
+          <pre id="job-error-content" class="max-h-[50vh] overflow-auto rounded-xl bg-surface-container-lowest border border-outline-variant/20 p-4 text-xs text-on-surface-variant whitespace-pre-wrap"></pre>
+        </div>
       </div>
     </div>
   </section>
 
-  <div class="flex items-center justify-between mb-4 gap-3 flex-wrap">
-    <p id="results-info" class="text-sm text-on-surface-variant font-medium">Cargando...</p>
-    <div id="pagination" class="flex items-center gap-2"></div>
-  </div>
-  <p id="job-run-status" class="mb-4 hidden text-sm font-semibold" aria-live="polite"></p>
+  <section id="panel-configuracion" class="hidden">
+    <section class="bg-surface-container-low rounded-2xl overflow-hidden border border-outline-variant/10">
+      <div id="config-loading" class="p-6">
+        <div class="space-y-3 animate-pulse">
+          <div class="h-12 rounded-xl bg-surface-container-high"></div>
+          <div class="h-12 rounded-xl bg-surface-container-high"></div>
+          <div class="h-12 rounded-xl bg-surface-container-high"></div>
+        </div>
+      </div>
 
-  <section class="bg-surface-container-low rounded-2xl overflow-hidden border border-outline-variant/10">
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="border-b border-outline-variant/15 bg-surface-container">
-            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Job</th>
-            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Inicio</th>
-            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Duración</th>
-            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado</th>
-            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Procesados</th>
-            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Error</th>
-            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="jobs-table-body">
-          <tr>
-            <td colspan="7" class="text-center py-12 text-on-surface-variant">
-              <div class="flex flex-col items-center gap-3">
-                <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-                <span class="text-sm font-medium">Cargando jobs...</span>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <div id="config-error" class="hidden px-6 py-12 text-center">
+        <span class="material-symbols-outlined text-3xl mb-2 block text-error" aria-hidden="true">error</span>
+        <p id="config-error-message" class="text-sm font-bold text-error mb-4">Error al cargar la configuración</p>
+        <button
+          id="config-retry-button"
+          type="button"
+          class="inline-flex items-center gap-1 rounded-lg bg-surface-container px-3 py-2 text-xs font-bold uppercase tracking-wider text-on-surface-variant hover:bg-surface-container-high transition-colors"
+        >
+          Reintentar
+        </button>
+      </div>
+
+      <div id="config-empty" class="hidden px-6 py-16 text-center text-on-surface-variant">
+        <p class="text-sm font-medium">No hay jobs configurados</p>
+      </div>
+
+      <div id="config-table-container" class="hidden overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-outline-variant/15 bg-surface-container">
+              <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Job</th>
+              <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Schedule</th>
+              <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Activo</th>
+              <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">En memoria</th>
+              <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Próxima ejecución</th>
+              <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="config-table-body"></tbody>
+        </table>
+      </div>
+    </section>
   </section>
 
   <ConfirmModal />
-
-  <div
-    id="job-error-modal"
-    class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/30 backdrop-blur-sm p-4"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="job-error-title"
-  >
-    <div class="w-full max-w-3xl rounded-2xl bg-surface-container-low border border-outline-variant/15 shadow-2xl">
-      <div class="flex items-center justify-between border-b border-outline-variant/15 px-6 py-4">
-        <h2 id="job-error-title" class="text-lg font-extrabold text-on-surface tracking-tight">Detalle de error</h2>
-        <button id="job-error-close" type="button" class="text-on-surface-variant hover:text-on-surface" aria-label="Cerrar">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-
-      <div class="p-6 space-y-3">
-        <p id="job-error-name" class="text-sm font-bold text-on-surface"></p>
-        <pre id="job-error-content" class="max-h-[50vh] overflow-auto rounded-xl bg-surface-container-lowest border border-outline-variant/20 p-4 text-xs text-on-surface-variant whitespace-pre-wrap"></pre>
-      </div>
-    </div>
-  </div>
 
   <script>
     import { api, apiURL } from '../../../services/apiClient';
     import { getToken, isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
 
     type JobStatus = 'running' | 'completed' | 'failed';
+    type TabKey = 'ejecuciones' | 'configuracion';
 
     type JobExecution = {
       jobName: string;
@@ -124,11 +192,39 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       sizePage: number;
     };
 
+    type CronJob = {
+      id: string;
+      key: string;
+      name: string;
+      schedule: string | null;
+      active: boolean;
+    };
+
+    type RunningCronJob = {
+      key: string;
+      running: boolean;
+      nextRun: string | null;
+    };
+
+    type EnrichedCronJob = CronJob & {
+      isRunning: boolean;
+      nextRun: string | null;
+      needsRestart: boolean;
+    };
+
     const PAGE_SIZE = 20;
     let currentPage = 1;
     let totalPages = 1;
     let currentJobFilter = '';
     let isLoading = false;
+    let configLoaded = false;
+    let isConfigLoading = false;
+    let editingCellKey = '';
+
+    const executionsTabButton = document.getElementById('tab-ejecuciones') as HTMLButtonElement;
+    const configTabButton = document.getElementById('tab-configuracion') as HTMLButtonElement;
+    const executionsPanel = document.getElementById('panel-ejecuciones') as HTMLElement;
+    const configPanel = document.getElementById('panel-configuracion') as HTMLElement;
 
     const tableBody = document.getElementById('jobs-table-body') as HTMLTableSectionElement;
     const pagination = document.getElementById('pagination') as HTMLDivElement;
@@ -140,6 +236,15 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     const runSelectedJobButton = document.getElementById('run-selected-job') as HTMLButtonElement;
     const jobRunInlineHint = document.getElementById('job-run-inline-hint') as HTMLParagraphElement;
     const jobRunStatus = document.getElementById('job-run-status') as HTMLParagraphElement;
+
+    const configLoading = document.getElementById('config-loading') as HTMLDivElement;
+    const configError = document.getElementById('config-error') as HTMLDivElement;
+    const configErrorMessage = document.getElementById('config-error-message') as HTMLParagraphElement;
+    const configRetryButton = document.getElementById('config-retry-button') as HTMLButtonElement;
+    const configEmpty = document.getElementById('config-empty') as HTMLDivElement;
+    const configTableContainer = document.getElementById('config-table-container') as HTMLDivElement;
+    const configTableBody = document.getElementById('config-table-body') as HTMLTableSectionElement;
+
     let runStatusTimeoutId: number | null = null;
     let runReloadTimeoutId: number | null = null;
 
@@ -156,6 +261,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
 
     const jobMetaMap = new Map<string, JobMetadata>();
     const jobBadgeClassMap = new Map<string, string>();
+    const enrichedCronJobsMap = new Map<string, EnrichedCronJob>();
 
     const STATUS_BADGE_CLASS: Record<JobStatus, string> = {
       completed: 'badge-soft-success',
@@ -170,6 +276,11 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+    }
+
+    function getErrorMessage(error: unknown, fallback: string): string {
+      const normalized = error as Error & { body?: { message?: string } };
+      return normalized.body?.message || normalized.message || fallback;
     }
 
     function formatDuration(durationMs: number | null): string {
@@ -200,6 +311,13 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       return errorMessage.length > 40 ? `${errorMessage.slice(0, 40)}...` : errorMessage;
     }
 
+    function formatNextRun(nextRun: string | null): string {
+      if (!nextRun) return '—';
+      const parsed = new Date(nextRun);
+      if (Number.isNaN(parsed.getTime())) return '—';
+      return parsed.toLocaleString('es-AR');
+    }
+
     function showJobRunStatus(message: string, tone: 'success' | 'error'): void {
       if (runStatusTimeoutId !== null) {
         window.clearTimeout(runStatusTimeoutId);
@@ -226,86 +344,235 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       jobRunInlineHint.classList.add('hidden');
     }
 
-    async function loadAvailableJobs(): Promise<void> {
-      jobFilter.innerHTML = '<option value="">Todos los jobs</option>';
+    function normalizeCronJobs(payload: unknown): CronJob[] {
+      const raw = payload as { data?: unknown } | unknown[];
+      const source = Array.isArray(raw) ? raw : Array.isArray((raw as { data?: unknown }).data) ? (raw as { data: unknown[] }).data : [];
+      return source
+        .filter((item): item is Record<string, unknown> => typeof item === 'object' && item !== null)
+        .map((item) => ({
+          id: String(item.id || ''),
+          key: String(item.key || ''),
+          name: String(item.name || ''),
+          schedule: typeof item.schedule === 'string' ? item.schedule : null,
+          active: Boolean(item.active),
+        }))
+        .filter((item) => item.id !== '' && item.key !== '');
+    }
 
-      try {
-        const token = getToken();
-        const response = await fetch(apiURL('/admin/jobs/available'), {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token || ''}`,
-          },
-        });
+    function normalizeRunningCronJobs(payload: unknown): RunningCronJob[] {
+      const raw = payload as { data?: unknown } | unknown[];
+      const source = Array.isArray(raw) ? raw : Array.isArray((raw as { data?: unknown }).data) ? (raw as { data: unknown[] }).data : [];
+      return source
+        .filter((item): item is Record<string, unknown> => typeof item === 'object' && item !== null)
+        .map((item) => ({
+          key: String(item.key || ''),
+          running: Boolean(item.running),
+          nextRun: typeof item.nextRun === 'string' ? item.nextRun : null,
+        }))
+        .filter((item) => item.key !== '');
+    }
 
-        if (!response.ok) {
-          return;
-        }
+    function getTabFromUrl(): TabKey {
+      const tab = new URLSearchParams(window.location.search).get('tab');
+      return tab === 'configuracion' ? 'configuracion' : 'ejecuciones';
+    }
 
-        const availableJobs = (await response.json()) as JobMetadata[];
+    function updateTabStyles(tab: TabKey): void {
+      const isExecutionsActive = tab === 'ejecuciones';
+      executionsTabButton.className = isExecutionsActive
+        ? 'border-b-2 border-primary px-1 py-3 text-sm font-bold text-primary transition-colors'
+        : 'border-b-2 border-transparent px-1 py-3 text-sm font-medium text-on-surface-variant transition-colors';
+      configTabButton.className = isExecutionsActive
+        ? 'border-b-2 border-transparent px-1 py-3 text-sm font-medium text-on-surface-variant transition-colors'
+        : 'border-b-2 border-primary px-1 py-3 text-sm font-bold text-primary transition-colors';
+    }
 
-        jobMetaMap.clear();
-        jobBadgeClassMap.clear();
+    function setActiveTab(tab: TabKey, pushHistory: boolean): void {
+      const showExecutions = tab === 'ejecuciones';
+      executionsPanel.classList.toggle('hidden', !showExecutions);
+      configPanel.classList.toggle('hidden', showExecutions);
+      updateTabStyles(tab);
 
-        availableJobs.forEach((job, index) => {
-          jobMetaMap.set(job.key, job);
-          jobBadgeClassMap.set(job.key, BADGE_PALETTE[index % BADGE_PALETTE.length]);
+      if (pushHistory) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', tab);
+        window.history.pushState({}, '', `${url.pathname}${url.search}${url.hash}`);
+      }
 
-          const option = document.createElement('option');
-          option.value = job.key;
-          option.textContent = job.name;
-          jobFilter.append(option);
-        });
-      } catch {
-        // Keep default option only if available jobs cannot be loaded.
+      if (tab === 'configuracion' && !configLoaded) {
+        void loadConfigTab();
       }
     }
 
-    async function runJob(jobName: string, triggerButton: HTMLButtonElement): Promise<void> {
-      const originalContent = triggerButton.innerHTML;
-      triggerButton.disabled = true;
+    function setConfigPanelState(state: 'loading' | 'error' | 'empty' | 'table'): void {
+      configLoading.classList.toggle('hidden', state !== 'loading');
+      configError.classList.toggle('hidden', state !== 'error');
+      configEmpty.classList.toggle('hidden', state !== 'empty');
+      configTableContainer.classList.toggle('hidden', state !== 'table');
+    }
 
-      try {
-        const token = getToken();
-        const response = await fetch(apiURL(`/admin/jobs/${encodeURIComponent(jobName)}/run`), {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token || ''}`,
-          },
-        });
+    function getMemoryCellContent(job: EnrichedCronJob): string {
+      const stateLabel = job.isRunning ? '✅ Registrado' : '⏸ No registrado';
+      const restartBadge = job.needsRestart
+        ? `<span class="badge bg-warning/10 text-warning border border-warning/20 text-[10px]"><span class="material-symbols-outlined text-xs">warning</span> Requiere reinicio</span>`
+        : '';
+      return `<div class="flex flex-col gap-1"><span class="text-xs text-on-surface-variant">${stateLabel}</span>${restartBadge}</div>`;
+    }
 
-        if (response.status === 404) {
-          showJobRunStatus('Job no encontrado', 'error');
-          triggerButton.disabled = false;
-          return;
-        }
-
-        if (!response.ok) {
-          showJobRunStatus('Error al iniciar el job', 'error');
-          triggerButton.disabled = false;
-          return;
-        }
-
-        triggerButton.innerHTML = '<span class="material-symbols-outlined text-sm">check</span> Iniciado';
-        showJobRunStatus('Job iniciado', 'success');
-
-        window.setTimeout(() => {
-          triggerButton.disabled = false;
-          triggerButton.innerHTML = originalContent;
-        }, 2000);
-
-        if (runReloadTimeoutId !== null) {
-          window.clearTimeout(runReloadTimeoutId);
-        }
-
-        runReloadTimeoutId = window.setTimeout(() => {
-          loadJobs();
-          runReloadTimeoutId = null;
-        }, 3000);
-      } catch {
-        showJobRunStatus('Error al iniciar el job', 'error');
-        triggerButton.disabled = false;
+    function setToggleVisual(button: HTMLButtonElement, isActive: boolean): void {
+      const thumb = button.querySelector<HTMLElement>('[data-toggle-thumb]');
+      button.dataset.active = String(isActive);
+      button.className = `relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isActive ? 'bg-primary' : 'bg-surface-container-high'}`;
+      if (thumb) {
+        thumb.className = `h-4 w-4 rounded-full bg-white transition-transform ${isActive ? 'translate-x-6' : 'translate-x-1'}`;
       }
+      button.setAttribute('aria-checked', String(isActive));
+    }
+
+    function showConfigRowError(jobId: string, message: string): void {
+      const rowError = configTableBody.querySelector<HTMLParagraphElement>(`[data-row-error="${CSS.escape(jobId)}"]`);
+      if (!rowError) return;
+      rowError.textContent = message;
+      rowError.classList.remove('hidden');
+    }
+
+    function clearConfigRowError(jobId: string): void {
+      const rowError = configTableBody.querySelector<HTMLParagraphElement>(`[data-row-error="${CSS.escape(jobId)}"]`);
+      if (!rowError) return;
+      rowError.textContent = '';
+      rowError.classList.add('hidden');
+    }
+
+    function renderConfigRows(rows: EnrichedCronJob[]): void {
+      if (rows.length === 0) {
+        configTableBody.innerHTML = '';
+        setConfigPanelState('empty');
+        return;
+      }
+
+      configTableBody.innerHTML = rows
+        .map((job) => {
+          const safeId = escapeHtml(job.id);
+          const safeKey = escapeHtml(job.key);
+          const safeName = escapeHtml(job.name);
+          const encodedName = escapeHtml(encodeURIComponent(job.name));
+          const encodedSchedule = escapeHtml(encodeURIComponent(job.schedule || ''));
+          const scheduleLabel = job.schedule || '—';
+          const activeClass = job.active ? 'bg-primary' : 'bg-surface-container-high';
+          const thumbClass = job.active ? 'translate-x-6' : 'translate-x-1';
+          return `
+            <tr class="border-b border-outline-variant/10 hover:bg-surface-container/50 transition-colors" data-config-row-id="${safeId}">
+              <td class="px-5 py-3.5 align-top">
+                <button
+                  type="button"
+                  data-editable-cell="true"
+                  data-field="name"
+                  data-job-id="${safeId}"
+                  data-original="${encodedName}"
+                  class="text-left text-xs font-semibold text-on-surface hover:text-primary"
+                >
+                  ${safeName}
+                </button>
+                <p data-row-error="${safeId}" class="mt-1 hidden text-xs font-semibold text-error"></p>
+              </td>
+              <td class="px-5 py-3.5 align-top">
+                <button
+                  type="button"
+                  data-editable-cell="true"
+                  data-field="schedule"
+                  data-job-id="${safeId}"
+                  data-original="${encodedSchedule}"
+                  class="text-left text-xs text-on-surface-variant hover:text-primary"
+                >
+                  ${escapeHtml(scheduleLabel)}
+                </button>
+              </td>
+              <td class="px-5 py-3.5 align-top">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked="${String(job.active)}"
+                  data-toggle-active="true"
+                  data-job-id="${safeId}"
+                  data-active="${String(job.active)}"
+                  class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${activeClass}"
+                >
+                  <span data-toggle-thumb="true" class="h-4 w-4 rounded-full bg-white transition-transform ${thumbClass}"></span>
+                </button>
+              </td>
+              <td class="px-5 py-3.5 align-top" data-memory-cell="${safeId}">
+                ${getMemoryCellContent(job)}
+              </td>
+              <td class="px-5 py-3.5 align-top text-xs text-on-surface-variant">${escapeHtml(formatNextRun(job.nextRun))}</td>
+              <td class="px-5 py-3.5 align-top">
+                <button
+                  type="button"
+                  data-config-run="${safeKey}"
+                  class="inline-flex items-center gap-1 rounded-lg bg-surface-container px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant hover:bg-surface-container-high transition-colors"
+                >
+                  <span class="material-symbols-outlined text-sm">play_arrow</span>
+                  Ejecutar
+                </button>
+              </td>
+            </tr>`;
+        })
+        .join('');
+
+      setConfigPanelState('table');
+    }
+
+    function setPaginationDisabled(disabled: boolean): void {
+      pagination.querySelectorAll<HTMLButtonElement>('button').forEach((button) => {
+        button.disabled = disabled;
+      });
+    }
+
+    function renderPagination(): void {
+      pagination.innerHTML = `
+        <button
+          type="button"
+          data-action="prev"
+          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          ${currentPage <= 1 || isLoading ? 'disabled' : ''}
+        >
+          <span class="material-symbols-outlined text-sm" aria-hidden="true">chevron_left</span>
+          Prev
+        </button>
+        <span class="text-xs font-bold text-on-surface-variant px-1">${currentPage} / ${totalPages}</span>
+        <button
+          type="button"
+          data-action="next"
+          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          ${currentPage >= totalPages || isLoading ? 'disabled' : ''}
+        >
+          Next
+          <span class="material-symbols-outlined text-sm" aria-hidden="true">chevron_right</span>
+        </button>`;
+    }
+
+    function updateSummary(total: number): void {
+      if (total === 0) {
+        resultsInfo.textContent = 'Mostrando 0–0 de 0 ejecuciones encontradas';
+        return;
+      }
+
+      const start = (currentPage - 1) * PAGE_SIZE + 1;
+      const end = Math.min(currentPage * PAGE_SIZE, total);
+      resultsInfo.textContent = `Mostrando ${start}–${end} de ${total} ejecuciones encontradas`;
+    }
+
+    function openErrorModal(jobName: string, errorMessage: string, errorStack: string): void {
+      errorName.textContent = `Job: ${jobName}`;
+      errorContent.textContent = `Error: ${errorMessage}\n\nStack:\n${errorStack}`;
+      errorModal.classList.remove('hidden');
+      errorModal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeErrorModal(): void {
+      errorModal.classList.add('hidden');
+      errorModal.classList.remove('flex');
+      document.body.style.overflow = '';
     }
 
     function renderLoadingRow(): void {
@@ -394,58 +661,86 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         .join('');
     }
 
-    function setPaginationDisabled(disabled: boolean): void {
-      pagination.querySelectorAll<HTMLButtonElement>('button').forEach((button) => {
-        button.disabled = disabled;
-      });
-    }
+    async function loadAvailableJobs(): Promise<void> {
+      jobFilter.innerHTML = '<option value="">Todos los jobs</option>';
 
-    function renderPagination(): void {
-      pagination.innerHTML = `
-        <button
-          type="button"
-          data-action="prev"
-          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          ${currentPage <= 1 || isLoading ? 'disabled' : ''}
-        >
-          <span class="material-symbols-outlined text-sm" aria-hidden="true">chevron_left</span>
-          Prev
-        </button>
-        <span class="text-xs font-bold text-on-surface-variant px-1">${currentPage} / ${totalPages}</span>
-        <button
-          type="button"
-          data-action="next"
-          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          ${currentPage >= totalPages || isLoading ? 'disabled' : ''}
-        >
-          Next
-          <span class="material-symbols-outlined text-sm" aria-hidden="true">chevron_right</span>
-        </button>`;
-    }
+      try {
+        const token = getToken();
+        const response = await fetch(apiURL('/admin/jobs/available'), {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token || ''}`,
+          },
+        });
 
-    function updateSummary(total: number): void {
-      if (total === 0) {
-        resultsInfo.textContent = 'Mostrando 0–0 de 0 ejecuciones encontradas';
-        return;
+        if (!response.ok) {
+          return;
+        }
+
+        const availableJobs = (await response.json()) as JobMetadata[];
+
+        jobMetaMap.clear();
+        jobBadgeClassMap.clear();
+
+        availableJobs.forEach((job, index) => {
+          jobMetaMap.set(job.key, job);
+          jobBadgeClassMap.set(job.key, BADGE_PALETTE[index % BADGE_PALETTE.length]);
+
+          const option = document.createElement('option');
+          option.value = job.key;
+          option.textContent = job.name;
+          jobFilter.append(option);
+        });
+      } catch {
+        // Keep default option only if available jobs cannot be loaded.
       }
-
-      const start = (currentPage - 1) * PAGE_SIZE + 1;
-      const end = Math.min(currentPage * PAGE_SIZE, total);
-      resultsInfo.textContent = `Mostrando ${start}–${end} de ${total} ejecuciones encontradas`;
     }
 
-    function openErrorModal(jobName: string, errorMessage: string, errorStack: string): void {
-      errorName.textContent = `Job: ${jobName}`;
-      errorContent.textContent = `Error: ${errorMessage}\n\nStack:\n${errorStack}`;
-      errorModal.classList.remove('hidden');
-      errorModal.classList.add('flex');
-      document.body.style.overflow = 'hidden';
-    }
+    async function runJob(jobName: string, triggerButton: HTMLButtonElement): Promise<void> {
+      const originalContent = triggerButton.innerHTML;
+      triggerButton.disabled = true;
 
-    function closeErrorModal(): void {
-      errorModal.classList.add('hidden');
-      errorModal.classList.remove('flex');
-      document.body.style.overflow = '';
+      try {
+        const token = getToken();
+        const response = await fetch(apiURL(`/admin/jobs/${encodeURIComponent(jobName)}/run`), {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token || ''}`,
+          },
+        });
+
+        if (response.status === 404) {
+          showJobRunStatus('Job no encontrado', 'error');
+          triggerButton.disabled = false;
+          return;
+        }
+
+        if (!response.ok) {
+          showJobRunStatus('Error al iniciar el job', 'error');
+          triggerButton.disabled = false;
+          return;
+        }
+
+        triggerButton.innerHTML = '<span class="material-symbols-outlined text-sm">check</span> Iniciado';
+        showJobRunStatus('Job iniciado', 'success');
+
+        window.setTimeout(() => {
+          triggerButton.disabled = false;
+          triggerButton.innerHTML = originalContent;
+        }, 2000);
+
+        if (runReloadTimeoutId !== null) {
+          window.clearTimeout(runReloadTimeoutId);
+        }
+
+        runReloadTimeoutId = window.setTimeout(() => {
+          loadJobs();
+          runReloadTimeoutId = null;
+        }, 3000);
+      } catch {
+        showJobRunStatus('Error al iniciar el job', 'error');
+        triggerButton.disabled = false;
+      }
     }
 
     async function loadJobs(): Promise<void> {
@@ -482,6 +777,185 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       }
     }
 
+    async function loadConfigTab(): Promise<void> {
+      if (configLoaded || isConfigLoading) {
+        return;
+      }
+
+      isConfigLoading = true;
+      setConfigPanelState('loading');
+
+      try {
+        const token = getToken();
+        if (token) {
+          api.setHeader('Authorization', `Bearer ${token}`);
+        }
+
+        const [dbJobsRaw, runningRaw] = await Promise.all([
+          api.get<unknown>(apiURL('/admin/cron-jobs')),
+          api.get<unknown>(apiURL('/admin/cron-jobs/running')),
+        ]);
+
+        const dbJobs = normalizeCronJobs(dbJobsRaw);
+        const runningJobs = normalizeRunningCronJobs(runningRaw);
+        const runningMap = new Map(runningJobs.map((job) => [job.key, job]));
+        const enriched = dbJobs.map((job) => ({
+          ...job,
+          isRunning: runningMap.get(job.key)?.running ?? false,
+          nextRun: runningMap.get(job.key)?.nextRun ?? null,
+          needsRestart: job.active !== (runningMap.get(job.key)?.running ?? false),
+        }));
+
+        enrichedCronJobsMap.clear();
+        enriched.forEach((job) => {
+          enrichedCronJobsMap.set(job.id, job);
+        });
+
+        configLoaded = true;
+        renderConfigRows(enriched);
+      } catch (error) {
+        configLoaded = false;
+        configErrorMessage.textContent = getErrorMessage(error, 'Error al cargar la configuración');
+        setConfigPanelState('error');
+      } finally {
+        isConfigLoading = false;
+      }
+    }
+
+    function startInlineEdit(cellButton: HTMLButtonElement): void {
+      const field = cellButton.dataset.field;
+      const jobId = cellButton.dataset.jobId;
+      const original = decodeURIComponent(cellButton.dataset.original || '');
+      if (!field || !jobId) {
+        return;
+      }
+
+      const editKey = `${jobId}:${field}`;
+      if (editingCellKey === editKey) {
+        return;
+      }
+
+      const cell = cellButton.parentElement as HTMLTableCellElement;
+      if (cell.querySelector('input[data-inline-editor="true"]')) {
+        return;
+      }
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = original;
+      input.dataset.inlineEditor = 'true';
+      input.className =
+        'w-full rounded-lg border border-outline-variant/30 bg-surface-container-lowest px-2.5 py-1.5 text-xs text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
+
+      cellButton.classList.add('hidden');
+      cell.append(input);
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+      editingCellKey = editKey;
+
+      let finished = false;
+      const finish = (mode: 'commit' | 'cancel') => {
+        if (finished) {
+          return;
+        }
+        finished = true;
+
+        const nextValue = input.value.trim();
+        input.remove();
+        editingCellKey = '';
+
+        if (mode === 'cancel' || nextValue === original) {
+          cellButton.classList.remove('hidden');
+          return;
+        }
+
+        const payload = { [field]: nextValue } as Record<string, string>;
+        cellButton.disabled = true;
+
+        void api
+          .patch(apiURL(`/admin/cron-jobs/${encodeURIComponent(jobId)}`), payload)
+          .then(() => {
+            const job = enrichedCronJobsMap.get(jobId);
+            if (job) {
+              if (field === 'name') {
+                job.name = nextValue;
+              }
+              if (field === 'schedule') {
+                job.schedule = nextValue || null;
+              }
+              enrichedCronJobsMap.set(jobId, job);
+            }
+
+            cellButton.dataset.original = encodeURIComponent(nextValue);
+            cellButton.textContent = field === 'schedule' ? nextValue || '—' : nextValue;
+            clearConfigRowError(jobId);
+            cellButton.classList.remove('hidden');
+          })
+          .catch((error) => {
+            cellButton.classList.remove('hidden');
+            showConfigRowError(jobId, getErrorMessage(error, 'No se pudo guardar el cambio.'));
+          })
+          .finally(() => {
+            cellButton.disabled = false;
+          });
+      };
+
+      input.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          finish('cancel');
+        }
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          finish('commit');
+        }
+      });
+
+      input.addEventListener('blur', () => {
+        finish('commit');
+      });
+    }
+
+    function handleToggleActive(toggleButton: HTMLButtonElement): void {
+      const jobId = toggleButton.dataset.jobId;
+      if (!jobId) {
+        return;
+      }
+
+      const job = enrichedCronJobsMap.get(jobId);
+      if (!job) {
+        return;
+      }
+
+      const nextActive = !job.active;
+      (window as any).openConfirmModal({
+        title: 'Cambiar activación',
+        body: `¿Cambiar estado de activación de "${job.name}"? Este cambio aplica en el próximo reinicio o deploy de la aplicación.`,
+        confirmText: 'Confirmar',
+        cancelText: 'Cancelar',
+        onConfirm: async () => {
+          toggleButton.disabled = true;
+          try {
+            await api.patch(apiURL(`/admin/cron-jobs/${encodeURIComponent(job.id)}`), { active: nextActive });
+            job.active = nextActive;
+            job.needsRestart = job.active !== job.isRunning;
+            enrichedCronJobsMap.set(jobId, job);
+
+            setToggleVisual(toggleButton, job.active);
+            const memoryCell = configTableBody.querySelector<HTMLTableCellElement>(`[data-memory-cell="${CSS.escape(jobId)}"]`);
+            if (memoryCell) {
+              memoryCell.innerHTML = getMemoryCellContent(job);
+            }
+            clearConfigRowError(jobId);
+          } catch (error) {
+            showConfigRowError(jobId, getErrorMessage(error, 'No se pudo cambiar la activación.'));
+          } finally {
+            toggleButton.disabled = false;
+          }
+        },
+      });
+    }
+
     function setupAuthGuard(): boolean {
       restoreSession();
 
@@ -498,6 +972,14 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       return true;
     }
 
+    executionsTabButton.addEventListener('click', () => {
+      setActiveTab('ejecuciones', true);
+    });
+
+    configTabButton.addEventListener('click', () => {
+      setActiveTab('configuracion', true);
+    });
+
     pagination.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
       const button = target.closest<HTMLButtonElement>('button[data-action]');
@@ -506,12 +988,12 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       const action = button.dataset.action;
       if (action === 'prev' && currentPage > 1) {
         currentPage -= 1;
-        loadJobs();
+        void loadJobs();
       }
 
       if (action === 'next' && currentPage < totalPages) {
         currentPage += 1;
-        loadJobs();
+        void loadJobs();
       }
     });
 
@@ -519,7 +1001,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       currentJobFilter = jobFilter.value;
       currentPage = 1;
       clearInlineHint();
-      loadJobs();
+      void loadJobs();
     });
 
     runSelectedJobButton.addEventListener('click', () => {
@@ -550,19 +1032,45 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       });
     });
 
+    configRetryButton.addEventListener('click', () => {
+      void loadConfigTab();
+    });
+
     tableBody.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
       const button = target.closest<HTMLButtonElement>('button[data-action]');
       if (!button) return;
 
-      const action = button.dataset.action;
-
-      if (action !== 'show-error') return;
+      if (button.dataset.action !== 'show-error') return;
 
       const jobName = button.dataset.jobName || '';
       const errorMessage = button.dataset.errorMessage || '—';
       const errorStack = button.dataset.errorStack || '—';
       openErrorModal(jobName, errorMessage, errorStack);
+    });
+
+    configTableBody.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+
+      const runButton = target.closest<HTMLButtonElement>('button[data-config-run]');
+      if (runButton) {
+        const jobKey = runButton.dataset.configRun;
+        if (jobKey) {
+          void runJob(jobKey, runButton);
+        }
+        return;
+      }
+
+      const toggleButton = target.closest<HTMLButtonElement>('button[data-toggle-active]');
+      if (toggleButton) {
+        handleToggleActive(toggleButton);
+        return;
+      }
+
+      const editableButton = target.closest<HTMLButtonElement>('button[data-editable-cell]');
+      if (editableButton) {
+        startInlineEdit(editableButton);
+      }
     });
 
     document.getElementById('job-error-close')?.addEventListener('click', closeErrorModal);
@@ -580,7 +1088,8 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     if (setupAuthGuard()) {
       setPaginationDisabled(false);
       void loadAvailableJobs();
-      loadJobs();
+      void loadJobs();
+      setActiveTab(getTabFromUrl(), false);
     }
   </script>
 </AdminLayout>
