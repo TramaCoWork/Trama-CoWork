@@ -74,7 +74,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
     import { getRubros, type ProfessionCategory } from '../../services/adminProfessionCategoriesService';
     import { getToken, isAuthenticated, restoreSession } from '../../services/authService';
     import { api } from '../../services/apiClient';
-    import { listJobs, getMyApplications, type Job, type JobApplication } from '../../services/workService';
+    import { listWorks, getMyWorkApplications, type Work, type WorkApplication } from '../../services/workService';
 
     const PAGE_SIZE = 20;
     let jobsPage = 1;
@@ -175,18 +175,18 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       });
     }
 
-    function getLogoHtml(job: Job): string {
+    function getLogoHtml(job: Work): string {
       const fallback = '<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center"><span class="material-symbols-outlined text-on-surface-variant" aria-hidden="true">business</span></div>';
       if (!job.companyLogo) return fallback;
       return `<img src="${escapeHtml(job.companyLogo)}" alt="Logo empresa" class="w-12 h-12 rounded-full object-cover border border-outline-variant/20" onerror="this.outerHTML='${fallback.replace(/'/g, '&apos;')}'" />`;
     }
 
-    function getVigenciaBadge(job: Job): string {
+    function getVigenciaBadge(job: Work): string {
       if (!job.validUntil) return '';
       return `<span class="inline-flex items-center px-2 py-1 rounded-lg text-[11px] font-bold bg-primary/10 text-primary">Válido hasta ${formatDate(job.validUntil)}</span>`;
     }
 
-    function renderJobsCards(items: Job[], append: boolean): void {
+    function renderJobsCards(items: Work[], append: boolean): void {
       if (!append && items.length === 0) {
         jobsGrid.innerHTML = '';
         jobsEmpty.classList.remove('hidden');
@@ -235,7 +235,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       jobsLoadMore.disabled = true;
 
       try {
-        const response = await listJobs(jobsPage, PAGE_SIZE, selectedCategoryId);
+        const response = await listWorks(jobsPage, PAGE_SIZE, selectedCategoryId);
         jobsTotalPages = response.meta.totalPages;
         renderJobsCards(response.data, append);
         jobsLoaded = true;
@@ -258,7 +258,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       }
     }
 
-    function renderApplications(items: JobApplication[], append: boolean): void {
+    function renderApplications(items: WorkApplication[], append: boolean): void {
       if (!append && items.length === 0) {
         applicationsList.innerHTML = '';
         applicationsEmpty.classList.remove('hidden');
@@ -301,7 +301,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
       applicationsLoadMore.disabled = true;
 
       try {
-        const response = await getMyApplications(applicationsPage, PAGE_SIZE);
+        const response = await getMyWorkApplications(applicationsPage, PAGE_SIZE);
         applicationsTotalPages = response.meta.totalPages;
         renderApplications(response.data, append);
         applicationsLoaded = true;

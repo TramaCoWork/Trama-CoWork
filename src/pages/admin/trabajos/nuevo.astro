@@ -1,0 +1,293 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import MdxEditorWrapper from '../../../components/MdxEditorWrapper';
+---
+
+<AdminLayout title="Nuevo trabajo | TRAMA Admin">
+  <header class="mb-8 flex items-start justify-between gap-4">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-widest text-primary">INICIO › TRABAJOS › NUEVO</p>
+      <h1 class="mt-2 text-3xl font-black tracking-tighter text-on-surface">Nuevo trabajo</h1>
+    </div>
+
+    <a
+      href="/admin/trabajos"
+      class="rounded-xl bg-surface-container px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface-container-high"
+    >
+      ← Volver
+    </a>
+  </header>
+
+  <section class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6 space-y-5">
+    <form id="new-job-form" class="space-y-5">
+      <div>
+        <label for="job-title" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Título *</label>
+        <input
+          id="job-title"
+          type="text"
+          required
+          class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+        />
+      </div>
+
+      <div>
+        <p class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Descripción *</p>
+        <div class="overflow-y-auto max-h-96 rounded-xl border border-outline-variant/20">
+          <MdxEditorWrapper client:load placeholder="Describí el trabajo..." maxlength={5000} />
+        </div>
+      </div>
+
+      <div>
+        <label for="job-email" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Email de notificación *</label>
+        <input
+          id="job-email"
+          type="email"
+          required
+          class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+        />
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div>
+          <label for="job-status" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado</label>
+          <select
+            id="job-status"
+            class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="active" selected>Activo</option>
+            <option value="paused">Pausado</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="job-company" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Empresa</label>
+          <input
+            id="job-company"
+            type="text"
+            class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+
+        <div>
+          <label for="job-valid-from" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Válido desde</label>
+          <input
+            id="job-valid-from"
+            type="date"
+            class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+
+        <div>
+          <label for="job-valid-until" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Válido hasta</label>
+          <input
+            id="job-valid-until"
+            type="date"
+            class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+
+        <div class="md:col-span-2">
+          <label for="job-logo" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">URL del logo</label>
+          <input
+            id="job-logo"
+            type="url"
+            class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+      </div>
+
+      <div>
+        <p class="mb-2 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Categorías</p>
+        <div id="job-category-checkboxes" class="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+          <p class="text-sm text-on-surface-variant">Cargando categorías...</p>
+        </div>
+      </div>
+
+      <div id="job-form-error" class="hidden rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></div>
+
+      <div>
+        <button
+          id="job-submit"
+          type="submit"
+          class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Crear trabajo
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <script>
+    import { api, apiURL } from '../../../services/apiClient';
+    import { getToken, isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
+    import { getRubros } from '../../../services/adminProfessionCategoriesService';
+    import { createWork } from '../../../services/workAdminService';
+
+    const form = document.getElementById('new-job-form') as HTMLFormElement;
+    const submitButton = document.getElementById('job-submit') as HTMLButtonElement;
+    const errorEl = document.getElementById('job-form-error') as HTMLDivElement;
+
+    const titleInput = document.getElementById('job-title') as HTMLInputElement;
+    const emailInput = document.getElementById('job-email') as HTMLInputElement;
+    const statusInput = document.getElementById('job-status') as HTMLSelectElement;
+    const validFromInput = document.getElementById('job-valid-from') as HTMLInputElement;
+    const validUntilInput = document.getElementById('job-valid-until') as HTMLInputElement;
+    const companyInput = document.getElementById('job-company') as HTMLInputElement;
+    const logoInput = document.getElementById('job-logo') as HTMLInputElement;
+    const categoriesContainer = document.getElementById('job-category-checkboxes') as HTMLDivElement;
+
+    function showError(message: string): void {
+      errorEl.textContent = message;
+      errorEl.classList.remove('hidden');
+    }
+
+    function hideError(): void {
+      errorEl.textContent = '';
+      errorEl.classList.add('hidden');
+    }
+
+    function toIsoDate(value: string): string {
+      return `${value}T00:00:00.000Z`;
+    }
+
+    function getCheckedCategoryIds(): number[] {
+      return Array.from(categoriesContainer.querySelectorAll<HTMLInputElement>('input[type="checkbox"]:checked'))
+        .map((checkbox) => Number(checkbox.value))
+        .filter((categoryId) => Number.isFinite(categoryId));
+    }
+
+    function renderCategories(items: Array<{ id: number; name: string }>): void {
+      if (items.length === 0) {
+        categoriesContainer.innerHTML = '<p class="text-sm text-on-surface-variant">No hay categorías disponibles.</p>';
+        return;
+      }
+
+      categoriesContainer.innerHTML = items
+        .map(
+          (rubro) => `
+            <label for="cat-${rubro.id}" class="flex items-center gap-2 rounded-lg border border-outline-variant/20 px-3 py-2 text-sm text-on-surface">
+              <input
+                id="cat-${rubro.id}"
+                type="checkbox"
+                value="${rubro.id}"
+                class="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20"
+              />
+              <span>${rubro.name}</span>
+            </label>
+          `,
+        )
+        .join('');
+    }
+
+    function getDescriptionFromEditor(): Promise<string> {
+      return new Promise((resolve) => {
+        const handleLegacyResponse = (event: Event) => {
+          const customEvent = event as CustomEvent<{ content?: string }>;
+          resolve(customEvent.detail?.content?.trim() || '');
+        };
+
+        const handleResponse = (event: Event) => {
+          const customEvent = event as CustomEvent<{ markdown?: string }>;
+          resolve(customEvent.detail?.markdown?.trim() || '');
+        };
+
+        document.addEventListener('mdx-editor-content', handleLegacyResponse, { once: true });
+        document.addEventListener('mdx-editor-content-response', handleResponse, { once: true });
+        document.dispatchEvent(new CustomEvent('mdx-editor-get-content'));
+      });
+    }
+
+    function validateDates(validFrom: string | null, validUntil: string | null): string | null {
+      if (!validFrom || !validUntil) return null;
+      if (new Date(validFrom) >= new Date(validUntil)) {
+        return 'La fecha de inicio debe ser anterior a la de fin';
+      }
+      return null;
+    }
+
+    async function handleSubmit(event: Event): Promise<void> {
+      event.preventDefault();
+      hideError();
+
+      const title = titleInput.value.trim();
+      const email = emailInput.value.trim();
+      const description = await getDescriptionFromEditor();
+      const validFrom = validFromInput.value ? toIsoDate(validFromInput.value) : null;
+      const validUntil = validUntilInput.value ? toIsoDate(validUntilInput.value) : null;
+
+      if (!title) {
+        showError('El título es obligatorio.');
+        return;
+      }
+      if (!description) {
+        showError('La descripción es obligatoria.');
+        return;
+      }
+      if (!email) {
+        showError('El email es obligatorio.');
+        return;
+      }
+
+      const dateValidationError = validateDates(validFrom, validUntil);
+      if (dateValidationError) {
+        showError(dateValidationError);
+        return;
+      }
+
+      const categoryIds = getCheckedCategoryIds().filter((categoryId) => categoryId > 0);
+
+      submitButton.disabled = true;
+      submitButton.textContent = 'Creando...';
+
+      try {
+        const result = await createWork({
+          title,
+          description,
+          email,
+          status: statusInput.value as 'active' | 'paused',
+          validFrom,
+          validUntil,
+          companyName: companyInput.value.trim() || null,
+          companyLogo: logoInput.value.trim() || null,
+          categoryIds,
+        });
+
+        window.location.href = `/admin/trabajos/detalle?id=${encodeURIComponent(result.id)}`;
+      } catch {
+        showError('No se pudo crear el trabajo. Intentá de nuevo.');
+        submitButton.disabled = false;
+        submitButton.textContent = 'Crear trabajo';
+      }
+    }
+
+    async function init(): Promise<void> {
+      restoreSession();
+
+      if (!isAuthenticated() || !isAdmin()) {
+        window.location.href = '/admin';
+        return;
+      }
+
+      const token = getToken();
+      if (token) {
+        api.setHeader('Authorization', `Bearer ${token}`);
+      }
+
+      // Keep apiURL import in use to ensure admin endpoint base is resolved with the same helper.
+      apiURL('/admin/work');
+
+      try {
+        const rubros = await getRubros();
+        renderCategories(rubros);
+      } catch {
+        categoriesContainer.innerHTML = '<p class="text-sm text-on-surface-variant">No se pudieron cargar las categorías.</p>';
+      }
+
+      form.addEventListener('submit', handleSubmit);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      init();
+    });
+  </script>
+</AdminLayout>

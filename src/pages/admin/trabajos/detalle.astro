@@ -198,12 +198,19 @@ import EditorModal from '../../../components/EditorModal.astro';
   <script>
     import { isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
     import { getRubros, type ProfessionCategory } from '../../../services/adminProfessionCategoriesService';
-    import { getJob, updateJob, listApplications, type Job, type JobApplication, type UpdateJobPayload } from '../../../services/workAdminService';
+    import {
+      getWork,
+      updateWork,
+      listWorkApplications,
+      type Work,
+      type WorkApplication,
+      type UpdateWorkPayload,
+    } from '../../../services/workAdminService';
     import { renderMarkdown } from '../../../utils/markdown';
 
     const APPLICATIONS_PAGE_SIZE = 20;
     let currentJobId = '';
-    let currentJob: Job | null = null;
+    let currentJob: Work | null = null;
     let rubros: ProfessionCategory[] = [];
     let applicationsPage = 1;
     let applicationsTotalPages = 1;
@@ -331,7 +338,7 @@ import EditorModal from '../../../components/EditorModal.astro';
         .join('');
     }
 
-    function renderJobInfo(job: Job): void {
+    function renderJobInfo(job: Work): void {
       const vigencia = !job.validFrom && !job.validUntil
         ? 'Sin límite'
         : `${formatDate(job.validFrom)} – ${formatDate(job.validUntil)}`;
@@ -355,7 +362,7 @@ import EditorModal from '../../../components/EditorModal.astro';
       }
     }
 
-    function renderApplicationsRows(items: JobApplication[], append = false): void {
+    function renderApplicationsRows(items: WorkApplication[], append = false): void {
       if (!append && items.length === 0) {
         applicationsBody.innerHTML = `
           <tr>
@@ -388,7 +395,7 @@ import EditorModal from '../../../components/EditorModal.astro';
       isLoadingApplications = true;
       loadMoreButton.disabled = true;
       try {
-        const response = await listApplications(currentJobId, applicationsPage, APPLICATIONS_PAGE_SIZE);
+        const response = await listWorkApplications(currentJobId, applicationsPage, APPLICATIONS_PAGE_SIZE);
         applicationsTotalPages = response.meta.totalPages;
         renderApplicationsRows(response.data, append);
 
@@ -451,7 +458,7 @@ import EditorModal from '../../../components/EditorModal.astro';
         .filter((value) => Number.isFinite(value));
     }
 
-    function buildPayload(): UpdateJobPayload {
+    function buildPayload(): UpdateWorkPayload {
       return {
         title: titleInput.value.trim(),
         description: descriptionInput.value.trim(),
@@ -465,7 +472,7 @@ import EditorModal from '../../../components/EditorModal.astro';
       };
     }
 
-    function validatePayload(payload: UpdateJobPayload): string | null {
+    function validatePayload(payload: UpdateWorkPayload): string | null {
       if (!payload.title) return 'El título es obligatorio.';
       if (!payload.description) return 'La descripción es obligatoria.';
       if (!payload.email) return 'El email es obligatorio.';
@@ -489,8 +496,8 @@ import EditorModal from '../../../components/EditorModal.astro';
 
       submitButton.disabled = true;
       try {
-        await updateJob(currentJobId, payload);
-        const refreshed = await getJob(currentJobId);
+        await updateWork(currentJobId, payload);
+        const refreshed = await getWork(currentJobId);
         currentJob = refreshed;
         renderJobInfo(refreshed);
         closeModal();
@@ -527,7 +534,7 @@ import EditorModal from '../../../components/EditorModal.astro';
       }
 
       try {
-        const job = await getJob(currentJobId);
+        const job = await getWork(currentJobId);
         currentJob = job;
         renderJobInfo(job);
         loadingEl.classList.add('hidden');

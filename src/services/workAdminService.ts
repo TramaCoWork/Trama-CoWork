@@ -1,7 +1,7 @@
 import { api, apiURL } from './apiClient';
 import { getToken } from './authService';
 
-export interface Job {
+export interface Work {
   id: string;
   title: string;
   description: string;
@@ -19,23 +19,23 @@ export interface Job {
   _count?: { applications: number };
 }
 
-export interface JobApplication {
+export interface WorkApplication {
   id: string;
   jobId: string;
   userId: string;
   coverLetter: string | null;
   createdAt: string;
-  job?: Job;
+  job?: Work;
 }
 
-export interface JobsMeta {
+export interface WorksMeta {
   page: number;
   limit: number;
   total: number;
   totalPages: number;
 }
 
-export interface CreateJobPayload {
+export interface CreateWorkPayload {
   title: string;
   description: string;
   email: string;
@@ -47,7 +47,7 @@ export interface CreateJobPayload {
   categoryIds?: number[];
 }
 
-export type UpdateJobPayload = Partial<CreateJobPayload>;
+export type UpdateWorkPayload = Partial<CreateWorkPayload>;
 
 const ADMIN_JOBS_PATH = new URL(apiURL('/admin/work')).pathname;
 
@@ -58,14 +58,14 @@ function setAuthHeader(): void {
   }
 }
 
-export async function listJobs(
+export async function listWorks(
   page: number,
   limit: number,
   status?: string,
   categoryId?: number,
-): Promise<{ data: Job[]; meta: JobsMeta }> {
+): Promise<{ data: Work[]; meta: WorksMeta }> {
   setAuthHeader();
-  return api.get<{ data: Job[]; meta: JobsMeta }>(ADMIN_JOBS_PATH, {
+  return api.get<{ data: Work[]; meta: WorksMeta }>(ADMIN_JOBS_PATH, {
     page,
     limit,
     status,
@@ -73,38 +73,38 @@ export async function listJobs(
   });
 }
 
-export async function getJob(id: string): Promise<Job> {
+export async function getWork(id: string): Promise<Work> {
   setAuthHeader();
-  return api.get<Job>(`${ADMIN_JOBS_PATH}/${id}`);
+  return api.get<Work>(`${ADMIN_JOBS_PATH}/${id}`);
 }
 
-export async function createJob(payload: CreateJobPayload): Promise<Job> {
+export async function createWork(payload: CreateWorkPayload): Promise<Work> {
   setAuthHeader();
-  return api.post<Job>(ADMIN_JOBS_PATH, payload);
+  return api.post<Work>(ADMIN_JOBS_PATH, payload);
 }
 
-export async function updateJob(id: string, payload: UpdateJobPayload): Promise<Job> {
+export async function updateWork(id: string, payload: UpdateWorkPayload): Promise<Work> {
   setAuthHeader();
-  return api.patch<Job>(`${ADMIN_JOBS_PATH}/${id}`, payload);
+  return api.patch<Work>(`${ADMIN_JOBS_PATH}/${id}`, payload);
 }
 
-export async function updateJobStatus(id: string, status: 'active' | 'paused'): Promise<Job> {
+export async function updateWorkStatus(id: string, status: 'active' | 'paused'): Promise<Work> {
   setAuthHeader();
-  return api.patch<Job>(`${ADMIN_JOBS_PATH}/${id}/status`, { status });
+  return api.patch<Work>(`${ADMIN_JOBS_PATH}/${id}/status`, { status });
 }
 
-export async function deleteJob(id: string): Promise<{ message: string }> {
+export async function deleteWork(id: string): Promise<{ message: string }> {
   setAuthHeader();
   return api.del<{ message: string }>(`${ADMIN_JOBS_PATH}/${id}`);
 }
 
-export async function listApplications(
+export async function listWorkApplications(
   id: string,
   page: number,
   limit: number,
-): Promise<{ data: JobApplication[]; meta: JobsMeta }> {
+): Promise<{ data: WorkApplication[]; meta: WorksMeta }> {
   setAuthHeader();
-  return api.get<{ data: JobApplication[]; meta: JobsMeta }>(`${ADMIN_JOBS_PATH}/${id}/applications`, {
+  return api.get<{ data: WorkApplication[]; meta: WorksMeta }>(`${ADMIN_JOBS_PATH}/${id}/applications`, {
     page,
     limit,
   });

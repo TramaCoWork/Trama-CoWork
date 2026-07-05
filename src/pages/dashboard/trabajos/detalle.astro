@@ -106,11 +106,11 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
   <script>
     import { getToken, isAuthenticated, restoreSession } from '../../../services/authService';
     import { api } from '../../../services/apiClient';
-    import { getJob, applyToJob, type Job } from '../../../services/workService';
+    import { getWork, applyToWork, type Work } from '../../../services/workService';
     import { renderMarkdown } from '../../../utils/markdown';
 
     let currentJobId = '';
-    let currentJob: Job | null = null;
+    let currentJob: Work | null = null;
     let hasApplied = false;
 
     const loadingEl = document.getElementById('job-loading') as HTMLDivElement;
@@ -153,13 +153,13 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
       return '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-warning/15 text-warning">Pausado</span>';
     }
 
-    function getLogoHtml(job: Job): string {
+    function getLogoHtml(job: Work): string {
       const fallback = '<div class="w-[50px] h-[50px] rounded-full bg-surface-container flex items-center justify-center"><span class="material-symbols-outlined text-on-surface-variant" aria-hidden="true">business</span></div>';
       if (!job.companyLogo) return fallback;
       return `<img src="${escapeHtml(job.companyLogo)}" alt="Logo empresa" class="w-[50px] h-[50px] rounded-full object-cover border border-outline-variant/20" onerror="this.outerHTML='${fallback.replace(/'/g, '&apos;')}'" />`;
     }
 
-    function renderCategories(job: Job): void {
+    function renderCategories(job: Work): void {
       const categoriesEl = document.getElementById('job-categories') as HTMLDivElement;
       if (!job.categoryIds || job.categoryIds.length === 0) {
         categoriesEl.innerHTML = '<span class="inline-flex items-center px-2 py-1 rounded-lg text-[11px] font-bold bg-surface-container-high text-on-surface-variant">Sin categorías</span>';
@@ -171,7 +171,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
         .join('');
     }
 
-    function renderJob(job: Job): void {
+    function renderJob(job: Work): void {
       (document.getElementById('job-logo') as HTMLElement).innerHTML = getLogoHtml(job);
       (document.getElementById('job-company') as HTMLElement).textContent = job.companyName || 'Empresa no especificada';
       (document.getElementById('job-title') as HTMLElement).textContent = job.title;
@@ -221,7 +221,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 
       try {
         const coverLetter = coverLetterInput.value.trim();
-        await applyToJob(currentJobId, coverLetter || undefined);
+        await applyToWork(currentJobId, coverLetter || undefined);
         closeModal();
         setAppliedState(true);
       } catch (err: unknown) {
@@ -259,7 +259,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
       currentJobId = id;
 
       try {
-        const job = await getJob(currentJobId);
+        const job = await getWork(currentJobId);
         currentJob = job;
         renderJob(job);
         setAppliedState(false);
