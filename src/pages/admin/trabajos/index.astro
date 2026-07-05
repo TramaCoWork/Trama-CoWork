@@ -1,10 +1,12 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import ConfirmModal from '../../../components/ConfirmModal.astro';
+import EditorModal from '../../../components/EditorModal.astro';
 ---
 
 <AdminLayout title="Trabajos | TRAMA Admin">
   <ConfirmModal />
+  <EditorModal />
 
   <header class="mb-8 flex items-center justify-between gap-4">
     <div>
@@ -105,8 +107,20 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         </div>
 
         <div class="md:col-span-2">
-          <label for="job-description" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Descripción *</label>
-          <textarea id="job-description" required rows="5" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm"></textarea>
+          <input id="job-description" type="hidden" />
+          <div class="flex items-center justify-between gap-2 mb-1.5">
+            <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Descripción *</p>
+            <button
+              id="job-description-edit"
+              type="button"
+              class="px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
+            >
+              Editar descripción
+            </button>
+          </div>
+          <div id="job-description-preview" class="rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface-variant">
+            Sin descripción.
+          </div>
         </div>
 
         <div>
@@ -197,7 +211,9 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     const categoryCheckboxes = document.getElementById('job-category-checkboxes') as HTMLDivElement;
 
     const titleInput = document.getElementById('job-title') as HTMLInputElement;
-    const descriptionInput = document.getElementById('job-description') as HTMLTextAreaElement;
+    const descriptionInput = document.getElementById('job-description') as HTMLInputElement;
+    const descriptionPreview = document.getElementById('job-description-preview') as HTMLDivElement;
+    const descriptionEditButton = document.getElementById('job-description-edit') as HTMLButtonElement;
     const emailInput = document.getElementById('job-email') as HTMLInputElement;
     const statusInput = document.getElementById('job-status') as HTMLSelectElement;
     const validFromInput = document.getElementById('job-valid-from') as HTMLInputElement;
@@ -267,6 +283,35 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
 
     function toIsoDate(value: string): string {
       return `${value}T00:00:00.000Z`;
+    }
+
+    function truncateDescription(value: string): string {
+      if (value.length <= 80) return value;
+      return `${value.slice(0, 79)}…`;
+    }
+
+    function updateDescriptionPreview(value: string): void {
+      const normalized = value.trim();
+      descriptionPreview.textContent = normalized ? truncateDescription(normalized) : 'Sin descripción.';
+    }
+
+    function openDescriptionEditor(): void {
+      document.dispatchEvent(
+        new CustomEvent('open-editor-modal', {
+          detail: {
+            title: 'Descripción del trabajo',
+            placeholder: 'Describí el trabajo...',
+            maxlength: 5000,
+            context: 'job-description',
+          },
+        }),
+      );
+
+      document.dispatchEvent(
+        new CustomEvent('mdx-editor-set-content', {
+          detail: { markdown: descriptionInput.value || '' },
+        }),
+      );
     }
 
     function getCheckedCategoryIds(): number[] {
@@ -439,6 +484,8 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         modalTitle.textContent = 'Nuevo trabajo';
         submitButton.textContent = 'Guardar';
         form.reset();
+        descriptionInput.value = '';
+        updateDescriptionPreview('');
         statusInput.value = 'active';
         renderCategoryCheckboxes();
       } else {
@@ -446,6 +493,12 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         submitButton.textContent = 'Guardar cambios';
         titleInput.value = job?.title || '';
         descriptionInput.value = job?.description || '';
+        updateDescriptionPreview(descriptionInput.value);
+        document.dispatchEvent(
+          new CustomEvent('mdx-editor-set-content', {
+            detail: { markdown: descriptionInput.value },
+          }),
+        );
         emailInput.value = job?.email || '';
         statusInput.value = job?.status || 'active';
         validFromInput.value = toInputDate(job?.validFrom || null);
@@ -466,6 +519,8 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       document.body.style.overflow = '';
       hideModalError();
       form.reset();
+      descriptionInput.value = '';
+      updateDescriptionPreview('');
       editingId = null;
       modalMode = 'create';
     }
@@ -614,8 +669,18 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       });
 
       document.getElementById('btn-open-create')?.addEventListener('click', () => openModal('create'));
+      descriptionEditButton.addEventListener('click', openDescriptionEditor);
       document.getElementById('job-modal-close')?.addEventListener('click', closeModal);
       document.getElementById('job-modal-cancel')?.addEventListener('click', closeModal);
+      document.addEventListener('editor-modal-submit', (event) => {
+        const customEvent = event as CustomEvent<{ content?: string; context?: string }>;
+        if (customEvent.detail?.context !== 'job-description') {
+          return;
+        }
+
+        descriptionInput.value = customEvent.detail.content || '';
+        updateDescriptionPreview(descriptionInput.value);
+      });
       modal.addEventListener('click', (event) => {
         if (event.target === modal) {
           closeModal();

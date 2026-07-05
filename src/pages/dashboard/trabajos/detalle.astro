@@ -49,7 +49,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 
       <div class="mt-6">
         <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Descripción</p>
-        <p id="job-description" class="text-sm text-on-surface whitespace-pre-wrap leading-relaxed"></p>
+        <div id="job-description" class="markdown-content text-sm text-on-surface leading-relaxed"></div>
       </div>
 
       <div class="mt-6">
@@ -107,6 +107,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
     import { getToken, isAuthenticated, restoreSession } from '../../../services/authService';
     import { api } from '../../../services/apiClient';
     import { getJob, applyToJob, type Job } from '../../../services/workService';
+    import { renderMarkdown } from '../../../utils/markdown';
 
     let currentJobId = '';
     let currentJob: Job | null = null;
@@ -181,7 +182,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 
       (document.getElementById('job-vigencia') as HTMLElement).textContent = vigencia;
       (document.getElementById('job-status') as HTMLElement).innerHTML = statusBadge(job.status);
-      (document.getElementById('job-description') as HTMLElement).textContent = job.description;
+      (document.getElementById('job-description') as HTMLElement).innerHTML = renderMarkdown(job.description || '');
 
       renderCategories(job);
     }

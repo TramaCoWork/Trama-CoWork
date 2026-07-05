@@ -133,14 +133,30 @@ export default function MdxEditorWrapper({
       );
     };
 
+    const handleSetContent = (event: Event) => {
+      const customEvent = event as CustomEvent<{ markdown?: string } | string>;
+      const nextMarkdown = typeof customEvent.detail === 'string'
+        ? customEvent.detail
+        : customEvent.detail?.markdown || '';
+      const content = typeof maxlength === 'number' && maxlength > 0
+        ? nextMarkdown.slice(0, maxlength)
+        : nextMarkdown;
+
+      editorRef.current?.setMarkdown(content);
+      imageIdsRef.current = [];
+      setMarkdown(content);
+    };
+
     document.addEventListener('mdx-editor-get-content', handleGetContent);
     document.addEventListener('mdx-editor-reset', handleReset);
+    document.addEventListener('mdx-editor-set-content', handleSetContent);
 
     return () => {
       document.removeEventListener('mdx-editor-get-content', handleGetContent);
       document.removeEventListener('mdx-editor-reset', handleReset);
+      document.removeEventListener('mdx-editor-set-content', handleSetContent);
     };
-  }, [markdown]);
+  }, [markdown, maxlength]);
 
   return (
     <MDXEditor
