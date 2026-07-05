@@ -1,12 +1,10 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import ConfirmModal from '../../../components/ConfirmModal.astro';
-import EditorModal from '../../../components/EditorModal.astro';
 ---
 
 <AdminLayout title="Trabajos | TRAMA Admin">
   <ConfirmModal />
-  <EditorModal />
 
   <header class="mb-8 flex items-center justify-between gap-4">
     <div>
@@ -14,13 +12,13 @@ import EditorModal from '../../../components/EditorModal.astro';
       <p class="text-on-surface-variant font-medium mt-1 text-sm">Gestioná publicaciones laborales para profesionales.</p>
     </div>
 
-    <button
+    <a
       id="btn-open-create"
-      type="button"
+      href="/admin/trabajos/nuevo"
       class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all"
     >
       Nuevo trabajo
-    </button>
+    </a>
   </header>
 
   <section class="bg-surface-container-low rounded-2xl border border-outline-variant/10 p-6 mb-6">
@@ -85,108 +83,15 @@ import EditorModal from '../../../components/EditorModal.astro';
 
   <div id="jobs-pagination" class="mt-4 flex items-center justify-between gap-3 flex-wrap"></div>
 
-  <div
-    id="job-modal"
-    class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/30 backdrop-blur-sm p-4"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="job-modal-title"
-  >
-    <div class="w-full max-w-3xl rounded-2xl bg-surface-container-low border border-outline-variant/15 shadow-2xl max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between border-b border-outline-variant/15 px-6 py-4 sticky top-0 bg-surface-container-low">
-        <h2 id="job-modal-title" class="text-lg font-extrabold text-on-surface tracking-tight">Nuevo trabajo</h2>
-        <button id="job-modal-close" type="button" class="text-on-surface-variant hover:text-on-surface" aria-label="Cerrar">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-
-      <form id="job-form" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="md:col-span-2">
-          <label for="job-title" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Título *</label>
-          <input id="job-title" type="text" required class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm" />
-        </div>
-
-        <div class="md:col-span-2">
-          <input id="job-description" type="hidden" />
-          <div class="flex items-center justify-between gap-2 mb-1.5">
-            <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Descripción *</p>
-            <button
-              id="job-description-edit"
-              type="button"
-              class="px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
-            >
-              Editar descripción
-            </button>
-          </div>
-          <div id="job-description-preview" class="rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 text-sm text-on-surface-variant">
-            Sin descripción.
-          </div>
-        </div>
-
-        <div>
-          <label for="job-email" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Email *</label>
-          <input id="job-email" type="email" required class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm" />
-        </div>
-
-        <div>
-          <label for="job-status" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Estado</label>
-          <select id="job-status" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm">
-            <option value="active">Activo</option>
-            <option value="paused">Pausado</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="job-valid-from" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Válido desde</label>
-          <input id="job-valid-from" type="date" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm" />
-        </div>
-
-        <div>
-          <label for="job-valid-until" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Válido hasta</label>
-          <input id="job-valid-until" type="date" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm" />
-        </div>
-
-        <div>
-          <label for="job-company-name" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Empresa</label>
-          <input id="job-company-name" type="text" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm" />
-        </div>
-
-        <div>
-          <label for="job-company-logo" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Logo (URL)</label>
-          <input id="job-company-logo" type="url" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm" />
-        </div>
-
-        <div class="md:col-span-2">
-          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Rubros</p>
-          <div id="job-category-checkboxes" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2"></div>
-        </div>
-
-        <div id="job-modal-error" class="hidden md:col-span-2 rounded-lg border border-error/20 bg-error/10 px-3 py-2 text-sm font-medium text-error"></div>
-
-        <div class="md:col-span-2 flex justify-end gap-3">
-          <button id="job-modal-cancel" type="button" class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors">Cancelar</button>
-          <button id="job-modal-submit" type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all">Guardar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <script>
     import { isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
     import { getRubros, type ProfessionCategory } from '../../../services/adminProfessionCategoriesService';
     import {
       listWorks,
-      getWork,
-      createWork,
-      updateWork,
       updateWorkStatus,
       deleteWork,
       type Work,
-      type CreateWorkPayload,
-      type UpdateWorkPayload,
     } from '../../../services/workAdminService';
-
-    type ModalMode = 'create' | 'edit';
 
     const PAGE_SIZE = 20;
     let currentPage = 1;
@@ -194,8 +99,6 @@ import EditorModal from '../../../components/EditorModal.astro';
     let totalItems = 0;
     let currentJobs: Work[] = [];
     let rubros: ProfessionCategory[] = [];
-    let modalMode: ModalMode = 'create';
-    let editingId: string | null = null;
 
     const tbody = document.getElementById('jobs-table-body') as HTMLTableSectionElement;
     const paginationEl = document.getElementById('jobs-pagination') as HTMLDivElement;
@@ -203,23 +106,6 @@ import EditorModal from '../../../components/EditorModal.astro';
     const statusFilter = document.getElementById('jobs-filter-status') as HTMLSelectElement;
     const categoryFilter = document.getElementById('jobs-filter-category') as HTMLSelectElement;
 
-    const modal = document.getElementById('job-modal') as HTMLDivElement;
-    const modalTitle = document.getElementById('job-modal-title') as HTMLHeadingElement;
-    const modalError = document.getElementById('job-modal-error') as HTMLDivElement;
-    const form = document.getElementById('job-form') as HTMLFormElement;
-    const submitButton = document.getElementById('job-modal-submit') as HTMLButtonElement;
-    const categoryCheckboxes = document.getElementById('job-category-checkboxes') as HTMLDivElement;
-
-    const titleInput = document.getElementById('job-title') as HTMLInputElement;
-    const descriptionInput = document.getElementById('job-description') as HTMLInputElement;
-    const descriptionPreview = document.getElementById('job-description-preview') as HTMLDivElement;
-    const descriptionEditButton = document.getElementById('job-description-edit') as HTMLButtonElement;
-    const emailInput = document.getElementById('job-email') as HTMLInputElement;
-    const statusInput = document.getElementById('job-status') as HTMLSelectElement;
-    const validFromInput = document.getElementById('job-valid-from') as HTMLInputElement;
-    const validUntilInput = document.getElementById('job-valid-until') as HTMLInputElement;
-    const companyNameInput = document.getElementById('job-company-name') as HTMLInputElement;
-    const companyLogoInput = document.getElementById('job-company-logo') as HTMLInputElement;
 
     function escapeHtml(value: string): string {
       return value
@@ -238,16 +124,6 @@ import EditorModal from '../../../components/EditorModal.astro';
     function hideInlineError(): void {
       inlineError.textContent = '';
       inlineError.classList.add('hidden');
-    }
-
-    function showModalError(message: string): void {
-      modalError.textContent = message;
-      modalError.classList.remove('hidden');
-    }
-
-    function hideModalError(): void {
-      modalError.textContent = '';
-      modalError.classList.add('hidden');
     }
 
     function formatDate(value: string | null): string {
@@ -274,52 +150,6 @@ import EditorModal from '../../../components/EditorModal.astro';
       return '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-warning/15 text-warning">Pausado</span>';
     }
 
-    function toInputDate(value: string | null): string {
-      if (!value) return '';
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '';
-      return date.toISOString().slice(0, 10);
-    }
-
-    function toIsoDate(value: string): string {
-      return `${value}T00:00:00.000Z`;
-    }
-
-    function truncateDescription(value: string): string {
-      if (value.length <= 80) return value;
-      return `${value.slice(0, 79)}…`;
-    }
-
-    function updateDescriptionPreview(value: string): void {
-      const normalized = value.trim();
-      descriptionPreview.textContent = normalized ? truncateDescription(normalized) : 'Sin descripción.';
-    }
-
-    function openDescriptionEditor(): void {
-      document.dispatchEvent(
-        new CustomEvent('open-editor-modal', {
-          detail: {
-            title: 'Descripción del trabajo',
-            placeholder: 'Describí el trabajo...',
-            maxlength: 5000,
-            context: 'job-description',
-          },
-        }),
-      );
-
-      document.dispatchEvent(
-        new CustomEvent('mdx-editor-set-content', {
-          detail: { markdown: descriptionInput.value || '' },
-        }),
-      );
-    }
-
-    function getCheckedCategoryIds(): number[] {
-      return Array.from(categoryCheckboxes.querySelectorAll<HTMLInputElement>('input[type="checkbox"]:checked'))
-        .map((input) => Number(input.value))
-        .filter((value) => Number.isFinite(value));
-    }
-
     function getFilters(): { status?: string; categoryId?: number } {
       const status = statusFilter.value || undefined;
       const categoryId = categoryFilter.value ? Number(categoryFilter.value) : undefined;
@@ -334,28 +164,6 @@ import EditorModal from '../../../components/EditorModal.astro';
         option.textContent = rubro.name;
         categoryFilter.appendChild(option);
       });
-    }
-
-    function renderCategoryCheckboxes(selectedIds: number[] = []): void {
-      if (rubros.length === 0) {
-        categoryCheckboxes.innerHTML = '<p class="text-sm text-on-surface-variant">No hay rubros disponibles.</p>';
-        return;
-      }
-
-      categoryCheckboxes.innerHTML = rubros
-        .map(
-          (rubro) => `
-            <label class="flex items-center gap-2 rounded-lg border border-outline-variant/20 px-3 py-2 text-sm text-on-surface">
-              <input
-                type="checkbox"
-                value="${rubro.id}"
-                ${selectedIds.includes(rubro.id) ? 'checked' : ''}
-                class="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20"
-              />
-              <span>${escapeHtml(rubro.name)}</span>
-            </label>`,
-        )
-        .join('');
     }
 
     function renderLoading(): void {
@@ -445,7 +253,6 @@ import EditorModal from '../../../components/EditorModal.astro';
     async function loadRubros(): Promise<void> {
       rubros = await getRubros();
       renderCategoryFilterOptions();
-      renderCategoryCheckboxes();
     }
 
     async function loadJobs(): Promise<void> {
@@ -472,109 +279,6 @@ import EditorModal from '../../../components/EditorModal.astro';
             </td>
           </tr>`;
         paginationEl.innerHTML = '';
-      }
-    }
-
-    function openModal(mode: ModalMode, job?: Work): void {
-      modalMode = mode;
-      editingId = job?.id || null;
-      hideModalError();
-
-      if (mode === 'create') {
-        modalTitle.textContent = 'Nuevo trabajo';
-        submitButton.textContent = 'Guardar';
-        form.reset();
-        descriptionInput.value = '';
-        updateDescriptionPreview('');
-        statusInput.value = 'active';
-        renderCategoryCheckboxes();
-      } else {
-        modalTitle.textContent = 'Editar trabajo';
-        submitButton.textContent = 'Guardar cambios';
-        titleInput.value = job?.title || '';
-        descriptionInput.value = job?.description || '';
-        updateDescriptionPreview(descriptionInput.value);
-        document.dispatchEvent(
-          new CustomEvent('mdx-editor-set-content', {
-            detail: { markdown: descriptionInput.value },
-          }),
-        );
-        emailInput.value = job?.email || '';
-        statusInput.value = job?.status || 'active';
-        validFromInput.value = toInputDate(job?.validFrom || null);
-        validUntilInput.value = toInputDate(job?.validUntil || null);
-        companyNameInput.value = job?.companyName || '';
-        companyLogoInput.value = job?.companyLogo || '';
-        renderCategoryCheckboxes(job?.categoryIds || []);
-      }
-
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeModal(): void {
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-      document.body.style.overflow = '';
-      hideModalError();
-      form.reset();
-      descriptionInput.value = '';
-      updateDescriptionPreview('');
-      editingId = null;
-      modalMode = 'create';
-    }
-
-    function buildPayload(): CreateWorkPayload {
-      const categoryIds = getCheckedCategoryIds();
-      return {
-        title: titleInput.value.trim(),
-        description: descriptionInput.value.trim(),
-        email: emailInput.value.trim(),
-        status: statusInput.value as 'active' | 'paused',
-        validFrom: validFromInput.value ? toIsoDate(validFromInput.value) : null,
-        validUntil: validUntilInput.value ? toIsoDate(validUntilInput.value) : null,
-        companyName: companyNameInput.value.trim() || null,
-        companyLogo: companyLogoInput.value.trim() || null,
-        categoryIds,
-      };
-    }
-
-    function validatePayload(payload: CreateWorkPayload): string | null {
-      if (!payload.title) return 'El título es obligatorio.';
-      if (!payload.description) return 'La descripción es obligatoria.';
-      if (!payload.email) return 'El email es obligatorio.';
-      if (payload.validFrom && payload.validUntil && new Date(payload.validFrom) >= new Date(payload.validUntil)) {
-        return 'La fecha de inicio debe ser anterior a la de fin';
-      }
-      return null;
-    }
-
-    async function submitForm(event: Event): Promise<void> {
-      event.preventDefault();
-      hideModalError();
-
-      const payload = buildPayload();
-      const validationError = validatePayload(payload);
-      if (validationError) {
-        showModalError(validationError);
-        return;
-      }
-
-      submitButton.disabled = true;
-      try {
-        if (modalMode === 'create') {
-          await createWork(payload);
-          currentPage = 1;
-        } else if (editingId) {
-          await updateWork(editingId, payload as UpdateWorkPayload);
-        }
-        closeModal();
-        await loadJobs();
-      } catch {
-        showModalError('No se pudo guardar el trabajo.');
-      } finally {
-        submitButton.disabled = false;
       }
     }
 
@@ -629,12 +333,7 @@ import EditorModal from '../../../components/EditorModal.astro';
           if (!job) return;
 
           if (button.dataset.action === 'edit') {
-            try {
-              const fullJob = await getWork(job.id);
-              openModal('edit', fullJob);
-            } catch {
-              showInlineError('No se pudo cargar el trabajo para editar.');
-            }
+            window.location.href = `/admin/trabajos/editar?id=${encodeURIComponent(job.id)}`;
             return;
           }
 
@@ -668,25 +367,6 @@ import EditorModal from '../../../components/EditorModal.astro';
         loadJobs();
       });
 
-      document.getElementById('btn-open-create')?.addEventListener('click', () => openModal('create'));
-      descriptionEditButton.addEventListener('click', openDescriptionEditor);
-      document.getElementById('job-modal-close')?.addEventListener('click', closeModal);
-      document.getElementById('job-modal-cancel')?.addEventListener('click', closeModal);
-      document.addEventListener('editor-modal-submit', (event) => {
-        const customEvent = event as CustomEvent<{ content?: string; context?: string }>;
-        if (customEvent.detail?.context !== 'job-description') {
-          return;
-        }
-
-        descriptionInput.value = customEvent.detail.content || '';
-        updateDescriptionPreview(descriptionInput.value);
-      });
-      modal.addEventListener('click', (event) => {
-        if (event.target === modal) {
-          closeModal();
-        }
-      });
-      form.addEventListener('submit', submitForm);
       setupTableInteractions();
     }
 
@@ -708,7 +388,6 @@ import EditorModal from '../../../components/EditorModal.astro';
       } catch {
         rubros = [];
         renderCategoryFilterOptions();
-        renderCategoryCheckboxes();
       }
 
       await loadJobs();
