@@ -16,6 +16,7 @@ export interface Work {
   createdAt: string;
   updatedAt: string;
   deletedAt: null;
+  hasApplied?: boolean | null;
   _count?: { applications: number };
 }
 

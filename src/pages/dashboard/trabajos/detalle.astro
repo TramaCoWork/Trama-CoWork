@@ -36,25 +36,16 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
         </div>
       </div>
 
-      <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+      <div class="mt-6 grid grid-cols-1 gap-4 text-sm">
         <div>
           <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Vigencia</p>
           <p id="job-vigencia" class="text-on-surface"></p>
-        </div>
-        <div>
-          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">Estado</p>
-          <div id="job-status"></div>
         </div>
       </div>
 
       <div class="mt-6">
         <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Descripción</p>
         <div id="job-description" class="markdown-content text-sm text-on-surface leading-relaxed"></div>
-      </div>
-
-      <div class="mt-6">
-        <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">Categorías</p>
-        <div id="job-categories" class="flex flex-wrap gap-2"></div>
       </div>
 
       <div class="mt-8 flex items-center gap-3">
@@ -65,9 +56,6 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
         >
           Postularme
         </button>
-        <span id="apply-success" class="hidden inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-success/15 text-success">
-          Postulación enviada ✓
-        </span>
       </div>
     </article>
   </section>
@@ -118,7 +106,6 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
     const errorEl = document.getElementById('job-error') as HTMLParagraphElement;
     const contentEl = document.getElementById('job-content') as HTMLElement;
     const applyButton = document.getElementById('btn-open-apply') as HTMLButtonElement;
-    const applySuccess = document.getElementById('apply-success') as HTMLSpanElement;
 
     const modal = document.getElementById('apply-modal') as HTMLDivElement;
     const form = document.getElementById('apply-form') as HTMLFormElement;
@@ -146,29 +133,10 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
       }).format(date);
     }
 
-    function statusBadge(status: 'active' | 'paused'): string {
-      if (status === 'active') {
-        return '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-success/15 text-success">Activo</span>';
-      }
-      return '<span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-warning/15 text-warning">Pausado</span>';
-    }
-
     function getLogoHtml(job: Work): string {
       const fallback = '<div class="w-[50px] h-[50px] rounded-full bg-surface-container flex items-center justify-center"><span class="material-symbols-outlined text-on-surface-variant" aria-hidden="true">business</span></div>';
       if (!job.companyLogo) return fallback;
       return `<img src="${escapeHtml(job.companyLogo)}" alt="Logo empresa" class="w-[50px] h-[50px] rounded-full object-cover border border-outline-variant/20" onerror="this.outerHTML='${fallback.replace(/'/g, '&apos;')}'" />`;
-    }
-
-    function renderCategories(job: Work): void {
-      const categoriesEl = document.getElementById('job-categories') as HTMLDivElement;
-      if (!job.categoryIds || job.categoryIds.length === 0) {
-        categoriesEl.innerHTML = '<span class="inline-flex items-center px-2 py-1 rounded-lg text-[11px] font-bold bg-surface-container-high text-on-surface-variant">Sin categorías</span>';
-        return;
-      }
-
-      categoriesEl.innerHTML = job.categoryIds
-        .map((id) => `<span class="inline-flex items-center px-2 py-1 rounded-lg text-[11px] font-bold bg-primary/10 text-primary">Categoría #${id}</span>`)
-        .join('');
     }
 
     function renderJob(job: Work): void {
@@ -181,18 +149,16 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
         : `${formatDate(job.validFrom)} – ${formatDate(job.validUntil)}`;
 
       (document.getElementById('job-vigencia') as HTMLElement).textContent = vigencia;
-      (document.getElementById('job-status') as HTMLElement).innerHTML = statusBadge(job.status);
       (document.getElementById('job-description') as HTMLElement).innerHTML = renderMarkdown(job.description || '');
-
-      renderCategories(job);
     }
 
     function setAppliedState(applied: boolean): void {
       hasApplied = applied;
-      applyButton.disabled = applied;
-      applyButton.classList.toggle('opacity-50', applied);
-      applyButton.classList.toggle('cursor-not-allowed', applied);
-      applySuccess.classList.toggle('hidden', !applied);
+      if (applied) {
+        applyButton.classList.add('hidden');
+        return;
+      }
+      applyButton.classList.remove('hidden');
     }
 
     function openModal(): void {
@@ -262,7 +228,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
         const job = await getWork(currentJobId);
         currentJob = job;
         renderJob(job);
-        setAppliedState(false);
+        setAppliedState(job.hasApplied === true);
 
         loadingEl.classList.add('hidden');
         contentEl.classList.remove('hidden');

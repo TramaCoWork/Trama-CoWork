@@ -43,7 +43,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         </button>
       </div>
 
-      <div id="post-content" class="prose prose-sm max-w-none text-on-surface"></div>
+      <div id="post-content" class="markdown-content prose prose-sm max-w-none text-on-surface"></div>
     </article>
 
     <aside class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
@@ -87,6 +87,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
   <script>
     import { api } from '../../../services/apiClient';
+    import { renderMarkdown } from '../../../utils/markdown';
     import {
       createAdminComment,
       deleteComment,
@@ -160,14 +161,6 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       return 'Usuario';
     }
 
-    function renderLightMarkdown(raw: string): string {
-      const escaped = escapeHtml(raw || '');
-      const withLinks = escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-primary underline">$1</a>');
-      const withBold = withLinks.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-      const withItalic = withBold.replace(/\*(.+?)\*/g, '<em>$1</em>');
-      return withItalic.replace(/\n/g, '<br>');
-    }
-
     function parsePagination(response: PaginatedResponse<CommunityComment>): { page: number; totalPages: number } {
       const page = response.meta?.page ?? response.page ?? 1;
       const byMeta = response.meta?.totalPages;
@@ -208,7 +201,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       postChannel.textContent = post.channelSlug || 'sin-canal';
       postDate.textContent = formatDate(post.createdAt);
       postCommentCount.textContent = `Comentarios: ${post.commentCount ?? 0}`;
-      postContent.innerHTML = renderLightMarkdown(post.content || '');
+      postContent.innerHTML = renderMarkdown(post.content || '');
     }
 
     function emptyCommentsState(): void {
@@ -249,7 +242,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
                   <span class="material-symbols-outlined text-lg" aria-hidden="true">delete</span>
                 </button>
               </div>
-              <div class="text-sm text-on-surface-variant">${renderLightMarkdown(comment.content || '')}</div>
+              <div class="markdown-content text-sm text-on-surface-variant">${renderMarkdown(comment.content || '')}</div>
             </article>`;
         })
         .join('');
@@ -275,7 +268,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
               <span class="material-symbols-outlined text-lg" aria-hidden="true">delete</span>
             </button>
           </div>
-          <div class="text-sm text-on-surface-variant">${renderLightMarkdown(comment.content || '')}</div>
+          <div class="markdown-content text-sm text-on-surface-variant">${renderMarkdown(comment.content || '')}</div>
         </article>`;
 
       const emptyState = commentsList.querySelector('div');
