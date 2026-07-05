@@ -183,7 +183,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
   <script>
     import { isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
     import { getRubros, type ProfessionCategory } from '../../../services/adminProfessionCategoriesService';
-    import { getJob, updateJob, listApplications, type Job, type JobApplication, type UpdateJobPayload } from '../../../services/jobsAdminService';
+    import { getJob, updateJob, listApplications, type Job, type JobApplication, type UpdateJobPayload } from '../../../services/workAdminService';
 
     const APPLICATIONS_PAGE_SIZE = 20;
     let currentJobId = '';

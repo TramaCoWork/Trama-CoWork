@@ -74,7 +74,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
     import { getRubros, type ProfessionCategory } from '../../services/adminProfessionCategoriesService';
     import { getToken, isAuthenticated, restoreSession } from '../../services/authService';
     import { api } from '../../services/apiClient';
-    import { listJobs, getMyApplications, type Job, type JobApplication } from '../../services/jobsService';
+    import { listJobs, getMyApplications, type Job, type JobApplication } from '../../services/workService';
 
     const PAGE_SIZE = 20;
     let jobsPage = 1;

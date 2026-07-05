@@ -162,8 +162,15 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
   <ConfirmModal />
 
   <script>
-    import { api, apiURL } from '../../../services/apiClient';
-    import { getToken, isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
+    import { isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
+    import {
+      listCronJobs,
+      listJobExecutions,
+      listRunningJobs,
+      restartJob,
+      runJob,
+      updateCronJob,
+    } from '../../../services/cronJobsService';
 
     type JobStatus = 'running' | 'completed' | 'failed';
     type TabKey = 'ejecuciones' | 'configuracion';
@@ -198,12 +205,6 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       name: string;
       schedule: string | null;
       active: boolean;
-    };
-
-    type RunningCronJob = {
-      key: string;
-      running: boolean;
-      nextRun: string | null;
     };
 
     type EnrichedCronJob = CronJob & {
@@ -344,33 +345,6 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       jobRunInlineHint.classList.add('hidden');
     }
 
-    function normalizeCronJobs(payload: unknown): CronJob[] {
-      const raw = payload as { data?: unknown } | unknown[];
-      const source = Array.isArray(raw) ? raw : Array.isArray((raw as { data?: unknown }).data) ? (raw as { data: unknown[] }).data : [];
-      return source
-        .filter((item): item is Record<string, unknown> => typeof item === 'object' && item !== null)
-        .map((item) => ({
-          id: String(item.id || ''),
-          key: String(item.key || ''),
-          name: String(item.name || ''),
-          schedule: typeof item.schedule === 'string' ? item.schedule : null,
-          active: Boolean(item.active),
-        }))
-        .filter((item) => item.id !== '' && item.key !== '');
-    }
-
-    function normalizeRunningCronJobs(payload: unknown): RunningCronJob[] {
-      const raw = payload as { data?: unknown } | unknown[];
-      const source = Array.isArray(raw) ? raw : Array.isArray((raw as { data?: unknown }).data) ? (raw as { data: unknown[] }).data : [];
-      return source
-        .filter((item): item is Record<string, unknown> => typeof item === 'object' && item !== null)
-        .map((item) => ({
-          key: String(item.key || ''),
-          running: Boolean(item.running),
-          nextRun: typeof item.nextRun === 'string' ? item.nextRun : null,
-        }))
-        .filter((item) => item.key !== '');
-    }
 
     function getTabFromUrl(): TabKey {
       const tab = new URLSearchParams(window.location.search).get('tab');
@@ -695,19 +669,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       jobFilter.innerHTML = '<option value="">Todos los jobs</option>';
 
       try {
-        const token = getToken();
-        const response = await fetch(apiURL('/admin/cron-jobs'), {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token || ''}`,
-          },
-        });
-
-        if (!response.ok) {
-          return;
-        }
-
-        const availableJobs = (await response.json()) as JobMetadata[];
+        const availableJobs = (await listCronJobs()) as JobMetadata[];
 
         jobMetaMap.clear();
         jobBadgeClassMap.clear();
@@ -726,30 +688,12 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       }
     }
 
-    async function runJob(jobName: string, triggerButton: HTMLButtonElement): Promise<void> {
+    async function runJobWithFeedback(jobName: string, triggerButton: HTMLButtonElement): Promise<void> {
       const originalContent = triggerButton.innerHTML;
       triggerButton.disabled = true;
 
       try {
-        const token = getToken();
-        const response = await fetch(apiURL(`/admin/jobs/${encodeURIComponent(jobName)}/run`), {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token || ''}`,
-          },
-        });
-
-        if (response.status === 404) {
-          showJobRunStatus('Job no encontrado', 'error');
-          triggerButton.disabled = false;
-          return;
-        }
-
-        if (!response.ok) {
-          showJobRunStatus('Error al iniciar el job', 'error');
-          triggerButton.disabled = false;
-          return;
-        }
+        await runJob(jobName);
 
         triggerButton.innerHTML = '<span class="material-symbols-outlined text-sm">check</span> Iniciado';
         showJobRunStatus('Job iniciado', 'success');
@@ -767,29 +711,25 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
           loadJobs();
           runReloadTimeoutId = null;
         }, 3000);
-      } catch {
+      } catch (error) {
+        const typedError = error as Error & { status?: number };
+        if (typedError.status === 404) {
+          showJobRunStatus('Job no encontrado', 'error');
+          triggerButton.disabled = false;
+          return;
+        }
         showJobRunStatus('Error al iniciar el job', 'error');
         triggerButton.disabled = false;
       }
     }
 
     async function loadJobs(): Promise<void> {
-      const endpoint = apiURL('/admin/jobs');
-      const query: Record<string, string | number> = {
-        page: currentPage,
-        sizePage: PAGE_SIZE,
-      };
-
-      if (currentJobFilter) {
-        query.jobName = currentJobFilter;
-      }
-
       isLoading = true;
       renderPagination();
       renderLoadingRow();
 
       try {
-        const response = await api.get<JobsResponse>(endpoint, query);
+        const response = await listJobExecutions(currentPage, PAGE_SIZE, currentJobFilter || undefined);
         const total = Number(response.total || 0);
         const sizePage = Number(response.sizePage || PAGE_SIZE);
         totalPages = Math.max(1, Math.ceil(total / sizePage));
@@ -816,21 +756,11 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       setConfigPanelState('loading');
 
       try {
-        const token = getToken();
-        if (token) {
-          api.setHeader('Authorization', `Bearer ${token}`);
-        }
-
-        const [dbJobsRaw, runningRaw] = await Promise.all([
-          api.get<unknown>(apiURL('/admin/cron-jobs')),
-          api.get<unknown>(apiURL('/admin/cron-jobs/running')),
-        ]);
-
-        const dbJobs = normalizeCronJobs(dbJobsRaw);
-        const runningJobs = normalizeRunningCronJobs(runningRaw);
+        const [dbJobs, runningJobs] = await Promise.all([listCronJobs(), listRunningJobs()]);
         const runningMap = new Map(runningJobs.map((job) => [job.key, job]));
         const enriched = dbJobs.map((job) => ({
           ...job,
+          schedule: job.schedule || null,
           isRunning: runningMap.get(job.key)?.running ?? false,
           nextRun: runningMap.get(job.key)?.nextRun ?? null,
           needsRestart: job.active !== (runningMap.get(job.key)?.running ?? false),
@@ -856,7 +786,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       await loadConfigTab(true);
     }
 
-    async function restartJob(jobKey: string, triggerButton: HTMLButtonElement): Promise<void> {
+    async function restartJobWithConfirm(jobKey: string, triggerButton: HTMLButtonElement): Promise<void> {
       const cronJob = getCronJobByKey(jobKey);
       const jobDisplayName = cronJob?.name || jobKey;
       const rowId = cronJob?.id || '';
@@ -875,15 +805,17 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
           triggerButton.disabled = true;
 
           try {
-            const token = getToken();
-            const response = await fetch(apiURL(`/admin/jobs/${encodeURIComponent(jobKey)}/restart`), {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${token || ''}`,
-              },
-            });
+            await restartJob(jobKey);
 
-            if (response.status === 400) {
+            triggerButton.innerHTML = '<span class="material-symbols-outlined text-sm">check</span> ✓ Reiniciado';
+            window.setTimeout(() => {
+              triggerButton.disabled = false;
+              triggerButton.innerHTML = originalContent;
+              void reloadConfigTab();
+            }, 2000);
+          } catch (error) {
+            const typedError = error as Error & { status?: number };
+            if (typedError.status === 400) {
               if (rowId) {
                 showConfigRowInfo(rowId, 'El job estaba inactivo y se detuvo');
               }
@@ -896,29 +828,13 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
               return;
             }
 
-            if (response.status === 404) {
+            if (typedError.status === 404) {
               if (rowId) {
                 showConfigRowError(rowId, 'Job no encontrado');
               }
               triggerButton.disabled = false;
               return;
             }
-
-            if (!response.ok) {
-              if (rowId) {
-                showConfigRowError(rowId, 'Error al reiniciar el job');
-              }
-              triggerButton.disabled = false;
-              return;
-            }
-
-            triggerButton.innerHTML = '<span class="material-symbols-outlined text-sm">check</span> ✓ Reiniciado';
-            window.setTimeout(() => {
-              triggerButton.disabled = false;
-              triggerButton.innerHTML = originalContent;
-              void reloadConfigTab();
-            }, 2000);
-          } catch {
             if (rowId) {
               showConfigRowError(rowId, 'Error al reiniciar el job');
             }
@@ -978,8 +894,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         const payload = { [field]: nextValue } as Record<string, string>;
         cellButton.disabled = true;
 
-        void api
-          .patch(apiURL(`/admin/cron-jobs/${encodeURIComponent(jobId)}`), payload)
+        void updateCronJob(jobId, payload)
           .then(() => {
             const job = enrichedCronJobsMap.get(jobId);
             if (job) {
@@ -987,7 +902,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
                 job.name = nextValue;
               }
               if (field === 'schedule') {
-                job.schedule = nextValue || null;
+                job.schedule = nextValue;
               }
               enrichedCronJobsMap.set(jobId, job);
             }
@@ -1042,7 +957,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         onConfirm: async () => {
           toggleButton.disabled = true;
           try {
-            await api.patch(apiURL(`/admin/cron-jobs/${encodeURIComponent(job.id)}`), { active: nextActive });
+            await updateCronJob(job.id, { active: nextActive });
             job.active = nextActive;
             job.needsRestart = job.active !== job.isRunning;
             enrichedCronJobsMap.set(jobId, job);
@@ -1068,11 +983,6 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       if (!isAuthenticated() || !isAdmin()) {
         window.location.href = '/admin';
         return false;
-      }
-
-      const token = getToken();
-      if (token) {
-        api.setHeader('Authorization', `Bearer ${token}`);
       }
 
       return true;
@@ -1127,7 +1037,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
             text: 'Ejecutar',
             variant: 'primary',
             onClick: () => {
-              void runJob(jobName, runSelectedJobButton);
+              void runJobWithFeedback(jobName, runSelectedJobButton);
             },
           },
           {
@@ -1162,7 +1072,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       if (runButton) {
         const jobKey = runButton.dataset.configRun;
         if (jobKey) {
-          void runJob(jobKey, runButton);
+          void runJobWithFeedback(jobKey, runButton);
         }
         return;
       }
@@ -1171,7 +1081,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       if (restartButton) {
         const jobKey = restartButton.dataset.configRestart;
         if (jobKey) {
-          void restartJob(jobKey, restartButton);
+          void restartJobWithConfirm(jobKey, restartButton);
         }
         return;
       }

@@ -1,10 +1,10 @@
 import { api, apiURL } from './apiClient';
 import { getToken } from './authService';
-import type { Job, JobApplication, JobsMeta } from './jobsAdminService';
+import type { Job, JobApplication, JobsMeta } from './workAdminService';
 
-export type { Job, JobApplication, JobsMeta } from './jobsAdminService';
+export type { Job, JobApplication, JobsMeta } from './workAdminService';
 
-const JOBS_PATH = new URL(apiURL('/jobs')).pathname;
+const JOBS_PATH = new URL(apiURL('/work')).pathname;
 
 function setAuthHeader(): void {
   const token = getToken();

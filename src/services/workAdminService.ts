@@ -49,7 +49,7 @@ export interface CreateJobPayload {
 
 export type UpdateJobPayload = Partial<CreateJobPayload>;
 
-const ADMIN_JOBS_PATH = new URL(apiURL('/admin/jobs')).pathname;
+const ADMIN_JOBS_PATH = new URL(apiURL('/admin/work')).pathname;
 
 function setAuthHeader(): void {
   const token = getToken();
