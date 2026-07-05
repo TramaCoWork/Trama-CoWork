@@ -185,21 +185,26 @@ import MdxEditorWrapper from '../../../components/MdxEditorWrapper';
     }
 
     function getDescriptionFromEditor(): Promise<string> {
-      return new Promise((resolve) => {
-        const handleLegacyResponse = (event: Event) => {
-          const customEvent = event as CustomEvent<{ content?: string }>;
-          resolve(customEvent.detail?.content?.trim() || '');
-        };
-
-        const handleResponse = (event: Event) => {
-          const customEvent = event as CustomEvent<{ markdown?: string }>;
-          resolve(customEvent.detail?.markdown?.trim() || '');
-        };
-
-        document.addEventListener('mdx-editor-content', handleLegacyResponse, { once: true });
-        document.addEventListener('mdx-editor-content-response', handleResponse, { once: true });
+      return new Promise<string>((resolve) => {
+        document.addEventListener(
+          'mdx-editor-content-response',
+          (event) => {
+            resolve((event as CustomEvent<{ markdown?: string }>).detail?.markdown?.trim() || '');
+          },
+          { once: true },
+        );
         document.dispatchEvent(new CustomEvent('mdx-editor-get-content'));
       });
+    }
+
+    function htmlToMarkdownBasic(html: string): string {
+      return html
+        .replace(/<img[^>]+src="([^"]+)"[^>]*\/?>/gi, '![]($1)')
+        .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
+        .replace(/<em>(.*?)<\/em>/gi, '*$1*')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<p>(.*?)<\/p>/gi, '$1\n')
+        .replace(/<[^>]+>/g, '');
     }
 
     function validateDates(validFrom: string | null, validUntil: string | null): string | null {
@@ -220,9 +225,10 @@ import MdxEditorWrapper from '../../../components/MdxEditorWrapper';
       logoInput.value = work.companyLogo || '';
 
       setTimeout(() => {
+        const descriptionMarkdown = htmlToMarkdownBasic(work.description);
         document.dispatchEvent(
           new CustomEvent('mdx-editor-set-content', {
-            detail: { markdown: work.description },
+            detail: { markdown: descriptionMarkdown },
           }),
         );
       }, 200);

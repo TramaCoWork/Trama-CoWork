@@ -180,19 +180,14 @@ import MdxEditorWrapper from '../../../components/MdxEditorWrapper';
     }
 
     function getDescriptionFromEditor(): Promise<string> {
-      return new Promise((resolve) => {
-        const handleLegacyResponse = (event: Event) => {
-          const customEvent = event as CustomEvent<{ content?: string }>;
-          resolve(customEvent.detail?.content?.trim() || '');
-        };
-
-        const handleResponse = (event: Event) => {
-          const customEvent = event as CustomEvent<{ markdown?: string }>;
-          resolve(customEvent.detail?.markdown?.trim() || '');
-        };
-
-        document.addEventListener('mdx-editor-content', handleLegacyResponse, { once: true });
-        document.addEventListener('mdx-editor-content-response', handleResponse, { once: true });
+      return new Promise<string>((resolve) => {
+        document.addEventListener(
+          'mdx-editor-content-response',
+          (event) => {
+            resolve((event as CustomEvent<{ markdown?: string }>).detail?.markdown?.trim() || '');
+          },
+          { once: true },
+        );
         document.dispatchEvent(new CustomEvent('mdx-editor-get-content'));
       });
     }
