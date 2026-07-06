@@ -147,6 +147,14 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     <section class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6">
       <div class="mb-4 flex items-center justify-between gap-3">
         <h2 class="text-xl font-extrabold tracking-tight text-on-surface">Envíos</h2>
+        <button
+          id="btn-download-csv"
+          type="button"
+          class="inline-flex items-center gap-1.5 rounded-lg border border-outline-variant/30 bg-transparent px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-on-surface-variant transition-colors hover:bg-surface-container disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <span class="material-symbols-outlined text-sm" aria-hidden="true">download</span>
+          Descargar CSV
+        </button>
       </div>
 
       <p id="submissions-inline-error" class="mb-4 hidden rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></p>
@@ -233,6 +241,10 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     const submissionsBody = document.getElementById('submissions-table-body') as HTMLTableSectionElement;
     const submissionsInlineError = document.getElementById('submissions-inline-error') as HTMLParagraphElement;
     const submissionsPagination = document.getElementById('submissions-pagination') as HTMLDivElement;
+    const downloadCsvBtn = document.getElementById('btn-download-csv') as HTMLButtonElement | null;
+
+    const DOWNLOAD_CSV_LABEL = '<span class="material-symbols-outlined text-sm" aria-hidden="true">download</span>Descargar CSV';
+    const DOWNLOAD_CSV_LOADING_LABEL = 'Descargando...';
 
     function escapeHtml(value: string): string {
       return value
@@ -530,6 +542,80 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       }
     }
 
+    function toCsvCell(value: unknown): string {
+      const normalized =
+        value === null || value === undefined
+          ? ''
+          : typeof value === 'object'
+            ? JSON.stringify(value)
+            : String(value);
+      return `"${normalized.replace(/"/g, '""')}"`;
+    }
+
+    function setDownloadCsvButtonState(isLoading: boolean): void {
+      if (!downloadCsvBtn) return;
+      downloadCsvBtn.disabled = isLoading;
+      downloadCsvBtn.innerHTML = isLoading ? DOWNLOAD_CSV_LOADING_LABEL : DOWNLOAD_CSV_LABEL;
+    }
+
+    async function downloadSubmissionsCSV(): Promise<void> {
+      if (!downloadCsvBtn) return;
+
+      hideSubmissionsError();
+      setDownloadCsvButtonState(true);
+
+      try {
+        const firstPage = await listSubmissions(landingId, 1, 1000);
+        let allSubmissions = firstPage.data;
+
+        if (firstPage.meta.totalPages > 1) {
+          const remaining = [];
+          for (let page = 2; page <= firstPage.meta.totalPages; page += 1) {
+            remaining.push(listSubmissions(landingId, page, 1000));
+          }
+          const pages = await Promise.all(remaining);
+          pages.forEach((page) => {
+            allSubmissions = allSubmissions.concat(page.data);
+          });
+        }
+
+        if (allSubmissions.length === 0) {
+          showSubmissionsError('Sin envíos para descargar.');
+          setTimeout(hideSubmissionsError, 2500);
+          return;
+        }
+
+        const dataKeys = [...new Set(allSubmissions.flatMap((submission) => Object.keys(submission.data || {})))];
+        const headers = ['id', 'createdAt', ...dataKeys];
+        const csvRows = [
+          headers.map((header) => toCsvCell(header)).join(','),
+          ...allSubmissions.map((submission) => {
+            const row = [
+              toCsvCell(submission.id),
+              toCsvCell(submission.createdAt),
+              ...dataKeys.map((key) => toCsvCell(submission.data?.[key] ?? '')),
+            ];
+            return row.join(',');
+          }),
+        ];
+
+        const csvContent = csvRows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `landing-${landingId}-submissions-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        URL.revokeObjectURL(url);
+      } catch {
+        showSubmissionsError('No se pudo descargar el CSV.');
+      } finally {
+        setDownloadCsvButtonState(false);
+      }
+    }
+
     async function persistFieldOrder(fields: LandingField[]): Promise<void> {
       const fieldIds = fields.map((field) => field.id);
       await reorderFields(landingId, fieldIds);
@@ -702,6 +788,8 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
 
         await handleDeleteSubmission(submission);
       });
+
+      downloadCsvBtn?.addEventListener('click', downloadSubmissionsCSV);
     }
 
     async function init(): Promise<void> {
