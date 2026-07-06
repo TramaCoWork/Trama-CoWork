@@ -63,6 +63,7 @@ import Layout from '../../layouts/Layout.astro';
 
 <script>
   import { getLanding, submitLanding, type LandingField, type PublicLanding } from '../../services/landingsService';
+  import { renderMarkdown } from '../../utils/markdown';
 
   let idSlug = '';
   let currentLanding: PublicLanding | null = null;
@@ -153,7 +154,7 @@ import Layout from '../../layouts/Layout.astro';
 
   function renderLanding(landing: PublicLanding): void {
     titleEl.textContent = landing.title;
-    bodyEl.innerHTML = landing.body;
+    bodyEl.innerHTML = renderMarkdown(landing.body || '');
 
     const orderedFields = [...(landing.fields || [])].sort((a, b) => a.order - b.order);
     fieldsEl.innerHTML = orderedFields.map((field) => buildFieldControl(field)).join('');
