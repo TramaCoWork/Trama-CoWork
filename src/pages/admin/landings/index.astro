@@ -1,0 +1,282 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import ConfirmModal from '../../../components/ConfirmModal.astro';
+---
+
+<AdminLayout title="Landings | TRAMA Admin">
+  <ConfirmModal />
+
+  <header class="mb-8 flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-black tracking-tighter text-on-surface">Landings</h1>
+      <p class="mt-1 text-sm font-medium text-on-surface-variant">Gestioná páginas de aterrizaje y sus envíos.</p>
+    </div>
+
+    <a
+      href="/admin/landings/nueva"
+      class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 active:scale-[0.98]"
+    >
+      Nueva landing
+    </a>
+  </header>
+
+  <p id="landings-inline-error" class="mb-4 hidden rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></p>
+
+  <section class="overflow-hidden rounded-2xl border border-outline-variant/10 bg-surface-container-low">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-outline-variant/15 bg-surface-container">
+            <th class="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Título</th>
+            <th class="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado</th>
+            <th class="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Vigencia</th>
+            <th class="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Campos</th>
+            <th class="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Envíos</th>
+            <th class="px-5 py-3.5 text-left text-xs font-bold uppercase tracking-widest text-on-surface-variant">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="landings-table-body">
+          <tr>
+            <td colspan="6" class="py-12 text-center text-on-surface-variant">
+              <div class="flex flex-col items-center gap-3">
+                <div class="h-8 w-8 animate-spin rounded-full border-3 border-primary/30 border-t-primary"></div>
+                <span class="text-sm font-medium">Cargando landings...</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div id="landings-pagination" class="mt-4 flex flex-wrap items-center justify-between gap-3"></div>
+
+  <script>
+    import { isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
+    import { deleteLanding, listLandings, type LandingPage } from '../../../services/landingsAdminService';
+
+    const PAGE_SIZE = 20;
+    let currentPage = 1;
+    let totalPages = 1;
+    let totalItems = 0;
+    let currentItems: LandingPage[] = [];
+
+    const tbody = document.getElementById('landings-table-body') as HTMLTableSectionElement;
+    const paginationEl = document.getElementById('landings-pagination') as HTMLDivElement;
+    const errorEl = document.getElementById('landings-inline-error') as HTMLParagraphElement;
+
+    function escapeHtml(value: string): string {
+      return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function showError(message: string): void {
+      errorEl.textContent = message;
+      errorEl.classList.remove('hidden');
+    }
+
+    function hideError(): void {
+      errorEl.textContent = '';
+      errorEl.classList.add('hidden');
+    }
+
+    function formatDate(value: string | null): string {
+      if (!value) return '—';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return new Intl.DateTimeFormat('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        timeZone: 'UTC',
+      }).format(date);
+    }
+
+    function formatVigencia(item: LandingPage): string {
+      if (!item.validFrom && !item.validUntil) return 'Sin límite';
+      return `${formatDate(item.validFrom)} – ${formatDate(item.validUntil)}`;
+    }
+
+    function renderStatus(isPublic: boolean): string {
+      if (isPublic) {
+        return '<span class="inline-flex items-center rounded-lg bg-success/15 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-success">Pública</span>';
+      }
+      return '<span class="inline-flex items-center rounded-lg bg-outline-variant/20 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">Privada</span>';
+    }
+
+    function renderLoading(): void {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="py-12 text-center text-on-surface-variant">
+            <div class="flex flex-col items-center gap-3">
+              <div class="h-8 w-8 animate-spin rounded-full border-3 border-primary/30 border-t-primary"></div>
+              <span class="text-sm font-medium">Cargando landings...</span>
+            </div>
+          </td>
+        </tr>`;
+      paginationEl.innerHTML = '';
+    }
+
+    function renderEmpty(): void {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="py-16 text-center text-on-surface-variant">
+            <span class="material-symbols-outlined mb-3 block text-4xl text-outline" aria-hidden="true">web_asset_off</span>
+            <p class="text-sm font-medium">No hay landings registradas.</p>
+          </td>
+        </tr>`;
+    }
+
+    function renderRows(): void {
+      if (currentItems.length === 0) {
+        renderEmpty();
+        return;
+      }
+
+      tbody.innerHTML = currentItems
+        .map(
+          (item) => `
+            <tr data-row-id="${item.id}" class="cursor-pointer border-b border-outline-variant/10 transition-colors hover:bg-surface-container/50">
+              <td class="px-5 py-3.5 text-sm font-semibold text-on-surface">${escapeHtml(item.title)}</td>
+              <td class="px-5 py-3.5">${renderStatus(item.isPublic)}</td>
+              <td class="px-5 py-3.5 text-sm text-on-surface-variant">${escapeHtml(formatVigencia(item))}</td>
+              <td class="px-5 py-3.5 text-sm text-on-surface-variant">${item._count?.fields ?? 0}</td>
+              <td class="px-5 py-3.5 text-sm text-on-surface-variant">${item._count?.submissions ?? 0}</td>
+              <td class="px-5 py-3.5">
+                <div class="flex flex-wrap items-center gap-2">
+                  <a href="/admin/landings/editar?id=${item.id}" data-action="edit" class="rounded-lg bg-surface-container px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant hover:bg-surface-container-high">Editar</a>
+                  <button type="button" data-action="delete" data-id="${item.id}" class="rounded-lg bg-error-container px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-on-error-container hover:opacity-90">Eliminar</button>
+                </div>
+              </td>
+            </tr>`,
+        )
+        .join('');
+    }
+
+    function renderPagination(): void {
+      if (totalPages <= 1) {
+        paginationEl.innerHTML = '';
+        return;
+      }
+
+      const start = totalItems === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+      const end = Math.min(currentPage * PAGE_SIZE, totalItems);
+
+      paginationEl.innerHTML = `
+        <span class="text-xs text-on-surface-variant">Mostrando ${start}–${end} de ${totalItems} landings</span>
+        <div class="flex items-center gap-2">
+          <button data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}
+            class="rounded-lg bg-surface-container px-3 py-1.5 text-xs font-bold text-on-surface-variant hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-40">
+            Anterior
+          </button>
+          <span class="px-1 text-xs font-bold text-on-surface-variant">${currentPage} / ${totalPages}</span>
+          <button data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}
+            class="rounded-lg bg-surface-container px-3 py-1.5 text-xs font-bold text-on-surface-variant hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-40">
+            Siguiente
+          </button>
+        </div>`;
+
+      paginationEl.querySelectorAll<HTMLButtonElement>('button[data-page]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const nextPage = Number(button.dataset.page);
+          if (!Number.isFinite(nextPage) || nextPage < 1 || nextPage > totalPages) return;
+          currentPage = nextPage;
+          loadLandings();
+        });
+      });
+    }
+
+    async function loadLandings(): Promise<void> {
+      hideError();
+      renderLoading();
+      try {
+        const response = await listLandings(currentPage, PAGE_SIZE);
+        currentItems = response.data;
+        totalItems = response.meta.total;
+        totalPages = response.meta.totalPages;
+        renderRows();
+        renderPagination();
+      } catch {
+        currentItems = [];
+        totalPages = 1;
+        totalItems = 0;
+        showError('No se pudieron cargar las landings. Intentá de nuevo.');
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="py-12 text-center text-error">
+              <span class="material-symbols-outlined mb-2 block text-3xl" aria-hidden="true">error</span>
+              <p class="text-sm font-bold">Error al cargar landings.</p>
+            </td>
+          </tr>`;
+        paginationEl.innerHTML = '';
+      }
+    }
+
+    async function handleDelete(item: LandingPage): Promise<void> {
+      (window as any).openConfirmModal({
+        title: '¿Eliminar esta landing? Esta acción no se puede deshacer.',
+        body: `Se eliminará la landing "${item.title}".`,
+        confirmText: 'Eliminar',
+        confirmStyle: 'error',
+        cancelText: 'Cancelar',
+        onConfirm: async () => {
+          try {
+            await deleteLanding(item.id);
+            currentItems = currentItems.filter((landing) => landing.id !== item.id);
+            if (currentPage > 1 && currentItems.length === 0) {
+              currentPage -= 1;
+            }
+            await loadLandings();
+          } catch {
+            showError('No se pudo eliminar la landing.');
+          }
+        },
+      });
+    }
+
+    function setupTableInteractions(): void {
+      tbody.addEventListener('click', async (event) => {
+        const target = event.target as HTMLElement;
+        const actionEl = target.closest<HTMLElement>('[data-action]');
+        if (actionEl) {
+          event.stopPropagation();
+          if (actionEl.dataset.action === 'delete') {
+            const id = Number(actionEl.dataset.id);
+            if (!Number.isFinite(id)) return;
+            const item = currentItems.find((landing) => landing.id === id);
+            if (!item) return;
+            await handleDelete(item);
+          }
+          return;
+        }
+
+        const row = target.closest<HTMLTableRowElement>('tr[data-row-id]');
+        if (!row) return;
+        const id = row.dataset.rowId;
+        if (!id) return;
+        window.location.href = `/admin/landings/detalle?id=${encodeURIComponent(id)}`;
+      });
+    }
+
+    async function init(): Promise<void> {
+      restoreSession();
+      if (!isAuthenticated()) {
+        window.location.href = '/admin/login';
+        return;
+      }
+      if (!isAdmin()) {
+        window.location.href = '/dashboard';
+        return;
+      }
+
+      setupTableInteractions();
+      await loadLandings();
+    }
+
+    init();
+  </script>
+</AdminLayout>

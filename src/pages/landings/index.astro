@@ -1,0 +1,245 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Landing | TRAMA" description="Landing pública de TRAMA.">
+  <section class="mx-auto max-w-4xl px-6 py-16">
+    <div id="landing-loading" class="flex items-center justify-center py-16">
+      <div class="flex flex-col items-center gap-3 text-on-surface-variant">
+        <div class="h-8 w-8 animate-spin rounded-full border-3 border-primary/30 border-t-primary"></div>
+        <span class="text-sm font-medium">Cargando landing...</span>
+      </div>
+    </div>
+
+    <div id="landing-unavailable" class="hidden rounded-2xl border border-outline-variant/20 bg-surface-container-low p-8 text-center">
+      <h1 class="text-2xl font-black tracking-tight text-on-surface">Recurso no disponible</h1>
+      <p class="mt-2 text-sm text-on-surface-variant">La landing que buscás no existe o ya no está disponible.</p>
+    </div>
+
+    <article id="landing-content" class="hidden space-y-8">
+      <header>
+        <h1 id="landing-title" class="text-3xl font-black tracking-tight text-on-surface"></h1>
+      </header>
+
+      <div id="landing-body" class="landing-body prose max-w-none"></div>
+
+      <section class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6">
+        <div id="submit-success" class="hidden rounded-xl border border-success/20 bg-success/10 px-4 py-3 text-sm font-semibold text-success">
+          ✓ Formulario enviado correctamente
+        </div>
+
+        <div id="submit-error" class="hidden mb-4 rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></div>
+
+        <form id="landing-form" class="space-y-4">
+          <div id="landing-fields" class="space-y-4"></div>
+
+          <div id="turnstile-wrap" class="hidden pt-2">
+            <div
+              class="cf-turnstile"
+              data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY}
+              data-theme="light"
+            ></div>
+          </div>
+
+          <button
+            id="landing-submit"
+            type="submit"
+            disabled
+            class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Enviar
+          </button>
+        </form>
+      </section>
+    </article>
+  </section>
+</Layout>
+
+<script
+  is:inline
+  src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+  async
+  defer></script>
+
+<script>
+  import { getLanding, submitLanding, type LandingField, type PublicLanding } from '../../services/landingsService';
+
+  let idSlug = '';
+  let currentLanding: PublicLanding | null = null;
+  let turnstileReady = false;
+
+  const loadingEl = document.getElementById('landing-loading') as HTMLDivElement;
+  const unavailableEl = document.getElementById('landing-unavailable') as HTMLDivElement;
+  const contentEl = document.getElementById('landing-content') as HTMLElement;
+  const titleEl = document.getElementById('landing-title') as HTMLHeadingElement;
+  const bodyEl = document.getElementById('landing-body') as HTMLDivElement;
+  const formEl = document.getElementById('landing-form') as HTMLFormElement;
+  const fieldsEl = document.getElementById('landing-fields') as HTMLDivElement;
+  const submitButton = document.getElementById('landing-submit') as HTMLButtonElement;
+  const turnstileWrap = document.getElementById('turnstile-wrap') as HTMLDivElement;
+  const submitError = document.getElementById('submit-error') as HTMLDivElement;
+  const submitSuccess = document.getElementById('submit-success') as HTMLDivElement;
+
+  function showUnavailable(message?: string): void {
+    loadingEl.classList.add('hidden');
+    contentEl.classList.add('hidden');
+    unavailableEl.classList.remove('hidden');
+    if (message) {
+      unavailableEl.querySelector('p')!.textContent = message;
+    }
+  }
+
+  function showContent(): void {
+    loadingEl.classList.add('hidden');
+    unavailableEl.classList.add('hidden');
+    contentEl.classList.remove('hidden');
+  }
+
+  function showError(message: string): void {
+    submitSuccess.classList.add('hidden');
+    submitError.textContent = message;
+    submitError.classList.remove('hidden');
+  }
+
+  function hideError(): void {
+    submitError.textContent = '';
+    submitError.classList.add('hidden');
+  }
+
+  function getTurnstileToken(): string | null {
+    return (window as any).turnstile?.getResponse() || null;
+  }
+
+  function resetTurnstile(): void {
+    (window as any).turnstile?.reset();
+    turnstileReady = false;
+    submitButton.disabled = true;
+  }
+
+  function setupTurnstileObserver(): void {
+    const interval = window.setInterval(() => {
+      const token = getTurnstileToken();
+      turnstileReady = Boolean(token);
+      submitButton.disabled = !turnstileReady;
+    }, 300);
+
+    window.addEventListener('beforeunload', () => {
+      window.clearInterval(interval);
+    });
+  }
+
+  function buildFieldControl(field: LandingField): string {
+    const labelHtml = `<label for="field-${field.id}" class="mb-1.5 block text-sm font-semibold text-on-surface">${field.label}${field.required ? ' *' : ''}</label>`;
+    const requiredAttr = field.required ? 'required' : '';
+    const baseClass = 'w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20';
+
+    if (field.type === 'textarea') {
+      return `<div>${labelHtml}<textarea id="field-${field.id}" data-field-label="${field.label}" data-field-type="${field.type}" ${requiredAttr} rows="4" class="${baseClass}"></textarea></div>`;
+    }
+
+    if (field.type === 'select') {
+      const options = (field.options || [])
+        .map((option) => `<option value="${option}">${option}</option>`)
+        .join('');
+      return `<div>${labelHtml}<select id="field-${field.id}" data-field-label="${field.label}" data-field-type="${field.type}" ${requiredAttr} class="${baseClass}"><option value="">Seleccioná una opción</option>${options}</select></div>`;
+    }
+
+    if (field.type === 'checkbox') {
+      return `<div><label class="inline-flex items-center gap-2 text-sm text-on-surface"><input id="field-${field.id}" data-field-label="${field.label}" data-field-type="${field.type}" type="checkbox" class="h-4 w-4 rounded border-outline-variant/40 accent-primary" ${requiredAttr} /><span>${field.label}${field.required ? ' *' : ''}</span></label></div>`;
+    }
+
+    return `<div>${labelHtml}<input id="field-${field.id}" data-field-label="${field.label}" data-field-type="${field.type}" type="${field.type}" ${requiredAttr} class="${baseClass}" /></div>`;
+  }
+
+  function renderLanding(landing: PublicLanding): void {
+    titleEl.textContent = landing.title;
+    bodyEl.innerHTML = landing.body;
+
+    const orderedFields = [...(landing.fields || [])].sort((a, b) => a.order - b.order);
+    fieldsEl.innerHTML = orderedFields.map((field) => buildFieldControl(field)).join('');
+
+    turnstileWrap.classList.remove('hidden');
+    setupTurnstileObserver();
+  }
+
+  function collectFormData(): Record<string, string> {
+    const result: Record<string, string> = {};
+    const controls = fieldsEl.querySelectorAll<HTMLElement>('[data-field-label][data-field-type]');
+
+    controls.forEach((control) => {
+      const label = control.dataset.fieldLabel;
+      const type = control.dataset.fieldType;
+      if (!label || !type) return;
+
+      if (type === 'checkbox') {
+        result[label] = (control as HTMLInputElement).checked ? 'true' : 'false';
+        return;
+      }
+
+      result[label] = (control as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value ?? '';
+    });
+
+    return result;
+  }
+
+  async function handleSubmit(event: Event): Promise<void> {
+    event.preventDefault();
+    hideError();
+
+    if (!turnstileReady || !getTurnstileToken()) {
+      showError('Completá la verificación de seguridad para enviar el formulario.');
+      submitButton.disabled = true;
+      return;
+    }
+
+    submitButton.disabled = true;
+    submitButton.textContent = 'Enviando...';
+
+    try {
+      const data = collectFormData();
+      await submitLanding(idSlug, data);
+      formEl.classList.add('hidden');
+      submitError.classList.add('hidden');
+      submitSuccess.classList.remove('hidden');
+    } catch (error) {
+      const apiError = error as Error & { status?: number; body?: { message?: string } };
+      if (apiError.status === 404) {
+        showError('Este formulario ya no está disponible');
+      } else if (apiError.status === 400) {
+        showError(apiError.body?.message || 'Revisá los datos ingresados e intentá nuevamente.');
+      } else {
+        showError('No se pudo enviar el formulario. Intentá de nuevo.');
+      }
+
+      submitButton.disabled = !turnstileReady;
+      submitButton.textContent = 'Enviar';
+      resetTurnstile();
+      return;
+    }
+
+    submitButton.textContent = 'Enviar';
+  }
+
+  async function init(): Promise<void> {
+    const idParam = new URLSearchParams(window.location.search).get('id');
+    if (!idParam) {
+      showUnavailable();
+      return;
+    }
+    idSlug = idParam;
+
+    try {
+      const landing = await getLanding(idSlug);
+      currentLanding = landing;
+      renderLanding(landing);
+      showContent();
+    } catch {
+      showUnavailable();
+      return;
+    }
+
+    formEl.addEventListener('submit', handleSubmit);
+  }
+
+  init();
+</script>

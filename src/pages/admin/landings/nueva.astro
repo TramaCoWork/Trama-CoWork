@@ -1,0 +1,195 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import MdxEditorWrapper from '../../../components/MdxEditorWrapper';
+---
+
+<AdminLayout title="Nueva landing | TRAMA Admin">
+  <header class="mb-8 flex items-start justify-between gap-4">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-widest text-primary">INICIO › LANDINGS › NUEVA</p>
+      <h1 class="mt-2 text-3xl font-black tracking-tighter text-on-surface">Nueva landing</h1>
+    </div>
+
+    <a
+      href="/admin/landings"
+      class="rounded-xl bg-surface-container px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface-container-high"
+    >
+      ← Volver
+    </a>
+  </header>
+
+  <section class="space-y-5 rounded-2xl border border-outline-variant/10 bg-surface-container-low p-6">
+    <form id="landing-form" class="space-y-5">
+      <div>
+        <label for="landing-title" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Título *</label>
+        <input
+          id="landing-title"
+          type="text"
+          required
+          class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+        />
+      </div>
+
+      <div>
+        <p class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Contenido *</p>
+        <div class="max-h-96 overflow-y-auto rounded-xl border border-outline-variant/20">
+          <MdxEditorWrapper client:load placeholder="Escribí el contenido de la landing..." maxlength={20000} />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div class="md:col-span-2 flex flex-col gap-2 rounded-xl border border-outline-variant/20 bg-surface-container-lowest p-4">
+          <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado de publicación</p>
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <p class="text-sm text-on-surface-variant">Publicar esta landing para acceso externo</p>
+            <label class="relative inline-flex cursor-pointer items-center">
+              <input id="landing-is-public" type="checkbox" class="sr-only peer" />
+              <div
+                class="h-6 w-11 rounded-full bg-neutral-200 peer-focus:outline-none peer-checked:bg-[#087781] peer-checked:after:translate-x-full peer-checked:after:border-white after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-neutral-300 after:bg-white after:transition-all after:content-['']"
+              ></div>
+              <span class="ml-3 text-sm font-medium text-neutral-900">Pública</span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label for="landing-valid-from" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Válida desde</label>
+          <input
+            id="landing-valid-from"
+            type="date"
+            class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+
+        <div>
+          <label for="landing-valid-until" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Válida hasta</label>
+          <input
+            id="landing-valid-until"
+            type="date"
+            class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+      </div>
+
+      <p id="landing-form-error" class="hidden rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error"></p>
+
+      <div>
+        <button
+          id="landing-submit"
+          type="submit"
+          class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Crear landing
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <script>
+    import { createLanding } from '../../../services/landingsAdminService';
+    import { isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
+
+    const form = document.getElementById('landing-form') as HTMLFormElement;
+    const submitButton = document.getElementById('landing-submit') as HTMLButtonElement;
+    const errorEl = document.getElementById('landing-form-error') as HTMLParagraphElement;
+
+    const titleInput = document.getElementById('landing-title') as HTMLInputElement;
+    const isPublicInput = document.getElementById('landing-is-public') as HTMLInputElement;
+    const validFromInput = document.getElementById('landing-valid-from') as HTMLInputElement;
+    const validUntilInput = document.getElementById('landing-valid-until') as HTMLInputElement;
+
+    function showError(message: string): void {
+      errorEl.textContent = message;
+      errorEl.classList.remove('hidden');
+    }
+
+    function hideError(): void {
+      errorEl.textContent = '';
+      errorEl.classList.add('hidden');
+    }
+
+    function toIsoDate(value: string): string {
+      return `${value}T00:00:00.000Z`;
+    }
+
+    function getBodyFromEditor(): Promise<string> {
+      return new Promise<string>((resolve) => {
+        document.addEventListener(
+          'mdx-editor-content-response',
+          (event) => {
+            resolve((event as CustomEvent<{ markdown?: string }>).detail?.markdown?.trim() || '');
+          },
+          { once: true },
+        );
+        document.dispatchEvent(new CustomEvent('mdx-editor-get-content'));
+      });
+    }
+
+    function validateDateRange(validFrom: string | null, validUntil: string | null): string | null {
+      if (!validFrom || !validUntil) return null;
+      if (new Date(validFrom) >= new Date(validUntil)) {
+        return 'La fecha de inicio debe ser anterior a la de fin.';
+      }
+      return null;
+    }
+
+    async function handleSubmit(event: Event): Promise<void> {
+      event.preventDefault();
+      hideError();
+
+      const title = titleInput.value.trim();
+      const body = await getBodyFromEditor();
+      const validFrom = validFromInput.value ? toIsoDate(validFromInput.value) : null;
+      const validUntil = validUntilInput.value ? toIsoDate(validUntilInput.value) : null;
+
+      if (!title) {
+        showError('El título es obligatorio.');
+        return;
+      }
+
+      if (!body) {
+        showError('El contenido es obligatorio.');
+        return;
+      }
+
+      const dateError = validateDateRange(validFrom, validUntil);
+      if (dateError) {
+        showError(dateError);
+        return;
+      }
+
+      submitButton.disabled = true;
+      submitButton.textContent = 'Creando...';
+
+      try {
+        const result = await createLanding({
+          title,
+          body,
+          isPublic: isPublicInput.checked,
+          validFrom: validFrom || null,
+          validUntil: validUntil || null,
+        });
+
+        window.location.href = `/admin/landings/detalle?id=${encodeURIComponent(String(result.id))}`;
+      } catch {
+        showError('No se pudo crear la landing. Intentá de nuevo.');
+        submitButton.disabled = false;
+        submitButton.textContent = 'Crear landing';
+      }
+    }
+
+    async function init(): Promise<void> {
+      restoreSession();
+      if (!isAuthenticated() || !isAdmin()) {
+        window.location.href = '/admin';
+        return;
+      }
+
+      form.addEventListener('submit', handleSubmit);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      init();
+    });
+  </script>
+</AdminLayout>
