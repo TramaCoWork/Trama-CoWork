@@ -113,6 +113,20 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
         </div>
       </div>
     </div>
+
+    <div id="metadata-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-4">
+      <div class="w-full max-w-2xl max-h-[80vh] flex flex-col rounded-2xl bg-surface shadow-xl border border-outline-variant/15">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-outline-variant/15 shrink-0">
+          <p id="metadata-modal-title" class="text-sm font-bold text-on-surface">Metadata</p>
+          <button id="metadata-modal-close" type="button" class="text-on-surface-variant hover:text-on-surface">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div class="p-5 overflow-y-auto flex-1">
+          <pre id="metadata-modal-content" class="text-xs text-on-surface font-mono whitespace-pre-wrap break-words leading-relaxed bg-surface-container rounded-xl p-4 overflow-x-auto"></pre>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section id="panel-configuracion" class="hidden">
@@ -183,6 +197,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       processedCount: number | null;
       errorMessage: string | null;
       errorStack: string | null;
+      metadata: Record<string, unknown> | null;
     };
 
     type JobMetadata = {
@@ -234,6 +249,9 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     const errorModal = document.getElementById('job-error-modal') as HTMLDivElement;
     const errorName = document.getElementById('job-error-name') as HTMLParagraphElement;
     const errorContent = document.getElementById('job-error-content') as HTMLPreElement;
+    const metadataModal = document.getElementById('metadata-modal') as HTMLDivElement;
+    const metadataModalTitle = document.getElementById('metadata-modal-title') as HTMLParagraphElement;
+    const metadataModalContent = document.getElementById('metadata-modal-content') as HTMLPreElement;
     const runSelectedJobButton = document.getElementById('run-selected-job') as HTMLButtonElement;
     const jobRunInlineHint = document.getElementById('job-run-inline-hint') as HTMLParagraphElement;
     const jobRunStatus = document.getElementById('job-run-status') as HTMLParagraphElement;
@@ -503,10 +521,10 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
                   <button
                     type="button"
                     data-config-run="${safeKey}"
-                    class="inline-flex items-center gap-1 rounded-lg bg-surface-container px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant hover:bg-surface-container-high transition-colors"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary"
+                    title="Ejecutar"
                   >
-                    <span class="material-symbols-outlined text-sm">play_arrow</span>
-                    Ejecutar
+                    <span class="material-symbols-outlined text-lg" aria-hidden="true">play_arrow</span>
                   </button>
                   <button
                     type="button"
@@ -579,6 +597,20 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       document.body.style.overflow = '';
     }
 
+    function openMetadataModal(jobName: string, prettyJson: string): void {
+      metadataModalTitle.textContent = `Metadata — ${jobName || 'job'}`;
+      metadataModalContent.textContent = prettyJson;
+      metadataModal.classList.remove('hidden');
+      metadataModal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMetadataModal(): void {
+      metadataModal.classList.add('hidden');
+      metadataModal.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+
     function renderLoadingRow(): void {
       tableBody.innerHTML = `
         <tr>
@@ -628,6 +660,10 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
           const safeErrorPreview = escapeHtml(formatErrorPreview(job.errorMessage));
           const safeErrorMessage = escapeHtml(job.errorMessage ?? '—');
           const safeErrorStack = escapeHtml(job.errorStack ?? '—');
+          const safeMetadata =
+            job.metadata !== null
+              ? escapeHtml(JSON.stringify(job.metadata))
+              : '';
 
           return `
             <tr class="border-b border-outline-variant/10 hover:bg-surface-container/50 transition-colors">
@@ -644,20 +680,36 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
               <td class="px-5 py-3.5">
                 <div class="flex items-center gap-2 flex-wrap">
                   ${
+                    job.metadata !== null
+                      ? `<button
+                           type="button"
+                           data-action="show-metadata"
+                           data-job-name="${safeJobName}"
+                           data-metadata="${safeMetadata}"
+                           class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors"
+                           title="Ver metadata"
+                         >
+                           <span class="material-symbols-outlined text-lg" aria-hidden="true">data_object</span>
+                         </button>`
+                      : ''
+                  }
+                  ${
                     job.errorMessage !== null
                       ? `<button
-                          type="button"
-                          data-action="show-error"
-                          data-row-index="${index}"
-                          data-job-name="${safeJobName}"
-                          data-error-message="${safeErrorMessage}"
-                          data-error-stack="${safeErrorStack}"
-                          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors"
-                        >
-                          Ver error
-                        </button>`
-                      : '<span class="text-on-surface-variant">—</span>'
+                           type="button"
+                           data-action="show-error"
+                           data-row-index="${index}"
+                           data-job-name="${safeJobName}"
+                           data-error-message="${safeErrorMessage}"
+                           data-error-stack="${safeErrorStack}"
+                           class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container hover:text-error"
+                           title="Ver error"
+                         >
+                           <span class="material-symbols-outlined text-lg">error</span>
+                         </button>`
+                      : ''
                   }
+                  ${job.errorMessage === null && job.metadata === null ? '<span class="text-on-surface-variant">—</span>' : ''}
                 </div>
               </td>
             </tr>`;
@@ -1057,12 +1109,23 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       const button = target.closest<HTMLButtonElement>('button[data-action]');
       if (!button) return;
 
-      if (button.dataset.action !== 'show-error') return;
+      if (button.dataset.action === 'show-error') {
+        const jobName = button.dataset.jobName || '';
+        const errorMessage = button.dataset.errorMessage || '—';
+        const errorStack = button.dataset.errorStack || '—';
+        openErrorModal(jobName, errorMessage, errorStack);
+        return;
+      }
 
-      const jobName = button.dataset.jobName || '';
-      const errorMessage = button.dataset.errorMessage || '—';
-      const errorStack = button.dataset.errorStack || '—';
-      openErrorModal(jobName, errorMessage, errorStack);
+      if (button.dataset.action === 'show-metadata') {
+        const rawMetadata = button.dataset.metadata;
+        if (!rawMetadata) {
+          return;
+        }
+
+        const prettyMetadata = JSON.stringify(JSON.parse(rawMetadata), null, 2);
+        openMetadataModal(button.dataset.jobName || 'job', prettyMetadata);
+      }
     });
 
     configTableBody.addEventListener('click', (event) => {
@@ -1099,14 +1162,24 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     });
 
     document.getElementById('job-error-close')?.addEventListener('click', closeErrorModal);
+    document.getElementById('metadata-modal-close')?.addEventListener('click', closeMetadataModal);
     errorModal.addEventListener('click', (event) => {
       if (event.target === errorModal) {
         closeErrorModal();
       }
     });
+    metadataModal.addEventListener('click', (event) => {
+      if (event.target === metadataModal) {
+        closeMetadataModal();
+      }
+    });
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && !errorModal.classList.contains('hidden')) {
         closeErrorModal();
+      }
+
+      if (event.key === 'Escape' && !metadataModal.classList.contains('hidden')) {
+        closeMetadataModal();
       }
     });
 
