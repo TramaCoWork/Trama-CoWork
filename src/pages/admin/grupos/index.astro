@@ -112,6 +112,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
   </div>
 
   <script>
+    import { escapeHtml, formatDate } from '../../../utils/helpers';
     import {
       createChannel,
       deleteChannel,
@@ -157,15 +158,6 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     const isActiveInput = document.getElementById('group-is-active') as HTMLInputElement;
     const submitButton = document.getElementById('btn-submit-modal') as HTMLButtonElement;
 
-    function escapeHtml(value: string): string {
-      return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
     function hideInlineMessages(): void {
       inlineError.classList.add('hidden');
       inlineError.textContent = '';
@@ -184,12 +176,6 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       window.setTimeout(() => {
         inlineSuccess.classList.add('hidden');
       }, 2500);
-    }
-
-    function formatDate(value: string): string {
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '—';
-      return date.toLocaleString('es-AR');
     }
 
     function getPaginationData(response: PaginatedResponse<CommunityChannel>): {

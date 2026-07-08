@@ -75,6 +75,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
     import { getToken, isAuthenticated, restoreSession } from '../../services/authService';
     import { api } from '../../services/apiClient';
     import { listWorks, getMyWorkApplications, type Work, type WorkApplication } from '../../services/workService';
+    import { escapeHtml, formatDateShort, truncate } from '../../utils/helpers';
 
     const PAGE_SIZE = 20;
     let jobsPage = 1;
@@ -105,30 +106,6 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
     const applicationsList = document.getElementById('applications-list') as HTMLDivElement;
     const applicationsEmpty = document.getElementById('applications-empty') as HTMLDivElement;
     const applicationsLoadMore = document.getElementById('applications-load-more') as HTMLButtonElement;
-
-    function escapeHtml(value: string): string {
-      return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function truncate(text: string, max: number): string {
-      if (text.length <= max) return text;
-      return `${text.slice(0, max - 1)}…`;
-    }
-
-    function formatDate(value: string): string {
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '—';
-      return new Intl.DateTimeFormat('es-AR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      }).format(date);
-    }
 
     function renderTabs(): void {
       const isDisponibles = currentTab === 'disponibles';
@@ -183,7 +160,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
 
     function getVigenciaBadge(job: Work): string {
       if (!job.validUntil) return '';
-      return `<span class="inline-flex items-center px-2 py-1 rounded-lg text-[11px] font-bold bg-primary/10 text-primary">Válido hasta ${formatDate(job.validUntil)}</span>`;
+      return `<span class="inline-flex items-center px-2 py-1 rounded-lg text-[11px] font-bold bg-primary/10 text-primary">Válido hasta ${formatDateShort(job.validUntil)}</span>`;
     }
 
     function renderJobsCards(items: Work[], append: boolean): void {
@@ -278,7 +255,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
             <article class="rounded-2xl border border-outline-variant/10 bg-surface-container-low p-4">
               <h3 class="text-base font-bold text-on-surface">${escapeHtml(title)}</h3>
               <p class="text-sm text-on-surface-variant mt-0.5">${escapeHtml(company)}</p>
-              <p class="text-xs font-medium text-on-surface-variant mt-2">Postulado el ${escapeHtml(formatDate(application.createdAt))}</p>
+              <p class="text-xs font-medium text-on-surface-variant mt-2">Postulado el ${escapeHtml(formatDateShort(application.createdAt))}</p>
               <p class="text-sm text-on-surface mt-2">${escapeHtml(coverLetter)}</p>
             </article>`;
         })

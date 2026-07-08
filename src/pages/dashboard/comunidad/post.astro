@@ -78,11 +78,12 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
   </div>
 
   <script>
-    import { apiURL } from '../../../services/apiClient';
     import { renderMarkdown } from '../../../utils/markdown';
+    import { escapeHtml, formatDate } from '../../../utils/helpers';
     import {
       createChannelComment,
       createComment,
+      fetchCommunityPost,
       fetchChannelPost,
       fetchChannelPostComments,
       fetchPostComments,
@@ -91,7 +92,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
       type Comment,
       type Post,
     } from '../../../services/communityService';
-    import { getToken, isAuthenticated, restoreSession } from '../../../services/authService';
+    import { isAuthenticated, restoreSession } from '../../../services/authService';
 
     type ReaderType = 'community' | 'channel';
 
@@ -125,25 +126,6 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
     restoreSession();
     if (!isAuthenticated()) {
       window.location.href = '/login';
-    }
-
-    function escapeHtml(value: string): string {
-      return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function renderLightMarkdown(raw: string): string {
-      return renderMarkdown(raw || '');
-    }
-
-    function formatDate(value: string): string {
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '—';
-      return date.toLocaleString('es-AR');
     }
 
     function showPageError(message: string): void {
@@ -183,25 +165,6 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
       return true;
     }
 
-    async function fetchCommunityPostDetail(targetPostId: string): Promise<Post> {
-      const token = getToken();
-      const response = await fetch(apiURL(`/community/posts/${targetPostId}`), {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
-
-      if (!response.ok) {
-        const error = new Error('community post detail failed') as Error & { status?: number };
-        error.status = response.status;
-        throw error;
-      }
-
-      return response.json() as Promise<Post>;
-    }
-
     function getPostAuthor(post: Post): string {
       const anyPost = post as Post & { nombre?: string | null };
       return anyPost.nombre || post.user?.profile?.name || post.user?.email || 'Usuario';
@@ -210,7 +173,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
     function renderPostDetail(post: Post): void {
       postAuthor.textContent = getPostAuthor(post);
       postDate.textContent = formatDate(post.createdAt);
-      postContent.innerHTML = renderLightMarkdown(post.content || '');
+      postContent.innerHTML = renderMarkdown(post.content || '');
       if (post.status === 'paused') {
         postStatus.classList.remove('hidden');
       } else {
@@ -248,7 +211,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
             <p class="truncate text-sm font-bold text-on-surface">${escapeHtml(getCommentAuthor(comment))}</p>
             <p class="text-xs text-on-surface-variant">${escapeHtml(formatDate(comment.createdAt))}</p>
           </div>
-          <div class="markdown-content text-sm text-on-surface-variant">${renderLightMarkdown(comment.content || '')}</div>
+          <div class="markdown-content text-sm text-on-surface-variant">${renderMarkdown(comment.content || '')}</div>
         </article>`;
     }
 
@@ -303,7 +266,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
       hidePageError();
       try {
         const post = readerType === 'community'
-          ? await fetchCommunityPostDetail(postId)
+          ? await fetchCommunityPost(postId)
           : await fetchChannelPost(channelId, postId);
         renderPostDetail(post);
       } catch (error) {

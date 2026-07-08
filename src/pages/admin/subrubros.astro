@@ -279,6 +279,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   <script>
     import { getToken, restoreSession } from "../../services/authService";
     import { api } from "../../services/apiClient";
+    import { escapeHtml } from "../../utils/helpers";
     import {
       createSubrubro,
       deleteSubrubro,
@@ -406,15 +407,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         toast.classList.remove("translate-y-0", "opacity-100");
         setTimeout(() => toast.classList.add("hidden"), 300);
       }, 3000);
-    }
-
-    function escapeHtml(value: string): string {
-      return value
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
     }
 
     function generateSlug(text: string) {

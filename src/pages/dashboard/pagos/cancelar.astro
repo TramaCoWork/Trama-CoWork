@@ -118,7 +118,11 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
   <script>
     import { getUserIdFromToken, getToken, logout } from '../../../services/authService';
     import { api } from '../../../services/apiClient';
-    import type { Subscription } from '../../../services/subscriptionService';
+    import {
+      cancelMySubscription,
+      getMySubscription,
+      type Subscription,
+    } from '../../../services/subscriptionService';
 
     const loadingEl = document.getElementById('cancel-loading')!;
     const contentEl = document.getElementById('cancel-content')!;
@@ -148,11 +152,10 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
       const token = getToken();
 
       if (!userId || !token) { logout(); return; }
-
       api.setHeader('Authorization', `Bearer ${token}`);
 
       try {
-        const sub = await api.get<Subscription>('/subscriptions/me');
+        const sub = await getMySubscription();
 
         if (!sub || sub.status === 'cancelled') {
           // No active subscription, redirect back
@@ -193,7 +196,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
       btnCancel.innerHTML = '<div class="w-4 h-4 border-2 border-on-error/30 border-t-on-error rounded-full animate-spin"></div> Cancelando...';
 
       try {
-        await api.patch('/subscriptions/me/cancel', { reason });
+        await cancelMySubscription({ reason });
 
         // Redirect with toast
         const msg = encodeURIComponent('Tu suscripcion fue cancelada correctamente');

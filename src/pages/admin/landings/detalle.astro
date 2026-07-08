@@ -179,6 +179,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
 
   <script>
     import { isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
+    import { escapeHtml, formatDate } from '../../../utils/helpers';
     import {
       addField,
       deleteField,
@@ -246,15 +247,6 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     const DOWNLOAD_CSV_LABEL = '<span class="material-symbols-outlined text-sm" aria-hidden="true">download</span>Descargar CSV';
     const DOWNLOAD_CSV_LOADING_LABEL = 'Descargando...';
 
-    function escapeHtml(value: string): string {
-      return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
     function showPageError(message: string): void {
       inlineErrorEl.textContent = message;
       inlineErrorEl.classList.remove('hidden');
@@ -293,19 +285,6 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     function hideFieldEditorError(): void {
       fieldEditorError.textContent = '';
       fieldEditorError.classList.add('hidden');
-    }
-
-    function formatDate(value: string | null): string {
-      if (!value) return '—';
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '—';
-      return new Intl.DateTimeFormat('es-AR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }).format(date);
     }
 
     function formatVigencia(item: LandingPage): string {

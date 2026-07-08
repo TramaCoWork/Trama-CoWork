@@ -76,6 +76,8 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
   <script>
     import { api } from '../../../services/apiClient';
+    import { escapeHtml, formatDate } from '../../../utils/helpers';
+    import { renderMarkdown } from '../../../utils/markdown';
     import {
       createComment,
       deleteComment,
@@ -125,32 +127,6 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     const newCommentSubmit = document.getElementById('new-comment-submit') as HTMLButtonElement;
     const newCommentInlineError = document.getElementById('new-comment-inline-error') as HTMLParagraphElement;
 
-    function escapeHtml(value: string): string {
-      return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function formatDate(value: string): string {
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '—';
-      return date.toLocaleString('es-AR');
-    }
-
-    function renderLightMarkdown(raw: string): string {
-      const escaped = escapeHtml(raw || '');
-      const withLinks = escaped.replace(
-        /(https?:\/\/[^\s<]+)/g,
-        '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-primary underline">$1</a>',
-      );
-      const withBold = withLinks.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-      const withItalic = withBold.replace(/\*(.+?)\*/g, '<em>$1</em>');
-      return withItalic.replace(/\n/g, '<br>');
-    }
-
     function parsePagination(response: PaginatedResponse<CommunityChannelComment>): {
       page: number;
       totalPages: number;
@@ -175,7 +151,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       postDate.textContent = formatDate(post.createdAt);
       postStatus.textContent = post.status === 'paused' ? 'Pausado' : 'Publicado';
       postStatus.className = `badge ${post.status === 'paused' ? 'badge-soft-warning' : 'badge-soft-success'}`;
-      postContent.innerHTML = renderLightMarkdown(post.content || '');
+      postContent.innerHTML = renderMarkdown(post.content || '');
     }
 
     function renderPostNotFound(): void {
@@ -225,7 +201,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
               <span class="material-symbols-outlined text-lg" aria-hidden="true">delete</span>
             </button>
           </div>
-          <div class="text-sm text-on-surface-variant">${renderLightMarkdown(comment.content || '')}</div>
+          <div class="text-sm text-on-surface-variant">${renderMarkdown(comment.content || '')}</div>
         </article>`;
     }
 

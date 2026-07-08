@@ -87,6 +87,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
   <script>
     import { api } from '../../../services/apiClient';
+    import { escapeHtml, formatDate } from '../../../utils/helpers';
     import { renderMarkdown } from '../../../utils/markdown';
     import {
       createAdminComment,
@@ -139,21 +140,6 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     const commentTextarea = document.getElementById('comment-content') as HTMLTextAreaElement;
     const commentFormError = document.getElementById('comment-form-error') as HTMLParagraphElement;
     const commentSubmitButton = document.getElementById('comment-submit') as HTMLButtonElement;
-
-    function escapeHtml(value: string): string {
-      return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function formatDate(value: string): string {
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '—';
-      return date.toLocaleString('es-AR');
-    }
 
     function getAuthorName(email?: string | null, name?: string | null): string {
       if (name?.trim()) return name.trim();

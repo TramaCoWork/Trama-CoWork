@@ -96,6 +96,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
     import { api } from '../../../services/apiClient';
     import { getWork, applyToWork, type Work } from '../../../services/workService';
     import { renderMarkdown } from '../../../utils/markdown';
+    import { escapeHtml, formatDateShort } from '../../../utils/helpers';
 
     let currentJobId = '';
     let currentJob: Work | null = null;
@@ -113,26 +114,6 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
     const inlineError = document.getElementById('apply-inline-error') as HTMLParagraphElement;
     const submitButton = document.getElementById('apply-submit') as HTMLButtonElement;
 
-    function escapeHtml(value: string): string {
-      return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function formatDate(value: string | null): string {
-      if (!value) return '—';
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '—';
-      return new Intl.DateTimeFormat('es-AR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      }).format(date);
-    }
-
     function getLogoHtml(job: Work): string {
       const fallback = '<div class="w-[50px] h-[50px] rounded-full bg-surface-container flex items-center justify-center"><span class="material-symbols-outlined text-on-surface-variant" aria-hidden="true">business</span></div>';
       if (!job.companyLogo) return fallback;
@@ -146,7 +127,7 @@ import DashboardLayout from '../../../layouts/DashboardLayout.astro';
 
       const vigencia = !job.validFrom && !job.validUntil
         ? 'Sin límite de vigencia'
-        : `${formatDate(job.validFrom)} – ${formatDate(job.validUntil)}`;
+        : `${formatDateShort(job.validFrom)} – ${formatDateShort(job.validUntil)}`;
 
       (document.getElementById('job-vigencia') as HTMLElement).textContent = vigencia;
       (document.getElementById('job-description') as HTMLElement).innerHTML = renderMarkdown(job.description || '');

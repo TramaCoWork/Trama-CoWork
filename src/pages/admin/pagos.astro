@@ -102,6 +102,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
   <script>
     import { getToken, restoreSession } from '../../services/authService';
     import { api } from '../../services/apiClient';
+    import { escapeHtml, formatDate } from '../../utils/helpers';
     import {
       getAdminPayments,
       type SubscriptionPayment,
@@ -136,20 +137,6 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     const statusFilter = document.getElementById('f-status') as HTMLSelectElement;
     const searchInput = document.getElementById('f-search') as HTMLInputElement;
     const detailModal = document.getElementById('payment-detail-modal') as HTMLDivElement;
-
-    function escapeHtml(value: string): string {
-      return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function formatDate(iso: string | null): string {
-      if (!iso) return '—';
-      return new Date(iso).toLocaleString('es-AR');
-    }
 
     function setLoadingTable() {
       tableBody.innerHTML = `

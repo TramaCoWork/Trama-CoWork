@@ -58,7 +58,7 @@ export interface PersonalDataPayload {
   address?: string;
   whatsapp?: string;
   linkedin?: string;
-  pricePerHour?: number;
+  pricePerHour?: number | string;
   workModality?: string;
   countryId?: number;
   provinceId?: number;
@@ -69,10 +69,11 @@ export interface GeneralProfilePayload {
   bio?: string;
   photo?: string;
   services?: string[];
-  pricePerHour?: number;
+  pricePerHour?: number | string;
   city?: string;
   emailContact?: string;
   whatsapp?: string;
+  rubroId?: number;
 }
 
 // ─── Fetch ─────────────────────────────────────────────────────

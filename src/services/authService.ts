@@ -92,6 +92,7 @@ function getSafePayloadFromToken(token: string | null): JwtPayload | null {
 export async function login(credentials: LoginRequest): Promise<LoginResponse> {
   const data = await api.post<LoginResponse>('/auth/login', credentials);
   localStorage.setItem(TOKEN_KEY, data.access_token);
+  setTokenCookie(data.access_token);
   api.setHeader('Authorization', `Bearer ${data.access_token}`);
   return data;
 }
@@ -99,6 +100,7 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
 export async function adminLogin(credentials: LoginRequest): Promise<LoginResponse> {
   const data = await api.post<LoginResponse>('/auth/admin/login', credentials);
   localStorage.setItem(TOKEN_KEY, data.access_token);
+  setTokenCookie(data.access_token);
   api.setHeader('Authorization', `Bearer ${data.access_token}`);
   return data;
 }
@@ -112,6 +114,7 @@ export function isAuthenticated(): boolean {
   if (!token) return false;
   if (isTokenExpired(token)) {
     localStorage.removeItem(TOKEN_KEY);
+    clearTokenCookie();
     return false;
   }
   return true;
@@ -119,6 +122,7 @@ export function isAuthenticated(): boolean {
 
 export function logout(redirectTo = '/login'): void {
   localStorage.removeItem(TOKEN_KEY);
+  clearTokenCookie();
   window.location.href = redirectTo;
 }
 
@@ -173,6 +177,7 @@ export function restoreSession(): void {
     api.setHeader('Authorization', `Bearer ${token}`);
   } else if (token) {
     localStorage.removeItem(TOKEN_KEY);
+    clearTokenCookie();
   }
 }
 
@@ -204,8 +209,21 @@ export async function professionalRegister(
 ): Promise<RegisterResponse> {
   const res = await api.post<RegisterResponse>('/auth/professional-register', data);
   localStorage.setItem(TOKEN_KEY, res.access_token);
+  setTokenCookie(res.access_token);
   api.setHeader('Authorization', `Bearer ${res.access_token}`);
   return res;
+}
+
+export function setTokenCookie(token: string): void {
+  if (typeof document === 'undefined') return;
+  const secure = location.protocol === 'https:' ? '; Secure' : '';
+  const maxAge = 60 * 60 * 24 * 7;
+  document.cookie = `trama_token=${encodeURIComponent(token)}; path=/; SameSite=Lax; Max-Age=${maxAge}${secure}`;
+}
+
+export function clearTokenCookie(): void {
+  if (typeof document === 'undefined') return;
+  document.cookie = 'trama_token=; path=/; Max-Age=0; SameSite=Lax';
 }
 
 export interface ReferralCodeResponse {
@@ -268,4 +286,30 @@ export async function verifyEmail(token: string): Promise<VerifyEmailResponse> {
 /** Reenvía el email de verificación (público, rate-limited). */
 export async function resendVerification(email: string): Promise<void> {
   await api.post('/auth/resend-verification', { email });
+}
+
+export async function changePasswordDashboard(
+  currentPassword: string,
+  newPassword: string,
+  confirmPassword: string,
+): Promise<void> {
+  const token = getToken();
+  if (token) {
+    api.setHeader('Authorization', `Bearer ${token}`);
+  }
+
+  await api.patch<void>('/auth/me/password', { currentPassword, newPassword, confirmPassword });
+}
+
+export async function changePasswordAdmin(
+  currentPassword: string,
+  newPassword: string,
+  confirmPassword: string,
+): Promise<void> {
+  const token = getToken();
+  if (token) {
+    api.setHeader('Authorization', `Bearer ${token}`);
+  }
+
+  await api.patch<void>('/auth/change-password', { currentPassword, newPassword, confirmPassword });
 }

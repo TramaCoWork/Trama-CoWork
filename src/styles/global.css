@@ -600,8 +600,30 @@ select {
   padding: 0.5rem 0.9rem;
 }
 
+/* Ensure MDXEditor Radix portals break above modal backdrops */
+[data-radix-portal] {
+  isolation: auto !important;
+  transform: none !important;
+  z-index: 99999 !important;
+}
+
+[data-radix-portal] [role='dialog'] {
+  z-index: 99999 !important;
+}
+
+[data-radix-portal] [data-radix-dialog-overlay] {
+  z-index: 99998 !important;
+}
+
 .city-name {
   text-transform: capitalize;
 }
+
+.spinner { @apply w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin; }
+.spinner-sm { @apply w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin; }
+.spinner-xs { @apply w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin; }
+.empty-state { @apply flex flex-col items-center gap-3 py-16 text-on-surface-variant text-sm font-medium; }
+.inline-error { @apply hidden rounded-xl border border-error/20 bg-error/10 px-4 py-3 text-sm font-medium text-error; }
+.inline-success { @apply hidden rounded-xl border border-success/20 bg-success/10 px-4 py-3 text-sm font-medium text-success; }
 
 /* Trazabilidad: editado por Programmer en 2026-06-02 15:19:35 */

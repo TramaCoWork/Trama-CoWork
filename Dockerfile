@@ -12,4 +12,4 @@ COPY . .
 
 EXPOSE 4321
 
-CMD ["pnpm", "dev"]
+CMD ["sh", "-c", "rm -f .astro/dev.json && pnpm dev"]

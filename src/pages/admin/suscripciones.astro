@@ -129,6 +129,7 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
   <script>
     import { getToken, restoreSession } from '../../services/authService';
     import { api } from '../../services/apiClient';
+    import { escapeHtml, formatDateShort } from '../../utils/helpers';
     import {
       getAdminSubscriptions,
       updateSubscriptionAmount,
@@ -172,20 +173,6 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
 
     let currentSubId: string | null = null;
     let currentSubAmount = 0;
-
-    function escapeHtml(value: string): string {
-      return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function formatDate(dateStr: string | null | undefined): string {
-      if (!dateStr) return '—';
-      return new Date(dateStr).toLocaleDateString('es-AR');
-    }
 
     function formatAmount(amount: number): string {
       return new Intl.NumberFormat('es-AR', {
@@ -285,8 +272,8 @@ import ConfirmModal from '../../components/ConfirmModal.astro';
               <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(email)}${escapeHtml(name)}</td>
               <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(plan)}</td>
               <td class="px-5 py-3.5">${statusBadge(sub.status)}</td>
-              <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(formatDate(sub.startDate))}</td>
-              <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(formatDate(sub.nextPaymentDate))}</td>
+              <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(formatDateShort(sub.startDate))}</td>
+              <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(formatDateShort(sub.nextPaymentDate))}</td>
               <td class="px-5 py-3.5 text-center text-on-surface-variant text-xs font-bold">${sub._count.payments}</td>
               <td class="px-5 py-3.5 text-center">
                 <button

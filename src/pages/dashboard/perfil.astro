@@ -95,6 +95,7 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
     import { getUserIdFromToken, getToken, getEmailFromToken, logout } from '../../services/authService';
     import { api } from '../../services/apiClient';
     import {
+      fetchProfile,
       uploadProfilePhoto, deleteProfilePhoto, getProfilePhotoUrl,
       updateProfessionalInfo, updatePersonalData, updateGeneralProfile,
       uploadIdentity, fetchEducation, addEducation, updateEducation,
@@ -564,7 +565,7 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
       try {
         const updated = await updateProfessionalInfo(profileId, { professionCategoryIds: profIds });
         // Also update rubro via general update
-        await api.patch(`/professionals/${profileId}`, { rubroId: currentRubroId });
+        await updateGeneralProfile(profileId, { rubroId: currentRubroId });
         if (profileData) { profileData.rubroId = currentRubroId; profileData.completionPct = updated?.completionPct ?? profileData.completionPct; }
       } catch (err: any) { showToast(err?.message || 'Error al guardar', 'error'); throw err; }
     }
@@ -610,12 +611,12 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
       try {
         const bio = (document.getElementById('w-bio') as HTMLTextAreaElement).value.trim();
         await updateProfessionalInfo(profileId, { bio: bio || undefined, services: currentServices });
-        const updated = await api.patch<ProfessionalProfile>(`/professionals/${profileId}/personal`, {
+        const updated = await updatePersonalData(profileId, {
           pricePerHour: parseOptionalString((document.getElementById('w-price-hour') as HTMLInputElement).value),
           workModality: (document.getElementById('w-modality') as HTMLSelectElement).value || undefined,
           linkedin: (document.getElementById('w-linkedin') as HTMLInputElement).value.trim() || undefined,
         });
-        await api.patch(`/professionals/${profileId}`, {
+        await updateGeneralProfile(profileId, {
           bio: bio || undefined,
           services: currentServices,
           pricePerHour: parseOptionalString((document.getElementById('w-price-hour') as HTMLInputElement).value),
@@ -1057,7 +1058,7 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
         nBtnSave.innerHTML = '<div class="w-5 h-5 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin"></div> Guardando...';
 
         try {
-          await api.patch(`/professionals/${profileId}/personal`, {
+          await updatePersonalData(profileId, {
             name: (document.getElementById('n-name') as HTMLInputElement).value.trim() || undefined,
             city: (document.getElementById('n-city') as HTMLInputElement).value.trim() || undefined,
             address: (document.getElementById('n-address') as HTMLInputElement).value.trim() || undefined,
@@ -1074,7 +1075,7 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
             services: normalServices,
           });
 
-          const updated = await api.patch<ProfessionalProfile>(`/professionals/${profileId}`, {
+          const updated = await updateGeneralProfile(profileId, {
             name: (document.getElementById('n-name') as HTMLInputElement).value.trim() || undefined,
             bio: nBio.value.trim() || undefined,
             services: normalServices,
@@ -1106,7 +1107,7 @@ import ProfileModals from '../../components/profile/ProfileModals.astro';
       api.setHeader('Authorization', `Bearer ${token}`);
 
       try {
-        const data = await api.get<ProfessionalProfile>(`/professionals/by-user/${userId}`);
+        const data = await fetchProfile(userId);
         profileData = data;
         profileId = data.id;
         currentStatus = data.profileStatus || 'incomplete';

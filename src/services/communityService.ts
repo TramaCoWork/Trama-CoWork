@@ -274,3 +274,9 @@ export async function getUnreadCount(channel: Channel): Promise<number> {
     return 0;
   }
 }
+
+export async function fetchCommunityPost(id: string): Promise<Post> {
+  setAuthHeader();
+  const response = await api.get<RawPost>(`/community/posts/${id}`);
+  return adaptPost(response);
+}

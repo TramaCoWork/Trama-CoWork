@@ -4,9 +4,16 @@ import { getToken } from './authService';
 export interface AdminUser {
   id: string;
   email: string;
-  role: 'admin' | string;
+  emailVerified: boolean;
+  userRoles: Array<{ role: { name: string; type: 'admin' | 'professional' | 'other' } }>;
   createdAt: string;
   updatedAt?: string;
+  deletedAt: null | string;
+}
+
+export function getPrimaryRole(user: AdminUser): string {
+  if (!user.userRoles?.length) return 'Sin rol';
+  return user.userRoles[0].role.name;
 }
 
 export interface PaginatedAdminUsersResponse {
@@ -41,9 +48,28 @@ function setAuthHeader(): void {
   }
 }
 
-export async function fetchAdminUsers(page = 1, sizePage = 15): Promise<PaginatedAdminUsersResponse> {
+export async function fetchAdminUsers(
+  page = 1,
+  sizePage = 15,
+  search?: string,
+): Promise<PaginatedAdminUsersResponse> {
   setAuthHeader();
-  return api.get<PaginatedAdminUsersResponse>(ADMIN_USERS_PATH, { page, sizePage });
+  const response = await api.get<AdminUser[] | PaginatedAdminUsersResponse>(ADMIN_USERS_PATH, {
+    page,
+    sizePage,
+    ...(search ? { search } : {}),
+  });
+
+  if (Array.isArray(response)) {
+    return {
+      data: response,
+      total: response.length,
+      page: 1,
+      sizePage: response.length,
+    };
+  }
+
+  return response as PaginatedAdminUsersResponse;
 }
 
 export async function createAdminUser(payload: CreateAdminUserPayload): Promise<AdminUser> {
@@ -54,6 +80,16 @@ export async function createAdminUser(payload: CreateAdminUserPayload): Promise<
 export async function updateAdminUser(id: string, payload: UpdateAdminUserPayload): Promise<AdminUser> {
   setAuthHeader();
   return api.patch<AdminUser>(`${ADMIN_USERS_PATH}/${id}`, payload);
+}
+
+export async function fetchAdminRoles(): Promise<Array<{ id: string; name: string; type: string }>> {
+  setAuthHeader();
+  return api.get<Array<{ id: string; name: string; type: string }>>('/admin/roles');
+}
+
+export async function updateUserRoles(userId: string, roles: string[]): Promise<AdminUser> {
+  setAuthHeader();
+  return api.patch<AdminUser>(`${ADMIN_USERS_PATH}/${userId}`, { roles });
 }
 
 export async function deleteAdminUser(id: string): Promise<AdminUserMutationResponse> {

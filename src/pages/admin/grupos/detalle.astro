@@ -174,13 +174,13 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     <div class="mb-4 flex items-center justify-between gap-3">
       <h2 class="text-xl font-extrabold tracking-tight text-on-surface">Publicaciones</h2>
       <div class="flex items-center gap-2">
-        <button
-          id="post-create-open"
-          type="button"
+        <a
+          href="#"
+          id="btn-open-create-post"
           class="rounded-xl bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90"
         >
           Agregar post
-        </button>
+        </a>
         <button
           id="posts-load-more"
           type="button"
@@ -210,69 +210,11 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     </div>
   </section>
 
-  <div id="post-create-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4" aria-hidden="true">
-    <div class="w-full max-w-2xl rounded-2xl border border-outline-variant/20 bg-surface-container-low p-5 shadow-lg" role="dialog" aria-modal="true" aria-labelledby="post-create-modal-title">
-      <div class="mb-4 flex items-center justify-between gap-3">
-        <h3 id="post-create-modal-title" class="text-lg font-extrabold tracking-tight text-on-surface">Agregar post</h3>
-        <button
-          id="post-create-close"
-          type="button"
-          class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container-high"
-          aria-label="Cerrar modal"
-        >
-          <span class="material-symbols-outlined" aria-hidden="true">close</span>
-        </button>
-      </div>
-
-      <form id="post-create-form" class="space-y-3">
-        <div>
-          <label for="post-create-content" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Contenido</label>
-          <textarea
-            id="post-create-content"
-            rows="5"
-            class="w-full resize-y rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-3 py-2.5 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            placeholder="Escribí el contenido del post"
-          ></textarea>
-        </div>
-
-        <div>
-          <label for="post-create-status" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado</label>
-          <select
-            id="post-create-status"
-            class="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-3 py-2.5 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-          >
-            <option value="published">Publicado</option>
-            <option value="paused">Pausado</option>
-          </select>
-        </div>
-
-        <p id="post-create-error" class="hidden rounded-lg border border-error/20 bg-error/10 px-3 py-2 text-sm font-medium text-error"></p>
-
-        <div class="flex justify-end gap-2 pt-1">
-          <button
-            id="post-create-cancel"
-            type="button"
-            class="rounded-xl bg-surface-container px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface-container-high"
-          >
-            Cancelar
-          </button>
-          <button
-            id="post-create-submit"
-            type="submit"
-            class="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Crear post
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <script>
     import { api } from '../../../services/apiClient';
+    import { escapeHtml, formatDate } from '../../../utils/helpers';
     import {
       addMember,
-      createPost,
       deletePost,
       getChannel,
       listMembers,
@@ -310,6 +252,13 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     if (!channelId) {
       window.location.href = '/admin/grupos';
     }
+
+    document
+      .getElementById('btn-open-create-post')
+      ?.setAttribute(
+        'href',
+        `/admin/editor?context=channel-post&channelId=${channelId}&returnUrl=${encodeURIComponent(window.location.href)}`,
+      );
 
     const POSTS_PAGE_SIZE = 10;
     const MEMBERS_PAGE_SIZE = 20;
@@ -352,32 +301,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     const postsError = document.getElementById('posts-inline-error') as HTMLParagraphElement;
     const postsTableBody = document.getElementById('posts-table-body') as HTMLTableSectionElement;
     const postsLoadMore = document.getElementById('posts-load-more') as HTMLButtonElement;
-    const postCreateOpen = document.getElementById('post-create-open') as HTMLButtonElement;
-    const postCreateModal = document.getElementById('post-create-modal') as HTMLDivElement;
-    const postCreateClose = document.getElementById('post-create-close') as HTMLButtonElement;
-    const postCreateCancel = document.getElementById('post-create-cancel') as HTMLButtonElement;
-    const postCreateForm = document.getElementById('post-create-form') as HTMLFormElement;
-    const postCreateContent = document.getElementById('post-create-content') as HTMLTextAreaElement;
-    const postCreateStatus = document.getElementById('post-create-status') as HTMLSelectElement;
-    const postCreateError = document.getElementById('post-create-error') as HTMLParagraphElement;
-    const postCreateSubmit = document.getElementById('post-create-submit') as HTMLButtonElement;
     let memberSearchLoading = false;
-    let postCreateLoading = false;
-
-    function escapeHtml(value: string): string {
-      return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function formatDate(value: string): string {
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '—';
-      return date.toLocaleString('es-AR');
-    }
 
     function showDetailError(message: string): void {
       detailError.textContent = message;
@@ -705,14 +629,24 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
             : 'border-b border-outline-variant/10 cursor-pointer hover:bg-surface-container';
           const action = isDeleted
             ? ''
-            : `<button
-                type="button"
-                data-delete-post-id="${escapeHtml(post.id)}"
-                class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-error transition-colors hover:bg-error/10"
-                aria-label="Eliminar publicación"
-              >
-                <span class="material-symbols-outlined text-lg" aria-hidden="true">delete</span>
-              </button>`;
+           : `<div class="inline-flex items-center gap-1">
+                <a
+                  href="/admin/editor?context=channel-post&channelId=${escapeHtml(channelId)}&postId=${escapeHtml(post.id)}&returnUrl=${encodeURIComponent(window.location.href)}"
+                  class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container hover:text-primary"
+                  title="Editar"
+                  aria-label="Editar publicación"
+                >
+                  <span class="material-symbols-outlined text-lg">edit</span>
+                </a>
+                <button
+                  type="button"
+                  data-delete-post-id="${escapeHtml(post.id)}"
+                  class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-error transition-colors hover:bg-error/10"
+                  aria-label="Eliminar publicación"
+                >
+                  <span class="material-symbols-outlined text-lg" aria-hidden="true">delete</span>
+                </button>
+              </div>`;
 
           return `
             <tr data-post-id="${escapeHtml(post.id)}" data-row-active="${isDeleted ? 'false' : 'true'}" class="${rowClass}">
@@ -780,64 +714,6 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       }
     }
 
-    function openPostCreateModal(): void {
-      postCreateError.classList.add('hidden');
-      postCreateError.textContent = '';
-      postCreateModal.classList.remove('hidden');
-      postCreateModal.classList.add('flex');
-      postCreateModal.setAttribute('aria-hidden', 'false');
-      document.body.classList.add('overflow-hidden');
-      window.setTimeout(() => {
-        postCreateContent.focus();
-      }, 0);
-    }
-
-    function closePostCreateModal(): void {
-      postCreateModal.classList.add('hidden');
-      postCreateModal.classList.remove('flex');
-      postCreateModal.setAttribute('aria-hidden', 'true');
-      document.body.classList.remove('overflow-hidden');
-      postCreateForm.reset();
-      postCreateStatus.value = 'published';
-      postCreateError.classList.add('hidden');
-      postCreateError.textContent = '';
-    }
-
-    function setPostCreateLoading(loading: boolean): void {
-      postCreateLoading = loading;
-      postCreateSubmit.disabled = loading;
-      postCreateSubmit.textContent = loading ? 'Creando...' : 'Crear post';
-    }
-
-    async function submitCreatePost(): Promise<void> {
-      if (postCreateLoading) return;
-
-      postCreateError.classList.add('hidden');
-      postCreateError.textContent = '';
-
-      const content = postCreateContent.value.trim();
-      if (!content) {
-        postCreateError.textContent = 'El contenido es obligatorio.';
-        postCreateError.classList.remove('hidden');
-        return;
-      }
-
-      setPostCreateLoading(true);
-      try {
-        await createPost(channelId, {
-          content,
-          status: postCreateStatus.value === 'paused' ? 'paused' : 'published',
-        });
-        closePostCreateModal();
-        await loadPostsSection(true);
-      } catch (error) {
-        postCreateError.textContent = getErrorMessage(error, 'No se pudo crear la publicación.');
-        postCreateError.classList.remove('hidden');
-      } finally {
-        setPostCreateLoading(false);
-      }
-    }
-
     function markPostAsDeleted(postId: string): void {
       const row = postsTableBody.querySelector<HTMLTableRowElement>(`tr[data-post-id="${postId}"]`);
       if (!row) return;
@@ -890,37 +766,10 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       }
     });
 
-    postCreateOpen.addEventListener('click', () => {
-      openPostCreateModal();
-    });
-
-    postCreateClose.addEventListener('click', () => {
-      closePostCreateModal();
-    });
-
-    postCreateCancel.addEventListener('click', () => {
-      closePostCreateModal();
-    });
-
-    postCreateModal.addEventListener('click', (event) => {
-      if (event.target === postCreateModal) {
-        closePostCreateModal();
-      }
-    });
-
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && memberSearchModal.classList.contains('flex')) {
         closeMemberSearchModal();
-        return;
       }
-      if (event.key === 'Escape' && postCreateModal.classList.contains('flex')) {
-        closePostCreateModal();
-      }
-    });
-
-    postCreateForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      await submitCreatePost();
     });
 
     memberSearchForm.addEventListener('submit', async (event) => {

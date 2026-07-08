@@ -177,6 +177,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
 
   <script>
     import { isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
+    import { escapeHtml, formatDuration } from '../../../utils/helpers';
     import {
       listCronJobs,
       listJobExecutions,
@@ -288,28 +289,9 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       running: 'badge-soft-warning',
     };
 
-    function escapeHtml(value: string): string {
-      return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
     function getErrorMessage(error: unknown, fallback: string): string {
       const normalized = error as Error & { body?: { message?: string } };
       return normalized.body?.message || normalized.message || fallback;
-    }
-
-    function formatDuration(durationMs: number | null): string {
-      if (durationMs === null) return '—';
-      if (durationMs === 0) return '0ms';
-      if (durationMs < 1000) return `${durationMs}ms`;
-      if (durationMs < 60000) return `${(durationMs / 1000).toFixed(1)}s`;
-      const minutes = Math.floor(durationMs / 60000);
-      const seconds = Math.floor((durationMs % 60000) / 1000);
-      return `${minutes}m ${seconds}s`;
     }
 
     function formatStartedAt(startedAt: string | null): string {

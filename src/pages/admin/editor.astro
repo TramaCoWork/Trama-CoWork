@@ -1,0 +1,238 @@
+---
+import MdxEditorWrapper from '../../components/MdxEditorWrapper';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Editor | TRAMA Admin">
+  <div class="space-y-4">
+    <header class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-4">
+      <div class="flex items-center justify-between gap-3 px-6 py-3">
+        <h1 id="editor-title" class="text-xl font-extrabold tracking-tight text-on-surface">Editor</h1>
+        <div class="flex items-center gap-2">
+          <a
+            id="editor-cancel"
+            href="/admin"
+            class="rounded-xl bg-surface-container px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface-container-high"
+          >
+            Cancelar
+          </a>
+          <button
+            id="editor-save"
+            type="button"
+            class="rounded-xl bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Guardar
+          </button>
+        </div>
+      </div>
+
+      <div id="status-row" class="border-t border-outline-variant/10 px-6 py-3">
+        <label for="post-status" class="mb-1.5 block text-xs font-bold uppercase tracking-widest text-on-surface-variant">Estado</label>
+        <select
+          id="post-status"
+          class="w-full max-w-xs rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-3 py-2.5 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+        >
+          <option value="published">Publicado</option>
+          <option value="paused">Pausado</option>
+        </select>
+      </div>
+
+      <p id="editor-inline-error" class="hidden border-t border-error/20 bg-error/10 px-6 py-3 text-sm font-medium text-error"></p>
+    </header>
+
+    <div class="min-h-[600px] rounded-2xl border border-outline-variant/15 overflow-hidden">
+      <MdxEditorWrapper client:load placeholder="Escribí acá..." maxlength={20000} />
+    </div>
+  </div>
+
+  <script>
+    import { api } from '../../services/apiClient';
+    import { createPost, getPost, updatePost } from '../../services/channelAdminService';
+    import { getLanding, updateLanding } from '../../services/landingsAdminService';
+    import { getToken, isAdmin, isAuthenticated, restoreSession } from '../../services/authService';
+
+    type EditorContext = 'channel-post' | 'community-post' | 'landing-body';
+    type PostStatus = 'published' | 'paused';
+
+    interface CommunityPostPayload {
+      content?: string;
+      status?: PostStatus;
+    }
+
+    restoreSession();
+    const token = getToken();
+    if (token) {
+      api.setHeader('Authorization', `Bearer ${token}`);
+    }
+
+    if (!isAuthenticated() || !isAdmin()) {
+      window.location.href = '/admin';
+    }
+
+    const titleEl = document.getElementById('editor-title') as HTMLHeadingElement;
+    const cancelButton = document.getElementById('editor-cancel') as HTMLAnchorElement;
+    const saveButton = document.getElementById('editor-save') as HTMLButtonElement;
+    const statusRow = document.getElementById('status-row') as HTMLDivElement;
+    const statusSelect = document.getElementById('post-status') as HTMLSelectElement;
+    const inlineError = document.getElementById('editor-inline-error') as HTMLParagraphElement;
+
+    const params = new URLSearchParams(window.location.search);
+    const context = (params.get('context')?.trim() || '') as EditorContext;
+    const returnUrl = params.get('returnUrl')?.trim() || '/admin';
+    const channelId = params.get('channelId')?.trim() || '';
+    const postId = params.get('postId')?.trim() || '';
+    const landingId = Number(params.get('landingId')?.trim() || '0');
+
+    const isContextValid = context === 'channel-post' || context === 'community-post' || context === 'landing-body';
+    if (!isContextValid) {
+      window.location.href = '/admin';
+    }
+
+    cancelButton.href = returnUrl;
+
+    let loading = false;
+    let editorReadyContent = '';
+    let mode: 'channel-create' | 'channel-edit' | 'community-edit' | 'landing-edit' = 'channel-create';
+
+    function setInlineError(message: string): void {
+      inlineError.textContent = message;
+      inlineError.classList.remove('hidden');
+    }
+
+    function clearInlineError(): void {
+      inlineError.textContent = '';
+      inlineError.classList.add('hidden');
+    }
+
+    function setLoading(value: boolean): void {
+      loading = value;
+      saveButton.disabled = value;
+      saveButton.textContent = value ? 'Guardando...' : 'Guardar';
+    }
+
+    function waitForEditorAndSetContent(content: string): void {
+      if (!content) return;
+
+      window.setTimeout(() => {
+        document.dispatchEvent(new CustomEvent('mdx-editor-set-content', {
+          detail: { markdown: content },
+        }));
+      }, 800);
+    }
+
+    async function getEditorContent(): Promise<string> {
+      return new Promise<string>((resolve) => {
+        document.addEventListener('mdx-editor-content-response', (e) => {
+          resolve((e as CustomEvent<{ markdown?: string }>).detail?.markdown?.trim() || '');
+        }, { once: true });
+        document.dispatchEvent(new CustomEvent('mdx-editor-get-content'));
+      });
+    }
+
+    function asPostStatus(value: string): PostStatus {
+      return value === 'paused' ? 'paused' : 'published';
+    }
+
+    async function loadContext(): Promise<void> {
+      if (context === 'channel-post') {
+        statusRow.classList.remove('hidden');
+        if (!channelId) {
+          window.location.href = '/admin';
+          return;
+        }
+
+        if (!postId) {
+          mode = 'channel-create';
+          titleEl.textContent = 'Nuevo post en canal';
+          statusSelect.value = 'published';
+          return;
+        }
+
+        mode = 'channel-edit';
+        titleEl.textContent = 'Editar post';
+        const post = await getPost(channelId, postId);
+        editorReadyContent = post.content || '';
+        statusSelect.value = asPostStatus(post.status);
+        return;
+      }
+
+      if (context === 'community-post') {
+        statusRow.classList.remove('hidden');
+        if (!postId) {
+          window.location.href = '/admin';
+          return;
+        }
+
+        mode = 'community-edit';
+        titleEl.textContent = 'Editar post';
+        const post = await api.get<CommunityPostPayload>(`/admin/community/posts/${postId}`);
+        editorReadyContent = post.content || '';
+        statusSelect.value = asPostStatus(post.status || 'published');
+        return;
+      }
+
+      statusRow.classList.add('hidden');
+      if (!landingId) {
+        window.location.href = '/admin';
+        return;
+      }
+
+      mode = 'landing-edit';
+      titleEl.textContent = 'Editar cuerpo de landing';
+      const landing = await getLanding(landingId);
+      editorReadyContent = landing.body || '';
+    }
+
+    async function save(): Promise<void> {
+      if (loading) return;
+
+      clearInlineError();
+      const content = await getEditorContent();
+      if (!content) {
+        setInlineError('El contenido es obligatorio.');
+        return;
+      }
+
+      setLoading(true);
+      try {
+        if (mode === 'channel-create') {
+          await createPost(channelId, { content, status: asPostStatus(statusSelect.value) });
+        } else if (mode === 'channel-edit') {
+          await updatePost(channelId, postId, { content, status: asPostStatus(statusSelect.value) });
+        } else if (mode === 'community-edit') {
+          await api.patch(`/admin/community/posts/${postId}`, {
+            content,
+            status: asPostStatus(statusSelect.value),
+          });
+        } else {
+          await updateLanding(landingId, { body: content });
+        }
+
+        window.location.href = returnUrl;
+      } catch (error) {
+        const err = error as Error & { body?: { message?: string }; message?: string };
+        setInlineError(err.body?.message || err.message || 'No se pudo guardar.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    saveButton.addEventListener('click', async () => {
+      await save();
+    });
+
+    async function init(): Promise<void> {
+      try {
+        await loadContext();
+        if (editorReadyContent) {
+          waitForEditorAndSetContent(editorReadyContent);
+        }
+      } catch (error) {
+        const err = error as Error & { body?: { message?: string }; message?: string };
+        setInlineError(err.body?.message || err.message || 'No se pudo cargar el editor.');
+      }
+    }
+
+    void init();
+  </script>
+</AdminLayout>

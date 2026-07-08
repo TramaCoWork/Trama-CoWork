@@ -255,6 +255,19 @@ export async function createPost(channelId: string, payload: CreatePostPayload):
   }
 }
 
+export async function updatePost(
+  channelId: string,
+  postId: string,
+  payload: { content?: string; status?: 'published' | 'paused' },
+): Promise<CommunityChannelPost> {
+  setAuthHeader();
+  try {
+    return await api.patch<CommunityChannelPost>(`${ADMIN_CHANNELS_PATH}/${channelId}/posts/${postId}`, payload);
+  } catch (error) {
+    throw toAdminError(error, 'Error al actualizar publicación');
+  }
+}
+
 export async function getPost(channelId: string, postId: string): Promise<CommunityChannelPost> {
   setAuthHeader();
   try {

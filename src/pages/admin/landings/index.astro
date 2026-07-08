@@ -53,6 +53,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
 
   <script>
     import { isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
+    import { escapeHtml, formatDateShort } from '../../../utils/helpers';
     import { deleteLanding, listLandings, type LandingPage } from '../../../services/landingsAdminService';
 
     const PAGE_SIZE = 20;
@@ -65,15 +66,6 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     const paginationEl = document.getElementById('landings-pagination') as HTMLDivElement;
     const errorEl = document.getElementById('landings-inline-error') as HTMLParagraphElement;
 
-    function escapeHtml(value: string): string {
-      return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
     function showError(message: string): void {
       errorEl.textContent = message;
       errorEl.classList.remove('hidden');
@@ -84,21 +76,9 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       errorEl.classList.add('hidden');
     }
 
-    function formatDate(value: string | null): string {
-      if (!value) return '—';
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '—';
-      return new Intl.DateTimeFormat('es-AR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        timeZone: 'UTC',
-      }).format(date);
-    }
-
     function formatVigencia(item: LandingPage): string {
       if (!item.validFrom && !item.validUntil) return 'Sin límite';
-      return `${formatDate(item.validFrom)} – ${formatDate(item.validUntil)}`;
+      return `${formatDateShort(item.validFrom)} – ${formatDateShort(item.validUntil)}`;
     }
 
     function renderStatus(isPublic: boolean): string {

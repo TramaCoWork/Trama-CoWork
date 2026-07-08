@@ -493,6 +493,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
   <script>
     import { restoreSession, getToken } from '../../../services/authService';
     import { api } from '../../../services/apiClient';
+    import { formatDate } from '../../../utils/helpers';
     import {
       fetchProfessionalDetail,
       fetchProfessionalDocuments,
@@ -553,15 +554,6 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     function statusBadge(status: string): string {
       const s = STATUS_MAP[status] || { label: status, cls: 'bg-outline/10 text-outline' };
       return `<span class="inline-block px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider ${s.cls}">${s.label}</span>`;
-    }
-
-    function formatDate(iso: string): string {
-      if (!iso) return '—';
-      try {
-        const d = new Date(iso);
-        if (isNaN(d.getTime())) return '—';
-        return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-      } catch { return '—'; }
     }
 
     // ─── Toast ───────────────────────────────────────────────────

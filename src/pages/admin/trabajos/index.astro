@@ -85,6 +85,7 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
 
   <script>
     import { isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
+    import { escapeHtml, formatDateShort } from '../../../utils/helpers';
     import { getRubros, type ProfessionCategory } from '../../../services/adminProfessionCategoriesService';
     import {
       listWorks,
@@ -107,15 +108,6 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
     const categoryFilter = document.getElementById('jobs-filter-category') as HTMLSelectElement;
 
 
-    function escapeHtml(value: string): string {
-      return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
     function showInlineError(message: string): void {
       inlineError.textContent = message;
       inlineError.classList.remove('hidden');
@@ -126,21 +118,9 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       inlineError.classList.add('hidden');
     }
 
-    function formatDate(value: string | null): string {
-      if (!value) return '—';
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '—';
-      return new Intl.DateTimeFormat('es-AR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        timeZone: 'UTC',
-      }).format(date);
-    }
-
     function formatVigencia(job: Work): string {
       if (!job.validFrom && !job.validUntil) return 'Sin límite';
-      return `${formatDate(job.validFrom)} – ${formatDate(job.validUntil)}`;
+      return `${formatDateShort(job.validFrom)} – ${formatDateShort(job.validUntil)}`;
     }
 
     function renderStatusBadge(status: 'active' | 'paused'): string {

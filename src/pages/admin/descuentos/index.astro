@@ -206,6 +206,7 @@ const columns = [
 
   <script>
     import { isAdmin, isAuthenticated, restoreSession } from '../../../services/authService';
+    import { escapeHtml, formatDateShort } from '../../../utils/helpers';
     import {
       createDiscountPlan,
       deleteDiscountPlan,
@@ -247,26 +248,6 @@ const columns = [
     const billingCyclesInput = document.getElementById('discount-billing-cycles') as HTMLInputElement;
     const maxUsesInput = document.getElementById('discount-max-uses') as HTMLInputElement;
     const perUserLimitInput = document.getElementById('discount-per-user-limit') as HTMLInputElement;
-
-    function escapeHtml(value: string): string {
-      return value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function formatDate(value: string): string {
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '—';
-      return new Intl.DateTimeFormat('es-AR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        timeZone: 'UTC',
-      }).format(date);
-    }
 
     function showLoadingRow(): void {
       tbody.innerHTML = `
@@ -319,7 +300,7 @@ const columns = [
 
       tbody.innerHTML = items
         .map((item) => {
-          const validity = `${formatDate(item.fromDate)} → ${formatDate(item.toDate)}`;
+          const validity = `${formatDateShort(item.fromDate)} → ${formatDateShort(item.toDate)}`;
           const cycles = item.billingCycles === null ? '—' : String(item.billingCycles);
           const uses = `${item.currentUses} / ${item.maxUses === null ? '—' : item.maxUses}`;
 

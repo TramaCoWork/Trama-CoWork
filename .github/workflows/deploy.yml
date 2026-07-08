@@ -82,3 +82,13 @@ jobs:
           server-dir: ${{ secrets.FTP_REMOTE_DIR }}
           protocol: ftps
           dangerous-clean-slate: true
+
+      - name: Restart PM2 via SSH
+        # Requires GitHub secrets: SSH_HOST, SSH_USER, SSH_PRIVATE_KEY
+        # Add these in: Settings → Secrets → Actions → New repository secret
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: pm2 restart trama-frontend

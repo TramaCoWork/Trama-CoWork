@@ -77,8 +77,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 </AdminLayout>
 
 <script>
-  import { apiURL } from '../../services/apiClient';
-  import { getToken } from '../../services/authService';
+  import { changePasswordAdmin, getToken } from '../../services/authService';
 
   const form = document.getElementById('change-password-form') as HTMLFormElement;
   const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
@@ -139,28 +138,18 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     submitBtn.textContent = 'Cambiando...';
 
     try {
-      const res = await fetch(apiURL('/auth/change-password'), {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ currentPassword, newPassword }),
-      });
-
-      if (res.ok) {
-        showSuccess('Contraseña actualizada exitosamente.');
-        form.reset();
-      } else if (res.status === 401) {
+      await changePasswordAdmin(currentPassword, newPassword, confirmPassword);
+      showSuccess('Contraseña actualizada exitosamente.');
+      form.reset();
+    } catch (error) {
+      const apiError = error as Error & { status?: number; body?: { message?: string } | null };
+      if (apiError.status === 401) {
         showError('La contraseña actual es incorrecta.');
-      } else if (res.status === 404) {
+      } else if (apiError.status === 404) {
         showError('Usuario no encontrado.');
       } else {
-        const data = await res.json().catch(() => null);
-        showError(data?.message || 'Error al cambiar la contraseña.');
+        showError(apiError.body?.message || 'Error al cambiar la contraseña.');
       }
-    } catch {
-      showError('Error de conexión. Intentá nuevamente.');
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Cambiar contraseña';
