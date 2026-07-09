@@ -208,9 +208,6 @@ export async function professionalRegister(
   data: ProfessionalRegisterRequest,
 ): Promise<RegisterResponse> {
   const res = await api.post<RegisterResponse>('/auth/professional-register', data);
-  localStorage.setItem(TOKEN_KEY, res.access_token);
-  setTokenCookie(res.access_token);
-  api.setHeader('Authorization', `Bearer ${res.access_token}`);
   return res;
 }
 
