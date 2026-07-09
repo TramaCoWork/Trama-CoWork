@@ -1,0 +1,29 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+Astro.response.status = 404;
+---
+
+<Layout
+  title="404 | Página no encontrada | TRAMA"
+  description="La página que buscás no existe o fue movida."
+>
+  <section class="min-h-[70vh] px-6 py-20 flex items-center">
+    <div class="mx-auto w-full max-w-3xl text-center rounded-3xl border border-outline-variant/30 bg-surface-container-lowest p-10 shadow-sm md:p-14">
+      <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <span class="material-symbols-outlined text-4xl" aria-hidden="true">search_off</span>
+      </div>
+
+      <p class="text-7xl font-black tracking-tight text-primary md:text-8xl">404</p>
+
+      <h1 class="mt-4 text-3xl font-bold tracking-tight text-on-surface md:text-4xl">
+        Página no encontrada
+      </h1>
+
+      <p class="mx-auto mt-4 max-w-xl text-base leading-relaxed text-on-surface-variant md:text-lg">
+        La página que buscás no existe o fue movida.
+      </p>
+
+    </div>
+  </section>
+</Layout>
