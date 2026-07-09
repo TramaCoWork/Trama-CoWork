@@ -55,11 +55,11 @@ const mockUser = {
     {visibleLinks.map((link) => (
       <a
         href={link.href}
-        class={`${link.requiresActive ? 'hidden ' : ''}${isActive(link.href)
+        class={`${link.requiresActive && !isPaymentGated ? 'hidden ' : ''}${isActive(link.href)
           ? 'bg-primary/10 text-primary rounded-lg mx-2 flex items-center px-4 py-3 gap-3 transition-transform duration-200 hover:translate-x-1 text-sm font-bold'
           : 'text-on-surface-variant hover:bg-surface-container mx-2 flex items-center px-4 py-3 gap-3 transition-transform duration-200 hover:translate-x-1 text-sm font-semibold rounded-lg'}`}
         aria-current={isActive(link.href) ? 'page' : undefined}
-        data-requires-active={link.requiresActive ? '' : undefined}
+        data-requires-active={link.requiresActive && !isPaymentGated ? '' : undefined}
       >
         <span class="material-symbols-outlined" aria-hidden="true">{link.icon}</span>
         <span>{link.label}</span>
