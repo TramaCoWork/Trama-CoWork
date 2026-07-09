@@ -36,6 +36,7 @@ import SearchHeader from '../../components/SearchHeader.astro';
 
 <script>
   import { renderProfessionalsList, searchProfessionals, type SearchFilters } from '../../services/professionalsService';
+  import { buildProfileSlug } from '../../utils/helpers';
   const API_BASE = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
   const listEl = document.getElementById('pro-list')!;
@@ -120,7 +121,7 @@ import SearchHeader from '../../components/SearchHeader.astro';
                     : ''
                 }
               </div>
-              <a href="/profesionales/perfil?id=${pro.id}" class="bg-primary hover:bg-primary-container text-on-primary px-8 py-3 rounded-xl font-bold transition-all active:scale-95 flex items-center gap-2">
+              <a href="${pro.publicId ? `/profesionales/${buildProfileSlug(pro.name, pro.publicId)}` : `/profesionales/perfil?id=${pro.id}`}" class="bg-primary hover:bg-primary-container text-on-primary px-8 py-3 rounded-xl font-bold transition-all active:scale-95 flex items-center gap-2">
                 Ver perfil
                 <span class="material-symbols-outlined text-xl" aria-hidden="true">arrow_forward</span>
               </a>

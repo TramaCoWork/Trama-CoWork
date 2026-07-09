@@ -1,0 +1,87 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { buildProfileSlug } from '../../utils/helpers';
+
+const { slug } = Astro.params;
+const parts = (slug || '').split('-');
+const publicId = parts[parts.length - 1];
+
+if (!publicId || Number.isNaN(Number(publicId))) {
+  return Astro.redirect('/profesionales');
+}
+
+const apiBase = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
+let professional: any = null;
+
+try {
+  const res = await fetch(`${apiBase}/professionals/${publicId}`);
+  if (!res.ok) return Astro.redirect('/profesionales');
+  professional = await res.json();
+} catch {
+  return Astro.redirect('/profesionales');
+}
+
+if (!professional || professional.hideProfile) {
+  return Astro.redirect('/profesionales');
+}
+
+const canonicalSlug = buildProfileSlug(professional.name, professional.publicId ?? Number(publicId));
+if (slug !== canonicalSlug) {
+  return Astro.redirect(`/profesionales/${canonicalSlug}`, 301);
+}
+
+const title = `${professional.name} | TRAMA`;
+const description = `Perfil profesional de ${professional.name} en TRAMA Cowork. ${professional.bio ? professional.bio.slice(0, 120) : 'Profesional verificado en la red TRAMA.'}`;
+const photoUrl = professional.id ? `${apiBase}/uploads/photo/${professional.id}` : undefined;
+const baseUrl = (import.meta.env.PUBLIC_BASE_URL || 'https://tramacowork.com').replace(/\/+$/, '');
+const canonicalUrl = `${baseUrl}/profesionales/${canonicalSlug}`;
+const rubroName = professional.rubro?.name ?? professional.professionCategories?.[0]?.name ?? null;
+const location = [professional.city, professional.country?.name].filter(Boolean).join(', ');
+---
+
+<Layout
+  title={title}
+  description={description}
+  ogTitle={title}
+  ogDescription={description}
+  ogType="profile"
+  ogImage={photoUrl}
+  ogUrl={canonicalUrl}
+  canonicalUrl={canonicalUrl}
+>
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <article class="rounded-3xl bg-surface-container-lowest p-8 shadow-sm border border-outline-variant/10">
+      <div class="flex flex-col gap-8 md:flex-row md:items-start">
+        <img
+          src={photoUrl ?? '/images/default-avatar.svg'}
+          alt={`Foto de perfil de ${professional.name}`}
+          class="h-48 w-48 rounded-2xl object-cover"
+          loading="eager"
+        />
+
+        <div class="flex-1 space-y-4">
+          <h1 class="text-4xl font-extrabold tracking-tight text-on-surface">{professional.name}</h1>
+
+          {rubroName && (
+            <p class="text-sm font-semibold uppercase tracking-widest text-secondary">{rubroName}</p>
+          )}
+
+          {location && (
+            <p class="text-sm font-medium text-on-surface-variant">{location}</p>
+          )}
+
+          {professional.bio && (
+            <p class="text-base leading-relaxed text-on-surface-variant">{professional.bio}</p>
+          )}
+
+          <a
+            href="#"
+            class="inline-flex items-center rounded-xl bg-primary px-6 py-3 text-sm font-bold text-on-primary transition-opacity hover:opacity-90"
+          >
+            Contactar
+          </a>
+        </div>
+      </div>
+    </article>
+  </section>
+</Layout>

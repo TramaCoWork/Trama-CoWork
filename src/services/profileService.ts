@@ -14,6 +14,7 @@ import { api } from './apiClient';
 
 export interface ProfessionalProfile {
   id: string;
+  publicId?: number;
   userId: string;
   name: string;
   bio: string | null;

@@ -1,5 +1,6 @@
 ---
 import type { Professional } from '../data/mock';
+import { buildProfileSlug } from '../utils/helpers';
 
 interface Props {
   professional: Professional;
@@ -9,6 +10,9 @@ const { professional } = Astro.props;
 
 const fullStars = Math.floor(professional.rating);
 const emptyStars = 5 - fullStars;
+const profileHref = professional.publicId
+  ? `/profesionales/${buildProfileSlug(professional.name, professional.publicId)}`
+  : `/profesionales/perfil?id=${professional.id}`;
 ---
 
 <article class="bg-surface-container-lowest rounded-xl overflow-hidden group hover:shadow-xl transition-all duration-500">
@@ -50,7 +54,7 @@ const emptyStars = 5 - fullStars;
       </span>
     </div>
     <a
-      href={`/profesionales/perfil?id=${professional.id}`}
+      href={profileHref}
       class="block w-full py-4 bg-surface-container-low text-on-surface font-bold rounded-lg hover:bg-primary hover:text-on-primary transition-all duration-300 text-center"
     >
       Ver perfil

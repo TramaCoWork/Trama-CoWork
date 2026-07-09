@@ -7,6 +7,7 @@
  */
 
 import { api } from './apiClient';
+import { buildProfileSlug } from '../utils/helpers';
 
 const DEFAULT_PHOTO = '/images/default-avatar.svg';
 const API_BASE = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
@@ -15,6 +16,7 @@ const API_BASE = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000'
 
 export interface ProfessionalItem {
   id: string;
+  publicId?: number;
   userId?: string;
   name: string;
   bio: string | null;
@@ -150,6 +152,9 @@ function renderCard(pro: ProfessionalItem): string {
   const rubroName = pro.rubro?.name || '';
   const service = pro.services.length > 0 ? pro.services[0] : '';
   const priceLabel = pro.pricePerHour != null ? `$${pro.pricePerHour} /hr.` : '';
+  const profileHref = pro.publicId
+    ? `/profesionales/${buildProfileSlug(pro.name, pro.publicId)}`
+    : `/profesionales/perfil?id=${pro.id}`;
 
   return `
     <article class="group bg-surface-container-lowest hover:bg-surface-container-lowest rounded-3xl p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col md:flex-row gap-8 relative overflow-hidden">
@@ -203,7 +208,7 @@ function renderCard(pro: ProfessionalItem): string {
             }
           </div>
           <a
-            href="/profesionales/perfil?id=${pro.id}"
+            href="${profileHref}"
             class="bg-primary hover:bg-primary-container text-on-primary px-8 py-3 rounded-xl font-bold transition-all active:scale-95 flex items-center gap-2"
           >
             Ver perfil

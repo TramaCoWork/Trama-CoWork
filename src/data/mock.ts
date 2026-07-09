@@ -14,6 +14,7 @@ export interface Service {
 
 export interface Professional {
   id: string;
+  publicId?: number;
   name: string;
   category: string;
   hourlyRate: number;

@@ -69,4 +69,17 @@ export function formatDuration(ms: number | null): string {
   return `${m}m ${s}s`;
 }
 
+export function buildProfileSlug(name: string, publicId: number): string {
+  const nameSlug = (name || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    || 'profesional';
+
+  return `${nameSlug}-${publicId}`;
+}
+
 // Traceability: created by Programmer as part of refactor-components task

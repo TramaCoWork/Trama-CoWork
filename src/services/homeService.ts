@@ -9,6 +9,7 @@
 
 import { api, apiURL } from './apiClient';
 import { fetchRubros, type Rubro } from './professionCategoriesService';
+import { buildProfileSlug } from '../utils/helpers';
 
 // ─── Tipos de respuesta API ────────────────────────────────────
 
@@ -17,6 +18,7 @@ export type ApiCategory = Rubro;
 
 export interface ApiFeaturedProfessional {
   id: number;
+  publicId?: number;
   name: string;
   photo: string | null;
   pricePerHour?: number;
@@ -96,6 +98,9 @@ export async function renderFeaturedSection(containerId: string): Promise<void> 
         const name = escapeHtml(pro.name);
         const escapedPrice = escapeHtml(String(pro.pricePerHour ?? ''));
         const priceLabel = pro.pricePerHour ? `Desde $${escapedPrice} / hr` : 'Consultar precio';
+        const profileHref = pro.publicId
+          ? `/profesionales/${buildProfileSlug(pro.name, pro.publicId)}`
+          : `/profesionales/perfil?id=${pro.id}`;
         return `
         <article style="background: white; border-radius: 20px; border: 1px solid #EDEDED; padding: 20px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: transform 0.15s ease, box-shadow 0.15s ease;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 28px rgba(0,0,0,0.08)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.04)'">
             <div style="display: flex; gap: 12px; align-items: flex-start;">
@@ -115,7 +120,7 @@ export async function renderFeaturedSection(containerId: string): Promise<void> 
 
             <p style="font-size: 15px; font-weight: 700; color: #404040; margin: 4px 0 0 0; text-align: center;">${priceLabel}</p>
 
-            <a href="/profesionales/perfil?id=${pro.id}" style="display: block; width: 100%; text-align: center; padding: 9px; border: 1.5px solid #087781; border-radius: 10px; color: #087781; font-size: 14px; font-weight: 500; text-decoration: none; transition: background 0.15s;" onmouseover="this.style.background='#087781';this.style.color='white'" onmouseout="this.style.background='';this.style.color='#087781'">Ver perfil →</a>
+            <a href="${profileHref}" style="display: block; width: 100%; text-align: center; padding: 9px; border: 1.5px solid #087781; border-radius: 10px; color: #087781; font-size: 14px; font-weight: 500; text-decoration: none; transition: background 0.15s;" onmouseover="this.style.background='#087781';this.style.color='white'" onmouseout="this.style.background='';this.style.color='#087781'">Ver perfil →</a>
           </article>
       `;
       })
@@ -141,6 +146,9 @@ export async function renderFeaturedProfessionals(containerId: string): Promise<
         const rating = 0;
         const fullStars = Math.floor(rating);
         const emptyStars = 5 - fullStars;
+        const profileHref = pro.publicId
+          ? `/profesionales/${buildProfileSlug(pro.name, pro.publicId)}`
+          : `/profesionales/perfil?id=${pro.id}`;
 
         return `
       <article class="bg-surface-container-lowest rounded-xl overflow-hidden group hover:shadow-xl transition-all duration-500">
@@ -176,7 +184,7 @@ export async function renderFeaturedProfessionals(containerId: string): Promise<
             </span>
           </div>
           <a
-            href="/profesionales/perfil?id=${pro.id}"
+            href="${profileHref}"
             class="block w-full py-4 bg-surface-container-low text-on-surface font-bold rounded-lg hover:bg-primary hover:text-on-primary transition-all duration-300 text-center"
           >
             Ver perfil
