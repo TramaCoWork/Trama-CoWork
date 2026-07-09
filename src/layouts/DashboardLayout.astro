@@ -18,6 +18,16 @@ const umamiSrc = import.meta.env.PUBLIC_UMAMI_SRC ?? 'https://cloud.umami.is/scr
 let profileStatus: string | null = null;
 try {
   const token = Astro.cookies.get('trama_token')?.value;
+  console.log('[DashboardLayout] cookie trama_token exists:', !!token);
+  console.log('[DashboardLayout] token length:', token?.length ?? 0);
+  if (token) {
+    try {
+      const p = JSON.parse(atob(token.split('.')[1]?.replace(/-/g, '+').replace(/_/g, '/') || ''));
+      console.log('[DashboardLayout] roles:', JSON.stringify(p?.roles));
+    } catch (e) {
+      console.log('[DashboardLayout] token decode error:', e);
+    }
+  }
   if (token) {
     // Only fetch for professionals (decode roles from JWT)
     const payloadPart = token.split('.')[1];
@@ -37,11 +47,13 @@ try {
         if (meRes.ok) {
           const me = await meRes.json();
           profileStatus = me?.profile?.profileStatus ?? null;
+          console.log('[DashboardLayout] profileStatus from /auth/me:', profileStatus);
         }
       }
     }
   }
-} catch {
+} catch (e) {
+  console.log('[DashboardLayout] error fetching /auth/me:', e);
   // fail open — profileStatus stays null
 }
 ---
