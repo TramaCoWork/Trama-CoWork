@@ -18,6 +18,7 @@ RUN pnpm build
 FROM mirror.gcr.io/library/node:22-alpine AS runner
 
 WORKDIR /app
+RUN apk add --no-cache curl
 
 # Copy only the built output
 COPY --from=builder /app/dist ./dist
