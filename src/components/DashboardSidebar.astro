@@ -22,7 +22,7 @@ const isPaymentGated = profileStatus === 'waiting_payment';
 const allowedWhenGated = ['/dashboard', '/dashboard/pagos'];
 const visibleLinks = isPaymentGated
   ? sidebarLinks.filter((link) =>
-      allowedWhenGated.some((allowed) => link.href === allowed || link.href.startsWith(`${allowed}/`))
+      allowedWhenGated.some((allowed) => link.href === allowed || (allowed !== '/dashboard' && link.href.startsWith(`${allowed}/`)))
     )
   : sidebarLinks;
 
