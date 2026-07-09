@@ -1,4 +1,9 @@
 ---
+interface Props {
+  profileStatus?: string | null;
+}
+
+const { profileStatus } = Astro.props;
 const currentPath = Astro.url.pathname;
 
 const sidebarLinks = [
@@ -10,6 +15,16 @@ const sidebarLinks = [
   { href: '/dashboard/trabajos', icon: 'work', label: 'Trabajos', requiresActive: true },
   { href: '/dashboard/pagos', icon: 'payments', label: 'Pagos', requiresActive: true },
 ];
+
+const isPaymentGated = profileStatus === 'waiting_payment';
+
+// When payment gated, only show Resumen and Pagos
+const allowedWhenGated = ['/dashboard', '/dashboard/pagos'];
+const visibleLinks = isPaymentGated
+  ? sidebarLinks.filter((link) =>
+      allowedWhenGated.some((allowed) => link.href === allowed || link.href.startsWith(`${allowed}/`))
+    )
+  : sidebarLinks;
 
 function isActive(href: string): boolean {
   if (href === '/dashboard') return currentPath === '/dashboard' || currentPath === '/dashboard/';
@@ -37,7 +52,7 @@ const mockUser = {
 
   <!-- Navigation -->
   <nav class="flex-1 space-y-1" aria-label="Panel de control">
-    {sidebarLinks.map((link) => (
+    {visibleLinks.map((link) => (
       <a
         href={link.href}
         class={`${link.requiresActive ? 'hidden ' : ''}${isActive(link.href)

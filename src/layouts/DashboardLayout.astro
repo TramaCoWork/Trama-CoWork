@@ -11,6 +11,39 @@ interface Props {
 const { title, description = 'Portal profesional TRAMA - Gestiona tu perfil y actividad.' } = Astro.props;
 const gtmId = import.meta.env.PUBLIC_GTM_ID;
 const gaId = import.meta.env.PUBLIC_GA_ID;
+const umamiId = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID;
+const umamiSrc = import.meta.env.PUBLIC_UMAMI_SRC ?? 'https://cloud.umami.is/script.js';
+
+// Resolve profileStatus for payment gate sidebar
+let profileStatus: string | null = null;
+try {
+  const token = Astro.cookies.get('trama_token')?.value;
+  if (token) {
+    // Only fetch for professionals (decode roles from JWT)
+    const payloadPart = token.split('.')[1];
+    if (payloadPart) {
+      const payload = JSON.parse(atob(payloadPart.replace(/-/g, '+').replace(/_/g, '/')));
+      const roles = payload?.roles as Array<{ name: string; type: string }> | undefined;
+      const isProfessional =
+        Array.isArray(roles) && roles.some((r: any) => r.type === 'professional' || r.name === 'professional');
+      const isAdmin = Array.isArray(roles) && roles.some((r: any) => r.type === 'admin' || r.name === 'admin');
+
+      if (isProfessional && !isAdmin) {
+        const apiBase = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000';
+        const meRes = await fetch(`${apiBase}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: AbortSignal.timeout(3000),
+        });
+        if (meRes.ok) {
+          const me = await meRes.json();
+          profileStatus = me?.profile?.profileStatus ?? null;
+        }
+      }
+    }
+  }
+} catch {
+  // fail open — profileStatus stays null
+}
 ---
 
 <!doctype html>
@@ -32,6 +65,14 @@ const gaId = import.meta.env.PUBLIC_GA_ID;
   gtag('config', '${gaId}');
 </script>`} />
     )}
+    {umamiId && (
+      <script
+        defer
+        is:inline
+        src={umamiSrc}
+        data-website-id={umamiId}
+      />
+    )}
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
@@ -50,7 +91,7 @@ const gaId = import.meta.env.PUBLIC_GA_ID;
       </noscript>
     )}
     <div class="flex min-h-screen">
-      <DashboardSidebar />
+      <DashboardSidebar profileStatus={profileStatus} />
       <main class="flex-1 min-h-screen p-8 lg:p-12 overflow-y-auto">
         <slot />
       </main>

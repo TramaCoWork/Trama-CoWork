@@ -81,6 +81,40 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (!isTokenValid(token)) {
       return context.redirect('/login');
     }
+
+    // Payment gate — only for professionals
+    if (token && pathname.startsWith('/dashboard')) {
+      // Skip gate entirely for admins
+      if (!hasAdminRole(token)) {
+        // Only gate professional users
+        const roles = decodeJwtPayload(token)?.roles as Array<{ name: string; type: string }> | undefined;
+        const isProfessional =
+          Array.isArray(roles) && roles.some((r) => r.type === 'professional' || r.name === 'professional');
+
+        if (isProfessional) {
+          try {
+            const apiBase = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000';
+            const meRes = await fetch(`${apiBase}/auth/me`, {
+              headers: { Authorization: `Bearer ${token}` },
+              signal: AbortSignal.timeout(3000),
+            });
+            if (meRes.ok) {
+              const me = await meRes.json();
+              if (me?.profile?.profileStatus === 'waiting_payment') {
+                // Allow /dashboard/pagos and sub-routes
+                if (!pathname.startsWith('/dashboard/pagos')) {
+                  return context.redirect('/dashboard/pagos');
+                }
+              }
+            }
+            // On any error (non-ok, network, timeout) → fail open, continue
+          } catch {
+            // fail open
+          }
+        }
+      }
+    }
+
     return next();
   }
 
