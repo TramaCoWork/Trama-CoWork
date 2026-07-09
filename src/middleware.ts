@@ -36,6 +36,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     '/admin/login',
     '/login',
     '/registro',
+    '/registro/email-enviado',
     '/recuperar-contrasena',
     '/verify-email',
     '/reset-password',
