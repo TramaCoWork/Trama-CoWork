@@ -2,7 +2,6 @@
   import DashboardLayout from '../../layouts/DashboardLayout.astro';
   import EditorModal from '../../components/EditorModal.astro';
   import ConfirmModal from '../../components/ConfirmModal.astro';
-  import { escapeHtml, timeAgo } from '../../utils/helpers';
 ---
 
 <DashboardLayout title="Comunidad | TRAMA">
@@ -318,6 +317,7 @@
   import { associateCommunityImages } from '../../services/uploadService';
   import { getUserIdFromToken, getToken } from '../../services/authService';
   import { api } from '../../services/apiClient';
+  import { escapeHtml, timeAgo } from '../../utils/helpers';
   import { renderMarkdown } from '../../utils/markdown';
 
   const API_BASE = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
