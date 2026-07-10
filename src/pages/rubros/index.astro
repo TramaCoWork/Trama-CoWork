@@ -204,7 +204,7 @@ import Layout from "../../layouts/Layout.astro";
           (subRubro) => `
         <li>
           <a
-            href="/profesionales?rubro=${rubroSlug}&sub_rubro=${subRubro.slug}"
+            href="/profesionales?q=${encodeURIComponent(subRubro.name)}"
             class="flex items-center justify-between p-3 rounded-xl hover:bg-surface-container-lowest transition-colors group"
           >
             <span class="text-on-surface-variant font-medium pl-12 group-hover:text-on-surface transition-colors">${subRubro.name}</span>
