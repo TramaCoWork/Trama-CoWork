@@ -1,0 +1,342 @@
+---
+  import ConfirmModal from '../../components/ConfirmModal.astro';
+---
+
+<!-- Comments Modal -->
+<div id="comments-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modal-post-author">
+  <div id="modal-backdrop" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+  <div class="relative w-full max-w-lg max-h-[85vh] bg-surface-container rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-outline-variant/15">
+    <div class="shrink-0 px-5 py-4 border-b border-outline-variant/15">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-primary text-base" aria-hidden="true">person</span>
+          </div>
+          <div class="min-w-0">
+            <p id="modal-post-author" class="text-sm font-bold text-on-surface truncate"></p>
+            <p id="modal-post-date" class="text-[10px] text-on-surface-variant"></p>
+          </div>
+        </div>
+        <button id="modal-close-btn" class="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" aria-label="Cerrar">
+          <span class="material-symbols-outlined text-xl" aria-hidden="true">close</span>
+        </button>
+      </div>
+      <div id="modal-post-content" class="markdown-content text-sm text-on-surface leading-relaxed mt-3"></div>
+    </div>
+    <div id="modal-comments-wrapper" class="flex-1 overflow-y-auto px-5 py-3 space-y-2 min-h-0">
+      <div id="modal-comments-list" class="space-y-2"></div>
+      <div id="modal-load-more-wrapper" class="hidden text-center py-2">
+        <button id="modal-load-more-btn" class="text-xs text-primary hover:text-primary/80 font-semibold transition-colors">
+          Cargar más comentarios...
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ConfirmModal />
+
+<script>
+  import {
+    fetchChannelPost,
+    fetchChannelPostComments,
+    fetchPostComments,
+    fetchCommunityPost,
+    createComment,
+    createChannelComment,
+    deleteComment,
+    type Channel,
+    type Comment,
+  } from '../../services/communityService';
+  import { associateCommunityImages } from '../../services/uploadService';
+  import { getUserIdFromToken } from '../../services/authService';
+  import { escapeHtml, formatDate } from '../../utils/helpers';
+  import { renderMarkdown } from '../../utils/markdown';
+
+  type ModalOpenDetail = {
+    postId: string;
+    channelType?: Channel['type'];
+    channelSlug?: string;
+    channelId?: string;
+  };
+
+  const userId = getUserIdFromToken();
+
+  const commentsModal = document.getElementById('comments-modal')!;
+  const modalBackdrop = document.getElementById('modal-backdrop')!;
+  const modalCloseBtn = document.getElementById('modal-close-btn')!;
+  const modalPostAuthor = document.getElementById('modal-post-author')!;
+  const modalPostDate = document.getElementById('modal-post-date')!;
+  const modalPostContent = document.getElementById('modal-post-content')!;
+  const modalCommentsList = document.getElementById('modal-comments-list')!;
+  const modalLoadMoreWrapper = document.getElementById('modal-load-more-wrapper')!;
+  const modalLoadMoreBtn = document.getElementById('modal-load-more-btn') as HTMLButtonElement;
+  const modalCommentsWrapper = document.getElementById('modal-comments-wrapper')!;
+
+  let modalPostId: string | null = null;
+  let modalChannelType: Channel['type'] = 'community';
+  let modalChannelSlug = '';
+  let modalChannelId = '';
+  let modalCurrentPage = 1;
+  let modalTotalPages = 1;
+  let isSubmittingComment = false;
+
+  function resolvePostChannelMeta(postId: string): { type: Channel['type']; slug: string; id: string } {
+    const article = document.querySelector<HTMLElement>(`article[data-post-id="${postId}"]`);
+    const type = article?.dataset.channelType === 'channel' ? 'channel' : 'community';
+    const slug = article?.dataset.channelSlug || '';
+    const id = article?.dataset.channelId || '';
+    return { type, slug, id };
+  }
+
+  function renderCommentHtml(comment: Comment): string {
+    const commenterName = comment.user?.profile?.name || comment.user?.email || 'Usuario';
+    return `
+      <div class="flex items-start gap-2 bg-surface-container-low rounded-lg p-3" data-comment-id="${comment.id}">
+        <div class="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-secondary text-xs" aria-hidden="true">person</span>
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-on-surface">${escapeHtml(commenterName)}</span>
+            <span class="text-[10px] text-on-surface-variant">${escapeHtml(formatDate(comment.createdAt))}</span>
+          </div>
+          <div class="markdown-content text-xs text-on-surface-variant mt-0.5">${renderMarkdown(comment.content)}</div>
+        </div>
+        ${comment.userId === userId ? `
+          <button class="btn-delete-comment text-on-surface-variant hover:text-error transition-colors p-0.5" data-comment-id="${comment.id}" title="Eliminar comentario">
+            <span class="material-symbols-outlined text-xs" aria-hidden="true">close</span>
+          </button>` : ''}
+      </div>`;
+  }
+
+  function renderComments(comments: Comment[]) {
+    modalCommentsList.innerHTML = '';
+    if (comments.length === 0) {
+      modalCommentsList.innerHTML = '<p class="text-xs text-on-surface-variant italic text-center py-4">Sin comentarios aún. Sé el primero en comentar.</p>';
+      return;
+    }
+
+    appendComments(comments);
+  }
+
+  function appendComments(comments: Comment[]) {
+    comments.forEach(comment => {
+      modalCommentsList.insertAdjacentHTML('beforeend', renderCommentHtml(comment));
+    });
+    bindModalDeleteButtons();
+  }
+
+  function updateCommentCountLabel(postId: string, delta: number) {
+    document.querySelectorAll(`article[data-post-id="${postId}"] .comment-count-label`).forEach(label => {
+      const text = label.textContent || '0';
+      const current = parseInt(text, 10) || 0;
+      const newCount = Math.max(0, current + delta);
+      const isMyPost = text.includes('recibido');
+      if (isMyPost) {
+        label.textContent = `${newCount} ${newCount === 1 ? 'comentario recibido' : 'comentarios recibidos'}`;
+        return;
+      }
+      label.textContent = `${newCount} ${newCount === 1 ? 'comentario' : 'comentarios'}`;
+    });
+  }
+
+  async function loadModalComments(page: number) {
+    if (!modalPostId) return;
+
+    try {
+      const result = modalChannelType === 'channel'
+        ? await fetchChannelPostComments(modalChannelId || modalChannelSlug, modalPostId, page, 10)
+        : await fetchPostComments(modalPostId, page, 10);
+      const comments = result.data || [];
+      const meta = result.meta;
+      modalCurrentPage = meta.page;
+      modalTotalPages = meta.totalPages;
+
+      if (page === 1) {
+        renderComments(comments);
+      } else {
+        appendComments(comments);
+      }
+
+      modalLoadMoreWrapper.classList.toggle('hidden', !(meta.page < meta.totalPages));
+    } catch (err) {
+      console.error('Error cargando comentarios:', err);
+      if (page === 1) {
+        modalCommentsList.innerHTML = '<p class="text-xs text-error text-center py-4">Error al cargar comentarios.</p>';
+      }
+    }
+  }
+
+  async function openCommentsModal(detail: ModalOpenDetail) {
+    if (!detail.postId) return;
+
+    modalPostId = detail.postId;
+    modalCurrentPage = 1;
+    modalTotalPages = 1;
+    modalChannelType = detail.channelType === 'channel' ? 'channel' : 'community';
+    modalChannelSlug = detail.channelSlug || '';
+    modalChannelId = detail.channelId || '';
+
+    modalCommentsList.innerHTML = `
+      <div class="flex items-center justify-center py-6">
+        <span class="material-symbols-outlined text-2xl text-primary animate-spin" aria-hidden="true">schedule</span>
+      </div>`;
+    modalLoadMoreWrapper.classList.add('hidden');
+
+    commentsModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    try {
+      const post = modalChannelType === 'channel'
+        ? await fetchChannelPost(modalChannelId || modalChannelSlug, modalPostId)
+        : await fetchCommunityPost(modalPostId);
+      const authorName = post.user?.profile?.name || post.user?.email || 'Usuario';
+      modalPostAuthor.textContent = authorName;
+      modalPostDate.textContent = formatDate(post.createdAt);
+      modalPostContent.innerHTML = post.content ? renderMarkdown(post.content) : '';
+    } catch (err) {
+      console.error('Error cargando detalle del post:', err);
+      modalPostAuthor.textContent = 'Usuario';
+      modalPostDate.textContent = '';
+      modalPostContent.innerHTML = '<p class="text-xs text-error">No se pudo cargar el contenido del post.</p>';
+    }
+
+    await loadModalComments(1);
+  }
+
+  function closeCommentsModal() {
+    commentsModal.classList.add('hidden');
+    document.body.style.overflow = '';
+    modalPostId = null;
+    modalChannelSlug = '';
+    modalChannelId = '';
+    modalChannelType = 'community';
+    modalCommentsList.innerHTML = '';
+  }
+
+  function bindModalDeleteButtons() {
+    modalCommentsList.querySelectorAll('.btn-delete-comment').forEach(button => {
+      if ((button as HTMLElement).dataset.bound) return;
+      (button as HTMLElement).dataset.bound = 'true';
+      button.addEventListener('click', async () => {
+        if (!modalPostId || modalChannelType === 'channel') {
+          return;
+        }
+
+        const commentId = (button as HTMLElement).dataset.commentId;
+        if (!commentId) {
+          return;
+        }
+
+        (window as any).openConfirmModal({
+          title: '¿Eliminar comentario?',
+          message: 'Esta acción no se puede deshacer.',
+          iconBgClass: 'bg-red-50',
+          iconHtml: '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
+          buttons: [
+            {
+              text: 'Eliminar',
+              icon: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
+              variant: 'danger',
+              onClick: async () => {
+                try {
+                  await deleteComment(commentId);
+                  const commentElement = modalCommentsList.querySelector(`[data-comment-id="${commentId}"]`);
+                  if (commentElement) {
+                    commentElement.remove();
+                  }
+                  updateCommentCountLabel(modalPostId, -1);
+                  if (modalCommentsList.children.length === 0) {
+                    modalCommentsList.innerHTML = '<p class="text-xs text-on-surface-variant italic text-center py-4">Sin comentarios aún. Sé el primero en comentar.</p>';
+                  }
+                } catch (err) {
+                  console.error('Error eliminando comentario:', err);
+                }
+              },
+            },
+            { text: 'Cancelar', variant: 'ghost' },
+          ],
+        });
+      });
+    });
+  }
+
+  async function handleCommentSubmit(content: string, imageIds: string[], context: string) {
+    if (!context.startsWith('comment-')) {
+      return;
+    }
+
+    const postId = context.slice('comment-'.length);
+    if (!postId) {
+      return;
+    }
+
+    const sourceMeta = resolvePostChannelMeta(postId);
+    const isModalTarget = modalPostId === postId;
+    const channelType = isModalTarget ? modalChannelType : sourceMeta.type;
+    const channelId = isModalTarget ? (modalChannelId || modalChannelSlug) : (sourceMeta.id || sourceMeta.slug);
+
+    const newComment = channelType === 'channel' && channelId
+      ? await createChannelComment(channelId, postId, content)
+      : await createComment(postId, content);
+
+    if (imageIds.length > 0) {
+      await associateCommunityImages(imageIds, newComment.id, 'COMMENT');
+    }
+
+    if (isModalTarget) {
+      const emptyMsg = modalCommentsList.querySelector('p.italic');
+      if (emptyMsg) {
+        emptyMsg.remove();
+      }
+
+      modalCommentsList.insertAdjacentHTML('afterbegin', renderCommentHtml(newComment));
+      bindModalDeleteButtons();
+      modalCommentsWrapper.scrollTop = 0;
+    }
+
+    updateCommentCountLabel(postId, 1);
+  }
+
+  document.addEventListener('comunidad:modal-open-post', async event => {
+    const customEvent = event as CustomEvent<ModalOpenDetail>;
+    await openCommentsModal(customEvent.detail);
+  });
+
+  modalCloseBtn.addEventListener('click', closeCommentsModal);
+  modalBackdrop.addEventListener('click', closeCommentsModal);
+  modalLoadMoreBtn.addEventListener('click', async () => {
+    if (modalCurrentPage < modalTotalPages) {
+      await loadModalComments(modalCurrentPage + 1);
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modalPostId) {
+      closeCommentsModal();
+    }
+  });
+
+  document.addEventListener('editor-modal-submit', async event => {
+    if (isSubmittingComment) return;
+
+    const customEvent = event as CustomEvent<{ content?: string; imageIds?: string[]; context?: string }>;
+    const content = customEvent.detail?.content?.trim() || '';
+    const imageIds = Array.isArray(customEvent.detail?.imageIds) ? customEvent.detail.imageIds : [];
+    const context = customEvent.detail?.context || '';
+
+    if (!content || !context.startsWith('comment-')) {
+      return;
+    }
+
+    isSubmittingComment = true;
+    try {
+      await handleCommentSubmit(content, imageIds, context);
+    } catch (err) {
+      console.error('Error procesando comentario desde editor modal:', err);
+    } finally {
+      isSubmittingComment = false;
+    }
+  });
+</script>

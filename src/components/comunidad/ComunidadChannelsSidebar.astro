@@ -1,0 +1,137 @@
+<aside id="comunidad-channels-sidebar" class="w-56 shrink-0 flex flex-col gap-1">
+  <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] px-3 mb-2">Canales</p>
+  <div id="channels-list" class="space-y-0.5">
+    <div class="flex items-center justify-center py-8">
+      <span class="material-symbols-outlined text-2xl text-primary animate-spin" aria-hidden="true">schedule</span>
+    </div>
+  </div>
+</aside>
+
+<script>
+  import { fetchChannels, markSeen, getUnreadCount, type Channel } from '../../services/communityService';
+  import { getToken } from '../../services/authService';
+  import { escapeHtml } from '../../utils/helpers';
+
+  const channelsList = document.getElementById('channels-list')!;
+
+  let channels: Channel[] = [];
+  let unreadMap = new Map<string, number>();
+  let activeChannel = 'general';
+  let hasLoadedChannels = false;
+
+  function resolveChannelBySlug(slug: string): Channel | null {
+    return channels.find(channel => channel.slug === slug) ?? null;
+  }
+
+  function getActiveChannelType(): Channel['type'] {
+    return resolveChannelBySlug(activeChannel)?.type ?? 'community';
+  }
+
+  function renderChannels() {
+    channelsList.innerHTML = channels.map(channel => {
+      const isActive = channel.slug === activeChannel;
+      const channelIcon = channel.type === 'community' ? 'tag' : 'hub';
+      const unreadCount = unreadMap.get(channel.slug) ?? 0;
+      const badge = unreadCount > 0
+        ? `<span class="ml-auto text-[10px] font-bold bg-error text-on-error rounded-full px-1.5 py-0.5 min-w-[18px] text-center">${unreadCount > 99 ? '99+' : unreadCount}</span>`
+        : '';
+
+      return `
+        <button
+          data-channel="${channel.slug}"
+          class="channel-btn w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2.5 transition-all ${
+            isActive
+              ? 'bg-primary/10 text-primary font-bold'
+              : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
+          }"
+        >
+          <span class="material-symbols-outlined text-base" aria-hidden="true">${channelIcon}</span>
+          ${escapeHtml(channel.name)}
+          ${badge}
+        </button>`;
+    }).join('');
+
+    channelsList.querySelectorAll('.channel-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const slug = (button as HTMLElement).dataset.channel;
+        if (!slug) {
+          return;
+        }
+        void setActiveChannel(slug);
+      });
+    });
+  }
+
+  async function refreshUnreadMap() {
+    const entries = await Promise.all(channels.map(async (channel) => {
+      const unreadCount = await getUnreadCount(channel);
+      return [channel.slug, unreadCount] as const;
+    }));
+
+    unreadMap = new Map(entries);
+    if (unreadMap.get(activeChannel) && unreadMap.get(activeChannel)! > 0) {
+      unreadMap.set(activeChannel, 0);
+    }
+  }
+
+  async function setActiveChannel(slug: string) {
+    activeChannel = slug;
+    const channelObj = resolveChannelBySlug(slug);
+    if (channelObj) {
+      unreadMap.set(channelObj.slug, 0);
+      void markSeen(channelObj).catch(() => {});
+    }
+
+    renderChannels();
+
+    document.dispatchEvent(new CustomEvent('comunidad:channel-changed', {
+      detail: {
+        channel: slug,
+        channelObj,
+        channelType: getActiveChannelType(),
+      },
+    }));
+  }
+
+  async function loadChannels() {
+    channelsList.innerHTML = `
+      <div class="flex items-center justify-center py-8">
+        <span class="material-symbols-outlined text-2xl text-primary animate-spin" aria-hidden="true">schedule</span>
+      </div>`;
+
+    try {
+      channels = await fetchChannels();
+      if (channels.length === 0) {
+        channelsList.innerHTML = '<p class="text-xs text-on-surface-variant px-3">No hay canales disponibles.</p>';
+        return;
+      }
+
+      if (!resolveChannelBySlug(activeChannel)) {
+        activeChannel = channels[0]?.slug || 'general';
+      }
+
+      await refreshUnreadMap();
+      renderChannels();
+      hasLoadedChannels = true;
+      await setActiveChannel(activeChannel);
+    } catch (err) {
+      console.error('Error cargando canales:', err);
+      channelsList.innerHTML = '<p class="text-xs text-error px-3">Error al cargar canales</p>';
+    }
+  }
+
+  document.addEventListener('comunidad:profile-loaded', () => {
+    const token = getToken();
+    if (!token) {
+      return;
+    }
+    void loadChannels();
+  });
+
+  document.addEventListener('comunidad:refresh-channels', () => {
+    if (!hasLoadedChannels) {
+      return;
+    }
+    void loadChannels();
+  });
+</script>
