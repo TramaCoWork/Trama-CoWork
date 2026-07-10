@@ -1,0 +1,228 @@
+---
+interface Props {
+  professionalId: string;
+  professionalName: string;
+}
+
+const { professionalId, professionalName } = Astro.props;
+const modalId = `professional-contact-modal-${professionalId}`;
+const titleId = `${modalId}-title`;
+---
+
+<div
+  id={modalId}
+  data-contact-modal
+  class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/50 px-4 backdrop-blur-sm"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby={titleId}
+>
+  <div class="w-full max-w-2xl rounded-2xl border border-outline-variant/20 bg-surface-container-lowest shadow-2xl">
+    <div class="flex items-center justify-between border-b border-outline-variant/20 px-6 py-4">
+      <h2 id={titleId} class="text-xl font-bold text-on-surface">Contactar a {professionalName}</h2>
+      <button
+        type="button"
+        data-contact-close
+        class="rounded-lg p-1 text-on-surface-variant transition-colors hover:bg-surface-container-high"
+        aria-label="Cerrar modal"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+      </button>
+    </div>
+
+    <div class="px-6 py-5">
+      <div data-contact-success class="mb-4 hidden rounded-xl bg-primary-container px-4 py-3 text-sm font-semibold text-on-primary-container"></div>
+      <div data-contact-error class="mb-4 hidden rounded-xl bg-error-container px-4 py-3 text-sm font-semibold text-on-error-container"></div>
+
+      <form data-contact-form class="space-y-4" novalidate>
+        <div>
+          <label for={`${modalId}-email`} class="mb-1.5 block text-sm font-semibold text-on-surface">Email *</label>
+          <input
+            id={`${modalId}-email`}
+            name="email"
+            type="email"
+            required
+            class="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+            placeholder="tu@email.com"
+          />
+        </div>
+
+        <div>
+          <label for={`${modalId}-message`} class="mb-1.5 block text-sm font-semibold text-on-surface">
+            Mensaje * <span class="font-medium text-outline">(mínimo 10 caracteres)</span>
+          </label>
+          <textarea
+            id={`${modalId}-message`}
+            name="message"
+            required
+            minlength="10"
+            rows="5"
+            class="w-full resize-none rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+            placeholder="Escribí tu mensaje para este profesional..."
+          ></textarea>
+        </div>
+
+        <div class="cf-turnstile" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY} data-theme="light"></div>
+
+        <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            data-contact-close
+            class="rounded-xl border border-outline-variant bg-surface-container-low px-5 py-2.5 text-sm font-bold text-on-surface transition-colors hover:bg-surface-container-high"
+          >
+            Cerrar
+          </button>
+          <button
+            type="submit"
+            data-contact-submit
+            class="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Enviar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<script>
+  import { api } from '../../services/apiClient';
+
+  const modal = document.querySelector('[data-contact-modal]') as HTMLDivElement | null;
+  const form = modal?.querySelector('[data-contact-form]') as HTMLFormElement | null;
+  const submitButton = modal?.querySelector('[data-contact-submit]') as HTMLButtonElement | null;
+  const emailInput = modal?.querySelector('input[name="email"]') as HTMLInputElement | null;
+  const messageInput = modal?.querySelector('textarea[name="message"]') as HTMLTextAreaElement | null;
+  const successBox = modal?.querySelector('[data-contact-success]') as HTMLDivElement | null;
+  const errorBox = modal?.querySelector('[data-contact-error]') as HTMLDivElement | null;
+  const closeButtons = modal?.querySelectorAll('[data-contact-close]') ?? [];
+  const professionalId = modal?.id.replace('professional-contact-modal-', '') ?? '';
+
+  function hideMessages() {
+    successBox?.classList.add('hidden');
+    errorBox?.classList.add('hidden');
+  }
+
+  function showError(message: string) {
+    successBox?.classList.add('hidden');
+    if (!errorBox) return;
+    errorBox.textContent = message;
+    errorBox.classList.remove('hidden');
+  }
+
+  function showSuccess(message: string) {
+    errorBox?.classList.add('hidden');
+    if (!successBox) return;
+    successBox.textContent = message;
+    successBox.classList.remove('hidden');
+  }
+
+  function openModal() {
+    hideMessages();
+    modal?.classList.remove('hidden');
+    modal?.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    modal?.classList.add('hidden');
+    modal?.classList.remove('flex');
+    document.body.style.overflow = '';
+  }
+
+  function setLoading(isLoading: boolean) {
+    if (!submitButton) return;
+    submitButton.disabled = isLoading;
+    submitButton.textContent = isLoading ? 'Enviando...' : 'Enviar';
+  }
+
+  function validateInputs(email: string, message: string): boolean {
+    if (!email || !message) {
+      showError('Completá todos los campos obligatorios.');
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showError('Ingresá un email válido.');
+      return false;
+    }
+
+    if (message.length < 10) {
+      showError('El mensaje debe tener al menos 10 caracteres.');
+      return false;
+    }
+
+    return true;
+  }
+
+  async function onSubmit(event: SubmitEvent) {
+    event.preventDefault();
+    hideMessages();
+
+    const email = emailInput?.value.trim() ?? '';
+    const message = messageInput?.value.trim() ?? '';
+
+    if (!professionalId) {
+      showError('No se pudo identificar al profesional.');
+      return;
+    }
+
+    if (!validateInputs(email, message)) {
+      return;
+    }
+
+    const turnstileToken = (window as any).turnstile?.getResponse();
+    if (!turnstileToken) {
+      showError('Por favor, completá la verificación de seguridad.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await api.post('/contact/professional', {
+        email,
+        message,
+        professionalId,
+        turnstileToken,
+      });
+
+      showSuccess('¡Mensaje enviado exitosamente!');
+      form?.reset();
+      (window as any).turnstile?.reset();
+    } catch (error: any) {
+      if (error?.status === 400) {
+        showError('Captcha inválido. Intentá nuevamente.');
+      } else if (error?.status === 404) {
+        showError('Profesional no encontrado.');
+      } else {
+        showError(error?.body?.message || 'Error al enviar el mensaje. Intentá nuevamente.');
+      }
+      (window as any).turnstile?.reset();
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  closeButtons.forEach((button) => {
+    button.addEventListener('click', closeModal);
+  });
+
+  modal?.addEventListener('click', (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+      closeModal();
+    }
+  });
+
+  window.addEventListener('open-professional-contact-modal', openModal);
+  form?.addEventListener('submit', onSubmit);
+</script>

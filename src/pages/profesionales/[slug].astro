@@ -1,5 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import ProfessionalActions from '../../components/profile/ProfessionalActions.astro';
+import ProfessionalContactModal from '../../components/profile/ProfessionalContactModal.astro';
 import { buildProfileSlug } from '../../utils/helpers';
 
 const { slug } = Astro.params;
@@ -37,6 +39,9 @@ const baseUrl = (import.meta.env.PUBLIC_BASE_URL || 'https://tramacowork.com').r
 const canonicalUrl = `${baseUrl}/profesionales/${canonicalSlug}`;
 const rubroName = professional.rubro?.name ?? professional.professionCategories?.[0]?.name ?? null;
 const location = [professional.city, professional.country?.name].filter(Boolean).join(', ');
+const services = Array.isArray(professional.services) ? professional.services : [];
+const professionCategories = Array.isArray(professional.professionCategories) ? professional.professionCategories : [];
+const educations = Array.isArray(professional.educations) ? professional.educations : [];
 ---
 
 <Layout
@@ -49,8 +54,8 @@ const location = [professional.city, professional.country?.name].filter(Boolean)
   ogUrl={canonicalUrl}
   canonicalUrl={canonicalUrl}
 >
-  <section class="mx-auto max-w-5xl px-6 py-12">
-    <article class="rounded-3xl bg-surface-container-lowest p-8 shadow-sm border border-outline-variant/10">
+  <section class="mx-auto max-w-6xl space-y-8 px-6 py-12">
+    <article class="rounded-3xl border border-outline-variant/10 bg-surface-container-lowest p-8 shadow-sm">
       <div class="flex flex-col gap-8 md:flex-row md:items-start">
         <img
           src={photoUrl ?? '/images/default-avatar.svg'}
@@ -70,18 +75,72 @@ const location = [professional.city, professional.country?.name].filter(Boolean)
             <p class="text-sm font-medium text-on-surface-variant">{location}</p>
           )}
 
-          {professional.bio && (
-            <p class="text-base leading-relaxed text-on-surface-variant">{professional.bio}</p>
+          {professional.pricePerHour != null && (
+            <p class="text-sm font-semibold text-on-surface">Precio por hora: ${professional.pricePerHour} /hr.</p>
           )}
 
-          <a
-            href="#"
-            class="inline-flex items-center rounded-xl bg-primary px-6 py-3 text-sm font-bold text-on-primary transition-opacity hover:opacity-90"
-          >
-            Contactar
-          </a>
+          <ProfessionalActions
+            professional={{
+              id: professional.id,
+              name: professional.name,
+              whatsapp: professional.whatsapp,
+              publicId: professional.publicId,
+            }}
+          />
         </div>
       </div>
     </article>
+
+    {services.length > 0 && (
+      <section class="rounded-3xl border border-outline-variant/10 bg-surface-container-lowest p-8 shadow-sm">
+        <h2 class="mb-4 text-2xl font-bold text-on-surface">Servicios</h2>
+        <div class="flex flex-wrap gap-2">
+          {services.map((service: string) => (
+            <span class="rounded-full bg-primary-fixed px-4 py-2 text-sm font-semibold text-on-primary-fixed-variant">
+              {service}
+            </span>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {professionCategories.length > 0 && (
+      <section class="rounded-3xl border border-outline-variant/10 bg-surface-container-lowest p-8 shadow-sm">
+        <h2 class="mb-4 text-2xl font-bold text-on-surface">Especialidades</h2>
+        <div class="flex flex-wrap gap-2">
+          {professionCategories.map((category: { id: number; name: string }) => (
+            <span class="rounded-full bg-secondary-fixed px-4 py-2 text-sm font-semibold text-on-secondary-fixed-variant">
+              {category.name}
+            </span>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {professional.bio && (
+      <section class="rounded-3xl border border-outline-variant/10 bg-surface-container-lowest p-8 shadow-sm">
+        <h2 class="mb-4 text-2xl font-bold text-on-surface">Sobre mí</h2>
+        <p class="leading-relaxed text-on-surface-variant">{professional.bio}</p>
+      </section>
+    )}
+
+    {educations.length > 0 && (
+      <section class="rounded-3xl border border-outline-variant/10 bg-surface-container-lowest p-8 shadow-sm">
+        <h2 class="mb-4 text-2xl font-bold text-on-surface">Educación</h2>
+        <ul class="space-y-4">
+          {educations.map((education: { id?: string; level?: string; title?: string; institution?: string; year?: number }) => (
+            <li class="rounded-2xl border border-outline-variant/10 bg-surface-container-low px-4 py-3">
+              <p class="font-semibold text-on-surface">{education.title ?? 'Formación profesional'}</p>
+              <p class="text-sm text-on-surface-variant">
+                {[education.institution, education.level].filter(Boolean).join(' · ')}
+                {education.year ? ` · ${education.year}` : ''}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
   </section>
+
+  <ProfessionalContactModal professionalId={String(professional.id)} professionalName={professional.name} />
 </Layout>

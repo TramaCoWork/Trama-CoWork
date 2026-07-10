@@ -1,0 +1,196 @@
+---
+interface ProfessionalActionsData {
+  id: string | number;
+  name: string;
+  whatsapp?: string | null;
+  publicId?: number | null;
+}
+
+interface Props {
+  professional: ProfessionalActionsData;
+}
+
+const { professional } = Astro.props;
+
+function sanitizeWhatsappNumber(value: string): string {
+  return value.replace(/\D/g, '');
+}
+
+const whatsappNumber = professional.whatsapp ? sanitizeWhatsappNumber(professional.whatsapp) : '';
+const whatsappMessage = encodeURIComponent(`Hola ${professional.name}, te contacto desde TRAMA.`);
+const whatsappUrl = whatsappNumber ? `https://wa.me/${whatsappNumber}?text=${whatsappMessage}` : null;
+---
+
+<div class="flex flex-wrap gap-3 pt-4" data-professional-actions>
+  <button
+    type="button"
+    data-open-contact-modal
+    class="inline-flex items-center rounded-xl bg-gradient-to-br from-primary to-primary-container px-6 py-3 text-sm font-bold text-on-primary shadow-lg transition-all hover:opacity-90"
+  >
+    Contactar
+  </button>
+
+  {whatsappUrl && (
+    <a
+      href={whatsappUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="inline-flex items-center rounded-xl border border-outline-variant bg-surface-container-high px-6 py-3 text-sm font-bold text-on-surface transition-colors hover:bg-surface-variant/40"
+    >
+      WhatsApp
+    </a>
+  )}
+
+  <div class="relative" data-share-container>
+    <button
+      type="button"
+      data-share-button
+      class="inline-flex items-center rounded-xl border border-outline-variant bg-surface-container-high px-6 py-3 text-sm font-bold text-on-surface transition-colors hover:bg-surface-variant/40"
+      aria-haspopup="menu"
+      aria-expanded="false"
+    >
+      Compartir
+    </button>
+
+    <div
+      data-share-menu
+      class="absolute right-0 top-full z-[80] mt-2 hidden min-w-56 rounded-xl border border-outline-variant/20 bg-white p-1.5 shadow-2xl"
+      role="menu"
+      aria-label="Opciones para compartir perfil"
+    >
+      <button
+        type="button"
+        data-share-action="copy"
+        class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-on-surface transition-colors hover:bg-primary/10"
+        role="menuitem"
+      >
+        <span aria-hidden="true">📋</span>
+        <span data-copy-text>Copiar link</span>
+      </button>
+      <button
+        type="button"
+        data-share-action="linkedin"
+        class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-on-surface transition-colors hover:bg-primary/10"
+        role="menuitem"
+      >
+        <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#0A66C2] text-xs font-extrabold text-white" aria-hidden="true">in</span>
+        LinkedIn
+      </button>
+      <button
+        type="button"
+        data-share-action="facebook"
+        class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-on-surface transition-colors hover:bg-primary/10"
+        role="menuitem"
+      >
+        <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#1877F2] text-sm font-extrabold text-white" aria-hidden="true">f</span>
+        Facebook
+      </button>
+      <button
+        type="button"
+        data-share-action="whatsapp"
+        class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-on-surface transition-colors hover:bg-primary/10"
+        role="menuitem"
+      >
+        <span class="material-symbols-outlined text-xl text-[#25D366]" aria-hidden="true">chat</span>
+        WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const actionsRoot = document.querySelector('[data-professional-actions]') as HTMLDivElement | null;
+  const contactButton = actionsRoot?.querySelector('[data-open-contact-modal]') as HTMLButtonElement | null;
+  const shareContainer = actionsRoot?.querySelector('[data-share-container]') as HTMLDivElement | null;
+  const shareButton = actionsRoot?.querySelector('[data-share-button]') as HTMLButtonElement | null;
+  const shareMenu = actionsRoot?.querySelector('[data-share-menu]') as HTMLDivElement | null;
+  const copyText = actionsRoot?.querySelector('[data-copy-text]') as HTMLSpanElement | null;
+
+  let copyFeedbackTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  function openShareMenu() {
+    shareMenu?.classList.remove('hidden');
+    shareButton?.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeShareMenu() {
+    shareMenu?.classList.add('hidden');
+    shareButton?.setAttribute('aria-expanded', 'false');
+  }
+
+  function getShareUrl(action: 'linkedin' | 'facebook' | 'whatsapp'): string {
+    const pageUrl = window.location.href;
+
+    if (action === 'linkedin') {
+      return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`;
+    }
+
+    if (action === 'facebook') {
+      return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`;
+    }
+
+    return `https://wa.me/?text=${encodeURIComponent(`Te comparto este perfil profesional en Trama: ${pageUrl}`)}`;
+  }
+
+  async function copyProfileUrl() {
+    await navigator.clipboard.writeText(window.location.href);
+    if (!copyText) return;
+
+    copyText.textContent = '¡Copiado!';
+    if (copyFeedbackTimeout) {
+      clearTimeout(copyFeedbackTimeout);
+    }
+
+    copyFeedbackTimeout = setTimeout(() => {
+      copyText.textContent = 'Copiar link';
+      copyFeedbackTimeout = null;
+    }, 2000);
+  }
+
+  contactButton?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('open-professional-contact-modal'));
+  });
+
+  shareButton?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    if (shareMenu?.classList.contains('hidden')) {
+      openShareMenu();
+      return;
+    }
+
+    closeShareMenu();
+  });
+
+  shareMenu?.addEventListener('click', async (event) => {
+    const target = event.target as HTMLElement;
+    const actionButton = target.closest<HTMLButtonElement>('[data-share-action]');
+    const action = actionButton?.dataset.shareAction;
+
+    if (!actionButton || !action) {
+      return;
+    }
+
+    if (action === 'copy') {
+      await copyProfileUrl();
+      closeShareMenu();
+      return;
+    }
+
+    const shareUrl = getShareUrl(action as 'linkedin' | 'facebook' | 'whatsapp');
+    window.open(shareUrl, '_blank');
+    closeShareMenu();
+  });
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as Node;
+    if (!shareContainer?.contains(target)) {
+      closeShareMenu();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && shareMenu && !shareMenu.classList.contains('hidden')) {
+      closeShareMenu();
+    }
+  });
+</script>
