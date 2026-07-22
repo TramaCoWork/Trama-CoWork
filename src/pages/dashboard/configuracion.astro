@@ -74,7 +74,7 @@ import DashboardLayout from '../../layouts/DashboardLayout.astro';
         <div id="password-success" class="hidden mb-4 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm font-semibold text-success"></div>
         <div id="password-error" class="hidden mb-4 rounded-xl border border-error/30 bg-error/10 px-4 py-3 text-sm font-semibold text-error"></div>
 
-        <form id="password-form" class="space-y-4" novalidate>
+        <form id="password-form" method="post" class="space-y-4" novalidate>
           <div>
             <label for="currentPassword" class="mb-1.5 block text-sm font-semibold text-on-surface">Contraseña actual</label>
             <input
