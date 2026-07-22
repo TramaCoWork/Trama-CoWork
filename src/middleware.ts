@@ -1,3 +1,4 @@
+import type { APIContext, MiddlewareNext } from 'astro';
 import { defineMiddleware } from 'astro:middleware';
 
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
@@ -28,7 +29,7 @@ function hasAdminRole(token: string): boolean {
   return roles.some((r) => r.type === 'admin' || r.name === 'admin');
 }
 
-export const onRequest = defineMiddleware(async (context, next) => {
+async function resolve(context: APIContext, next: MiddlewareNext): Promise<Response> {
   const pathname = new URL(context.request.url).pathname;
 
   // Public routes — always pass through
@@ -120,4 +121,21 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   return next();
+}
+
+export const onRequest = defineMiddleware(async (context, next) => {
+  const response = await resolve(context, next);
+
+  // El HTML nunca debe cachearse en el navegador: si guarda una versión vieja,
+  // esta apunta a chunks JS con hash que ya no existen tras un deploy (404) y la
+  // página queda rota (por ej. el login sin su script). Con `no-cache` el navegador
+  // revalida y siempre recibe HTML apuntando a los assets actuales.
+  // Los assets con hash (/_astro/*) no son text/html, así que conservan su cache
+  // inmutable puesto por el adapter de Astro.
+  const contentType = response.headers.get('content-type') ?? '';
+  if (contentType.includes('text/html')) {
+    response.headers.set('Cache-Control', 'no-cache');
+  }
+
+  return response;
 });
