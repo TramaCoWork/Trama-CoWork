@@ -29,6 +29,8 @@
     fetchMyPosts,
     deletePost,
     updatePostStatus,
+    deleteChannelPost,
+    updateChannelPostStatus,
     type Channel,
     type Post,
   } from '../../services/communityService';
@@ -50,8 +52,15 @@
   let profileUserId: string | null = null;
   let hasLoadedMyPosts = false;
 
+  function isOwnPost(post: Post): boolean {
+    if (!profileUserId) return true; // "mis posts" ya devuelve solo los propios
+    const authorId = post.userId ?? post.user?.id;
+    return authorId ? String(authorId) === profileUserId : true;
+  }
+
   function renderMyPost(post: Post): string {
     const isChannelPost = post.type === 'channel';
+    const isOwner = isOwnPost(post);
     const commentCount = post.commentCount ?? 0;
     const isPaused = post.status === 'paused';
     const statusLabel = isPaused ? 'Pausado' : 'Publicado';
@@ -68,7 +77,7 @@
                 <span class="material-symbols-outlined text-xs" aria-hidden="true">${statusIcon}</span>
                 ${statusLabel}
               </span>`;
-    const headerActions = isChannelPost
+    const headerActions = !isOwner
       ? ''
       : `<div class="flex items-center gap-1 shrink-0">
             <button
@@ -237,7 +246,7 @@
         if (!postId) return;
 
         const post = allMyPosts.find((item) => item.id === postId);
-        if (post?.type === 'channel') {
+        if (!post || !isOwnPost(post)) {
           return;
         }
 
@@ -246,11 +255,12 @@
         (button as HTMLButtonElement).disabled = true;
 
         try {
-          await updatePostStatus(postId, newStatus);
-          const targetPost = allMyPosts.find((item) => item.id === postId);
-          if (targetPost) {
-            targetPost.status = newStatus;
+          if (post.type === 'channel') {
+            await updateChannelPostStatus(post.channelId || '', postId, newStatus);
+          } else {
+            await updatePostStatus(postId, newStatus);
           }
+          post.status = newStatus;
           renderFilteredMyPosts();
         } catch (err) {
           console.error('Error cambiando estado del post:', err);
@@ -266,7 +276,7 @@
         if (!postId) return;
 
         const post = allMyPosts.find((item) => item.id === postId);
-        if (post?.type === 'channel') {
+        if (!post || !isOwnPost(post)) {
           return;
         }
 
@@ -282,7 +292,11 @@
               variant: 'danger',
               onClick: async () => {
                 try {
-                  await deletePost(postId);
+                  if (post.type === 'channel') {
+                    await deleteChannelPost(post.channelId || '', postId);
+                  } else {
+                    await deletePost(postId);
+                  }
                   allMyPosts = allMyPosts.filter((item) => item.id !== postId);
                   renderFilteredMyPosts();
                 } catch (err) {

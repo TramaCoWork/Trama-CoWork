@@ -166,6 +166,23 @@ export async function updatePostStatus(postId: string, status: 'published' | 'pa
   return api.patch<Post>(`/community/posts/${postId}/status`, { status });
 }
 
+/** Eliminar un post de canal (solo autor) */
+export async function deleteChannelPost(channelId: string, postId: string): Promise<void> {
+  setAuthHeader();
+  await api.del<void>(`${CHANNELS_PATH}/${channelId}/posts/${postId}`);
+}
+
+/** Cambiar estado de un post de canal (published/paused, solo autor) */
+export async function updateChannelPostStatus(
+  channelId: string,
+  postId: string,
+  status: 'published' | 'paused',
+): Promise<Post> {
+  setAuthHeader();
+  const response = await api.patch<RawPost>(`${CHANNELS_PATH}/${channelId}/posts/${postId}/status`, { status });
+  return adaptPost(response);
+}
+
 /** Comentar en un post */
 export async function createComment(postId: string, content: string): Promise<Comment> {
   return api.post<Comment>('/community/comments', { postId, content });
