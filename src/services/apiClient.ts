@@ -78,7 +78,23 @@ export class ApiClient {
       throw err;
     }
 
-    return res.json() as Promise<T>;
+    return this.parseBody<T>(res);
+  }
+
+  /**
+   * Parsea el body de una respuesta exitosa tolerando cuerpos vacios.
+   * Un 204 o un 200 sin body (tipico de DELETE) devuelve undefined en vez
+   * de romper con "Unexpected end of JSON input".
+   */
+  private async parseBody<T>(res: Response): Promise<T> {
+    if (res.status === 204) {
+      return undefined as T;
+    }
+    try {
+      return (await res.json()) as T;
+    } catch {
+      return undefined as T;
+    }
   }
 
   async get<T>(path: string, query?: QueryParams): Promise<T> {
@@ -136,7 +152,7 @@ export class ApiClient {
       throw err;
     }
 
-    return res.json() as Promise<T>;
+    return this.parseBody<T>(res);
   }
 
   /** Build a full URL for binary downloads (caller uses window.open or <a>). */

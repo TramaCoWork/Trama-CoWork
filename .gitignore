@@ -43,3 +43,5 @@ vault/memory/.engine/.index-state.json
 .codegraph/
 
 .pnpm-store/
+.claude/
+.opencode/

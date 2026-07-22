@@ -170,4 +170,32 @@ describe('ApiClient', () => {
     expect(callArgs[1].method).toBe('DELETE');
     expect(callArgs[1].body).toBeUndefined();
   });
+
+  it('tolera respuesta 200 con body vacio (no rompe con JSON invalido)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: () => Promise.reject(new SyntaxError('Unexpected end of JSON input')),
+      }),
+    );
+
+    await expect(client.del('/notifications/preferences/mi-canal/channel')).resolves.toBeUndefined();
+  });
+
+  it('devuelve undefined en respuesta 204 sin intentar parsear', async () => {
+    const json = vi.fn(() => Promise.reject(new Error('no deberia llamarse')));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 204,
+        json,
+      }),
+    );
+
+    await expect(client.del('/item/1')).resolves.toBeUndefined();
+    expect(json).not.toHaveBeenCalled();
+  });
 });
