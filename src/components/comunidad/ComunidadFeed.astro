@@ -393,12 +393,18 @@
   });
 
   openNewPostModalButton.addEventListener('click', () => {
-    openEditorModal({
-      title: 'Crear publicación',
-      placeholder: '¿Qué querés compartir?',
-      maxlength: 5000,
-      context: 'post',
-    });
+    const type = currentChannelObj?.type === 'channel' ? 'channel' : 'community';
+    const params = new URLSearchParams({ type });
+    if (type === 'channel') {
+      params.set('channelId', currentChannel);
+    } else {
+      params.set('slug', currentChannel);
+    }
+    const name = currentChannelObj?.name || currentChannel;
+    if (name) {
+      params.set('name', name);
+    }
+    window.location.href = `/dashboard/comunidad/nuevo?${params.toString()}`;
   });
 
   document.addEventListener('comunidad:profile-loaded', (event) => {

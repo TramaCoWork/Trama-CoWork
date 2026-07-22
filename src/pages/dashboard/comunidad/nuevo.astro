@@ -1,0 +1,167 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import MdxEditorWrapper from '../../../components/MdxEditorWrapper';
+---
+
+<DashboardLayout title="Crear post">
+  <div class="space-y-5">
+    <div class="flex items-center justify-between gap-3">
+      <h1 class="text-2xl font-extrabold tracking-tight text-on-surface">Crear post</h1>
+      <a
+        href="/dashboard/comunidad"
+        class="inline-flex items-center gap-1 rounded-lg bg-surface-container-low px-3 py-2 text-xs font-bold uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface-container"
+      >
+        <span class="material-symbols-outlined text-sm" aria-hidden="true">arrow_back</span>
+        Volver
+      </a>
+    </div>
+
+    <div class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+      <p class="mb-4 flex items-center gap-1.5 text-sm text-on-surface-variant">
+        Publicando en
+        <span id="target-channel" class="inline-flex items-center gap-1 font-bold text-on-surface">
+          <span id="target-channel-icon" class="material-symbols-outlined text-base" aria-hidden="true">tag</span>
+          <span id="target-channel-name">general</span>
+        </span>
+      </p>
+
+      <div class="editor-page-mdx rounded-xl border border-outline-variant/20 bg-surface-container-lowest">
+        <MdxEditorWrapper client:load placeholder="¿Qué querés compartir?" maxlength={5000} />
+      </div>
+
+      <p id="post-error" class="mt-3 hidden text-sm font-medium text-error"></p>
+
+      <div class="mt-4 flex justify-end gap-3">
+        <a
+          href="/dashboard/comunidad"
+          class="rounded-xl bg-surface-container px-4 py-2.5 text-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container-high"
+        >
+          Cancelar
+        </a>
+        <button
+          id="publish-btn"
+          type="button"
+          class="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-on-primary transition-all hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Publicar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import {
+      createChannelPost,
+      createPost,
+      type Post,
+    } from '../../../services/communityService';
+    import { associateCommunityImages } from '../../../services/uploadService';
+    import { isAuthenticated, restoreSession } from '../../../services/authService';
+
+    type TargetType = 'community' | 'channel';
+
+    const MAX_LENGTH = 5000;
+
+    const targetIcon = document.getElementById('target-channel-icon') as HTMLSpanElement;
+    const targetName = document.getElementById('target-channel-name') as HTMLSpanElement;
+    const postError = document.getElementById('post-error') as HTMLParagraphElement;
+    const publishBtn = document.getElementById('publish-btn') as HTMLButtonElement;
+
+    let type: TargetType = 'community';
+    let slug = 'general';
+    let channelId = '';
+    let isSubmitting = false;
+
+    restoreSession();
+    if (!isAuthenticated()) {
+      window.location.href = '/login';
+    }
+
+    function parseParams(): boolean {
+      const params = new URLSearchParams(window.location.search);
+      type = params.get('type') === 'channel' ? 'channel' : 'community';
+      slug = params.get('slug')?.trim() || 'general';
+      channelId = params.get('channelId')?.trim() || '';
+      const name = params.get('name')?.trim() || (type === 'channel' ? '' : slug);
+
+      // Canal requiere el UUID del canal; sin él no se puede publicar.
+      if (type === 'channel' && !channelId) {
+        return false;
+      }
+
+      targetIcon.textContent = type === 'channel' ? 'hub' : 'tag';
+      targetName.textContent = name || 'canal';
+      return true;
+    }
+
+    function showError(message: string): void {
+      postError.textContent = message;
+      postError.classList.remove('hidden');
+    }
+
+    function hideError(): void {
+      postError.textContent = '';
+      postError.classList.add('hidden');
+    }
+
+    function getEditorContent(): Promise<{ markdown: string; imageIds: string[] }> {
+      return new Promise((resolve) => {
+        document.addEventListener(
+          'mdx-editor-content-response',
+          (event) => {
+            const detail = (event as CustomEvent<{ markdown?: string; imageIds?: string[] }>).detail || {};
+            resolve({
+              markdown: detail.markdown?.trim() || '',
+              imageIds: Array.isArray(detail.imageIds) ? detail.imageIds : [],
+            });
+          },
+          { once: true },
+        );
+        document.dispatchEvent(new CustomEvent('mdx-editor-get-content'));
+      });
+    }
+
+    publishBtn.addEventListener('click', async () => {
+      if (isSubmitting) return;
+      hideError();
+
+      const { markdown, imageIds } = await getEditorContent();
+      if (!markdown) {
+        showError('Escribí algo antes de publicar.');
+        return;
+      }
+      if (markdown.length > MAX_LENGTH) {
+        showError(`El contenido supera el máximo de ${MAX_LENGTH} caracteres.`);
+        return;
+      }
+
+      isSubmitting = true;
+      publishBtn.disabled = true;
+      publishBtn.textContent = 'Publicando...';
+
+      try {
+        const newPost: Post = type === 'channel'
+          ? await createChannelPost(channelId, markdown)
+          : await createPost(markdown, slug);
+
+        if (imageIds.length > 0) {
+          await associateCommunityImages(imageIds, newPost.id, 'POST');
+        }
+
+        window.location.href = '/dashboard/comunidad';
+      } catch (err) {
+        console.error('Error creando post:', err);
+        showError('No se pudo publicar. Intentá de nuevo.');
+        isSubmitting = false;
+        publishBtn.disabled = false;
+        publishBtn.textContent = 'Publicar';
+      }
+    });
+
+    if (!parseParams()) {
+      window.location.href = '/dashboard/comunidad';
+    }
+  </script>
+</DashboardLayout>
+
+<!-- Traceability: create-post page (replaces editor modal for post creation) -->

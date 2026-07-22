@@ -100,12 +100,14 @@
 
     return `
       <article
-        class="bg-surface-container-lowest rounded-xl border border-outline-variant/10 p-5 transition-all ${cardOpacity}"
+        class="bg-surface-container-lowest rounded-xl border border-outline-variant/10 p-5 transition-all cursor-pointer hover:border-outline-variant/25 ${cardOpacity}"
         data-post-id="${post.id}"
         data-post-type="${postType}"
         data-channel-type="${postType}"
         data-channel-slug="${escapeHtml(postChannelSlug)}"
         data-channel-id="${escapeHtml(postChannelId)}"
+        role="link"
+        tabindex="0"
       >
         <div class="flex items-start justify-between gap-3 mb-3">
           <div class="flex-1">
@@ -345,6 +347,49 @@
       });
     });
   }
+
+  function shouldIgnorePostNavigation(target: HTMLElement): boolean {
+    return Boolean(
+      target.closest(
+        '.btn-toggle-status, .btn-delete-mypost, .btn-open-comment-editor, .btn-open-comments, button, a, input, textarea, select, label',
+      ),
+    );
+  }
+
+  function navigateToPostReader(card: HTMLElement): void {
+    const postId = card.dataset.postId;
+    if (!postId) return;
+
+    const type = card.dataset.postType === 'channel' ? 'channel' : 'community';
+    const query = type === 'community'
+      ? `type=community&slug=${encodeURIComponent(card.dataset.channelSlug || '')}&postId=${encodeURIComponent(postId)}`
+      : `type=channel&channelId=${encodeURIComponent(card.dataset.channelId || '')}&postId=${encodeURIComponent(postId)}`;
+
+    window.location.href = `/dashboard/comunidad/post?${query}`;
+  }
+
+  mypostsContainer.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement;
+    if (shouldIgnorePostNavigation(target)) return;
+
+    const card = target.closest<HTMLElement>('article[data-post-id][data-post-type]');
+    if (!card) return;
+    navigateToPostReader(card);
+  });
+
+  mypostsContainer.addEventListener('keydown', (event) => {
+    const keyboardEvent = event as KeyboardEvent;
+    if (keyboardEvent.key !== 'Enter' && keyboardEvent.key !== ' ') return;
+
+    const target = keyboardEvent.target as HTMLElement;
+    if (shouldIgnorePostNavigation(target)) return;
+
+    const card = target.closest<HTMLElement>('article[data-post-id][data-post-type]');
+    if (!card) return;
+
+    keyboardEvent.preventDefault();
+    navigateToPostReader(card);
+  });
 
   mypostsChannelSelect.addEventListener('change', () => {
     myPostsChannelFilter = mypostsChannelSelect.value;
