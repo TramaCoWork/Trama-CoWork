@@ -8,6 +8,7 @@ import {
   type MDXEditorMethods,
   headingsPlugin,
   imagePlugin,
+  linkDialogPlugin,
   linkPlugin,
   listsPlugin,
   quotePlugin,
@@ -171,6 +172,7 @@ export default function MdxEditorWrapper({
         listsPlugin(),
         quotePlugin(),
         linkPlugin(),
+        linkDialogPlugin(),
         imagePlugin({ imageUploadHandler: handleUploadImage }),
         toolbarPlugin({
           toolbarContents: () => (
