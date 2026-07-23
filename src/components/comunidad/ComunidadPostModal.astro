@@ -9,9 +9,7 @@
     <div class="shrink-0 px-5 py-4 border-b border-outline-variant/15">
       <div class="flex items-start justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined text-primary text-base" aria-hidden="true">person</span>
-          </div>
+          <img id="modal-post-avatar" src="/images/default-avatar.svg" alt="" class="w-9 h-9 rounded-full object-cover bg-surface-container shrink-0" loading="lazy" onerror="this.onerror=null;this.src='/images/default-avatar.svg'" />
           <div class="min-w-0">
             <p id="modal-post-author" class="text-sm font-bold text-on-surface truncate"></p>
             <p id="modal-post-date" class="text-[10px] text-on-surface-variant"></p>
@@ -50,6 +48,7 @@
   } from '../../services/communityService';
   import { associateCommunityImages } from '../../services/uploadService';
   import { getUserIdFromToken } from '../../services/authService';
+  import { getProfilePhotoUrl } from '../../services/profileService';
   import { escapeHtml, formatDate } from '../../utils/helpers';
   import { renderMarkdown } from '../../utils/markdown';
 
@@ -66,6 +65,7 @@
   const modalBackdrop = document.getElementById('modal-backdrop')!;
   const modalCloseBtn = document.getElementById('modal-close-btn')!;
   const modalPostAuthor = document.getElementById('modal-post-author')!;
+  const modalPostAvatar = document.getElementById('modal-post-avatar') as HTMLImageElement;
   const modalPostDate = document.getElementById('modal-post-date')!;
   const modalPostContent = document.getElementById('modal-post-content')!;
   const modalCommentsList = document.getElementById('modal-comments-list')!;
@@ -93,9 +93,7 @@
     const commenterName = comment.user?.profile?.name || comment.user?.email || 'Usuario';
     return `
       <div class="flex items-start gap-2 bg-surface-container-low rounded-lg p-3" data-comment-id="${comment.id}">
-        <div class="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
-          <span class="material-symbols-outlined text-secondary text-xs" aria-hidden="true">person</span>
-        </div>
+        <img src="${escapeHtml(getProfilePhotoUrl(comment.user?.photoUrl, comment.user?.id || ''))}" alt="" class="w-6 h-6 rounded-full object-cover bg-surface-container shrink-0" loading="lazy" onerror="this.onerror=null;this.src='/images/default-avatar.svg'" />
         <div class="flex-1">
           <div class="flex items-center gap-2">
             <span class="text-xs font-bold text-on-surface">${escapeHtml(commenterName)}</span>
@@ -193,11 +191,13 @@
         : await fetchCommunityPost(modalPostId);
       const authorName = post.user?.profile?.name || post.user?.email || 'Usuario';
       modalPostAuthor.textContent = authorName;
+      modalPostAvatar.src = getProfilePhotoUrl(post.user?.photoUrl, post.user?.id || '');
       modalPostDate.textContent = formatDate(post.createdAt);
       modalPostContent.innerHTML = post.content ? renderMarkdown(post.content) : '';
     } catch (err) {
       console.error('Error cargando detalle del post:', err);
       modalPostAuthor.textContent = 'Usuario';
+      modalPostAvatar.src = '/images/default-avatar.svg';
       modalPostDate.textContent = '';
       modalPostContent.innerHTML = '<p class="text-xs text-error">No se pudo cargar el contenido del post.</p>';
     }

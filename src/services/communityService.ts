@@ -30,6 +30,8 @@ export interface PostUser {
   id: string;
   email: string;
   profile?: { name: string };
+  /** Ruta parcial de la foto (`/uploads/photo/{id}`) o null si no tiene. */
+  photoUrl?: string | null;
 }
 
 export interface Comment {
@@ -79,6 +81,7 @@ interface FlatUserData {
   userId?: string;
   email?: string | null;
   nombre?: string | null;
+  photoUrl?: string | null;
   user?: PostUser;
 }
 
@@ -105,6 +108,7 @@ function mapPostUser(raw: FlatUserData): PostUser {
     profile: {
       name: raw.nombre || '',
     },
+    photoUrl: raw.photoUrl ?? null,
   };
 }
 
