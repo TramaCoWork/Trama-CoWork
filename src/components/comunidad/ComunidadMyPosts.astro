@@ -80,6 +80,9 @@
     const headerActions = !isOwner
       ? ''
       : `<div class="flex items-center gap-1 shrink-0">
+            <button class="btn-edit-mypost text-on-surface-variant hover:text-primary text-xs transition-colors p-1.5" data-post-id="${post.id}" title="Editar post">
+              <span class="material-symbols-outlined text-base" aria-hidden="true">edit</span>
+            </button>
             <button
               class="btn-toggle-status px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${isPaused ? 'text-primary hover:bg-primary/10' : 'text-outline hover:bg-outline/10'}"
               data-post-id="${post.id}"
@@ -240,6 +243,24 @@
   }
 
   function bindMyPostActions() {
+    mypostsContainer.querySelectorAll('.btn-edit-mypost').forEach(button => {
+      if ((button as HTMLElement).dataset.bound) return;
+      (button as HTMLElement).dataset.bound = 'true';
+      button.addEventListener('click', () => {
+        const postId = (button as HTMLElement).dataset.postId;
+        if (!postId) return;
+
+        const post = allMyPosts.find((item) => item.id === postId);
+        if (!post || !isOwnPost(post)) return;
+
+        const type = post.type === 'channel' ? 'channel' : 'community';
+        const query = type === 'community'
+          ? `type=community&slug=${encodeURIComponent(post.channelSlug || '')}&postId=${encodeURIComponent(postId)}`
+          : `type=channel&channelId=${encodeURIComponent(post.channelId || '')}&postId=${encodeURIComponent(postId)}`;
+        window.location.href = `/dashboard/comunidad/editar?${query}`;
+      });
+    });
+
     mypostsContainer.querySelectorAll('.btn-toggle-status').forEach(button => {
       if ((button as HTMLElement).dataset.bound) return;
       (button as HTMLElement).dataset.bound = 'true';
@@ -351,7 +372,7 @@
   function shouldIgnorePostNavigation(target: HTMLElement): boolean {
     return Boolean(
       target.closest(
-        '.btn-toggle-status, .btn-delete-mypost, .btn-open-comment-editor, .btn-open-comments, button, a, input, textarea, select, label',
+        '.btn-edit-mypost, .btn-toggle-status, .btn-delete-mypost, .btn-open-comment-editor, .btn-open-comments, button, a, input, textarea, select, label',
       ),
     );
   }

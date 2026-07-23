@@ -1,0 +1,211 @@
+---
+import DashboardLayout from '../../../layouts/DashboardLayout.astro';
+import MdxEditorWrapper from '../../../components/MdxEditorWrapper';
+---
+
+<DashboardLayout title="Editar post">
+  <div class="space-y-5">
+    <div class="flex items-center justify-between gap-3">
+      <h1 class="text-2xl font-extrabold tracking-tight text-on-surface">Editar post</h1>
+      <a
+        href="/dashboard/comunidad"
+        class="inline-flex items-center gap-1 rounded-lg bg-surface-container-low px-3 py-2 text-xs font-bold uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface-container"
+      >
+        <span class="material-symbols-outlined text-sm" aria-hidden="true">arrow_back</span>
+        Volver
+      </a>
+    </div>
+
+    <div class="rounded-2xl border border-outline-variant/15 bg-surface-container-low p-5">
+      <div id="edit-loading" class="flex items-center justify-center py-10">
+        <span class="material-symbols-outlined text-2xl text-primary animate-spin" aria-hidden="true">schedule</span>
+      </div>
+
+      <div id="edit-form" class="hidden">
+        <div class="editor-page-mdx rounded-xl border border-outline-variant/20 bg-surface-container-lowest">
+          <MdxEditorWrapper client:load placeholder="Editá tu publicación..." maxlength={5000} />
+        </div>
+
+        <p id="post-error" class="mt-3 hidden text-sm font-medium text-error"></p>
+
+        <div class="mt-4 flex justify-end gap-3">
+          <a
+            href="/dashboard/comunidad"
+            class="rounded-xl bg-surface-container px-4 py-2.5 text-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container-high"
+          >
+            Cancelar
+          </a>
+          <button
+            id="save-btn"
+            type="button"
+            class="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-on-primary transition-all hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Guardar cambios
+          </button>
+        </div>
+      </div>
+
+      <div id="edit-not-found" class="hidden rounded-xl border border-outline-variant/15 bg-surface-container-lowest p-5 text-sm text-on-surface-variant">
+        <p class="font-semibold text-on-surface">No se pudo cargar el post</p>
+        <a href="/dashboard/comunidad" class="mt-2 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-primary hover:opacity-80">
+          <span class="material-symbols-outlined text-sm" aria-hidden="true">arrow_back</span>
+          Volver a comunidad
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import {
+      fetchChannelPost,
+      fetchCommunityPost,
+      updateChannelPost,
+      updatePost,
+      type Post,
+    } from '../../../services/communityService';
+    import { associateCommunityImages } from '../../../services/uploadService';
+    import { isAuthenticated, restoreSession } from '../../../services/authService';
+
+    type TargetType = 'community' | 'channel';
+
+    const MAX_LENGTH = 5000;
+
+    const editLoading = document.getElementById('edit-loading') as HTMLDivElement;
+    const editForm = document.getElementById('edit-form') as HTMLDivElement;
+    const editNotFound = document.getElementById('edit-not-found') as HTMLDivElement;
+    const postError = document.getElementById('post-error') as HTMLParagraphElement;
+    const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
+
+    let type: TargetType = 'community';
+    let slug = '';
+    let channelId = '';
+    let postId = '';
+    let isSubmitting = false;
+
+    restoreSession();
+    if (!isAuthenticated()) {
+      window.location.href = '/login';
+    }
+
+    function parseParams(): boolean {
+      const params = new URLSearchParams(window.location.search);
+      type = params.get('type') === 'channel' ? 'channel' : 'community';
+      postId = params.get('postId')?.trim() || '';
+      slug = params.get('slug')?.trim() || '';
+      channelId = params.get('channelId')?.trim() || '';
+
+      if (!postId) return false;
+      if (type === 'community' && !slug) return false;
+      if (type === 'channel' && !channelId) return false;
+      return true;
+    }
+
+    function showError(message: string): void {
+      postError.textContent = message;
+      postError.classList.remove('hidden');
+    }
+
+    function hideError(): void {
+      postError.textContent = '';
+      postError.classList.add('hidden');
+    }
+
+    function showNotFound(): void {
+      editLoading.classList.add('hidden');
+      editForm.classList.add('hidden');
+      editNotFound.classList.remove('hidden');
+    }
+
+    function getEditorContent(): Promise<{ markdown: string; imageIds: string[] }> {
+      return new Promise((resolve) => {
+        document.addEventListener(
+          'mdx-editor-content-response',
+          (event) => {
+            const detail = (event as CustomEvent<{ markdown?: string; imageIds?: string[] }>).detail || {};
+            resolve({
+              markdown: detail.markdown?.trim() || '',
+              imageIds: Array.isArray(detail.imageIds) ? detail.imageIds : [],
+            });
+          },
+          { once: true },
+        );
+        document.dispatchEvent(new CustomEvent('mdx-editor-get-content'));
+      });
+    }
+
+    async function loadPost(): Promise<void> {
+      try {
+        const post: Post = type === 'channel'
+          ? await fetchChannelPost(channelId, postId)
+          : await fetchCommunityPost(postId);
+
+        editLoading.classList.add('hidden');
+        editForm.classList.remove('hidden');
+
+        // Precargar el contenido en el editor (ya montado por client:load).
+        document.dispatchEvent(
+          new CustomEvent('mdx-editor-set-content', {
+            detail: { markdown: post.content || '' },
+          }),
+        );
+      } catch (err) {
+        console.error('Error cargando el post a editar:', err);
+        showNotFound();
+      }
+    }
+
+    saveBtn.addEventListener('click', async () => {
+      if (isSubmitting) return;
+      hideError();
+
+      const { markdown, imageIds } = await getEditorContent();
+      if (!markdown) {
+        showError('El post no puede quedar vacío.');
+        return;
+      }
+      if (markdown.length > MAX_LENGTH) {
+        showError(`El contenido supera el máximo de ${MAX_LENGTH} caracteres.`);
+        return;
+      }
+
+      isSubmitting = true;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Guardando...';
+
+      try {
+        if (type === 'channel') {
+          await updateChannelPost(channelId, postId, markdown);
+        } else {
+          await updatePost(postId, markdown);
+        }
+
+        if (imageIds.length > 0) {
+          await associateCommunityImages(imageIds, postId, 'POST');
+        }
+
+        const query = type === 'community'
+          ? `type=community&slug=${encodeURIComponent(slug)}&postId=${encodeURIComponent(postId)}`
+          : `type=channel&channelId=${encodeURIComponent(channelId)}&postId=${encodeURIComponent(postId)}`;
+        window.location.href = `/dashboard/comunidad/post?${query}`;
+      } catch (err) {
+        const apiError = err as Error & { status?: number };
+        if (apiError.status === 403) {
+          showError('No tenés permiso para editar este post.');
+        } else {
+          showError('No se pudo guardar. Intentá de nuevo.');
+        }
+        isSubmitting = false;
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Guardar cambios';
+      }
+    });
+
+    if (!parseParams()) {
+      window.location.href = '/dashboard/comunidad';
+    } else {
+      void loadPost();
+    }
+  </script>
+</DashboardLayout>
+
+<!-- Traceability: edit-post page (owner or admin) -->

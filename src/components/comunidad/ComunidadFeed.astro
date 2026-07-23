@@ -44,7 +44,6 @@
     fetchChannelPosts,
     createPost,
     createChannelPost,
-    deletePost,
     type Channel,
     type Post,
   } from '../../services/communityService';
@@ -99,8 +98,8 @@
             </div>
           </div>
           ${isOwner ? `
-            <button class="btn-delete-post text-on-surface-variant hover:text-error text-xs transition-colors p-1" data-post-id="${post.id}" title="Eliminar post">
-              <span class="material-symbols-outlined text-base" aria-hidden="true">delete</span>
+            <button class="btn-edit-post text-on-surface-variant hover:text-primary text-xs transition-colors p-1" data-post-id="${post.id}" title="Editar post">
+              <span class="material-symbols-outlined text-base" aria-hidden="true">edit</span>
             </button>` : ''}
         </div>
         <div class="markdown-content text-sm text-on-surface leading-relaxed pl-11">${renderMarkdown(post.content)}</div>
@@ -249,11 +248,11 @@
   }
 
   function shouldIgnorePostNavigation(target: HTMLElement): boolean {
-    return Boolean(target.closest('.btn-delete-post, .btn-open-comment-editor, .btn-open-comments, button, a, input, textarea, select, label'));
+    return Boolean(target.closest('.btn-edit-post, .btn-open-comment-editor, .btn-open-comments, button, a, input, textarea, select, label'));
   }
 
   function bindPostActions() {
-    postsContainer.querySelectorAll('.btn-delete-post').forEach(button => {
+    postsContainer.querySelectorAll('.btn-edit-post').forEach(button => {
       if ((button as HTMLElement).dataset.bound) return;
       (button as HTMLElement).dataset.bound = 'true';
       button.addEventListener('click', () => {
@@ -263,32 +262,11 @@
         }
 
         const postType = findPostData(postId)?.type || (button as HTMLElement).closest('article')?.dataset.postType || 'community';
-        if (postType === 'channel') {
-          return;
-        }
-
-        (window as any).openConfirmModal({
-          title: '¿Eliminar este post?',
-          message: 'Esta acción no se puede deshacer.',
-          iconBgClass: 'bg-red-50',
-          iconHtml: '<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
-          buttons: [
-            {
-              text: 'Eliminar',
-              icon: '<svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
-              variant: 'danger',
-              onClick: async () => {
-                try {
-                  await deletePost(postId);
-                  await loadPosts();
-                } catch (err) {
-                  console.error('Error eliminando post:', err);
-                }
-              },
-            },
-            { text: 'Cancelar', variant: 'ghost' },
-          ],
-        });
+        const type = postType === 'channel' ? 'channel' : 'community';
+        const query = type === 'community'
+          ? `type=community&slug=${encodeURIComponent(currentChannel)}&postId=${encodeURIComponent(postId)}`
+          : `type=channel&channelId=${encodeURIComponent(currentChannel)}&postId=${encodeURIComponent(postId)}`;
+        window.location.href = `/dashboard/comunidad/editar?${query}`;
       });
     });
 

@@ -183,6 +183,18 @@ export async function updateChannelPostStatus(
   return adaptPost(response);
 }
 
+/** Editar el contenido de un post de comunidad (solo autor) */
+export async function updatePost(postId: string, content: string): Promise<Post> {
+  return api.patch<Post>(`/community/posts/${postId}`, { content });
+}
+
+/** Editar el contenido de un post de canal (solo autor) */
+export async function updateChannelPost(channelId: string, postId: string, content: string): Promise<Post> {
+  setAuthHeader();
+  const response = await api.patch<RawPost>(`${CHANNELS_PATH}/${channelId}/posts/${postId}`, { content });
+  return adaptPost(response);
+}
+
 /** Comentar en un post */
 export async function createComment(postId: string, content: string): Promise<Comment> {
   return api.post<Comment>('/community/comments', { postId, content });
