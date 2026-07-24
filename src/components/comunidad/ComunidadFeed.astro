@@ -103,10 +103,6 @@
         </div>
         <div class="markdown-content text-sm text-on-surface leading-relaxed pl-11">${renderMarkdown(post.content)}</div>
         <div class="pl-11 mt-3 flex items-center gap-4">
-          <button class="btn-open-comment-editor text-xs text-on-surface-variant hover:text-primary font-semibold flex items-center gap-1 transition-colors" data-post-id="${post.id}">
-            <span class="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
-            Comentar
-          </button>
           <button class="btn-open-comments text-xs text-on-surface-variant hover:text-primary font-semibold flex items-center gap-1 transition-colors" data-post-id="${post.id}">
             <span class="material-symbols-outlined text-sm" aria-hidden="true">comment</span>
             <span class="comment-count-label">${commentCount} ${commentCount === 1 ? 'comentario' : 'comentarios'}</span>
@@ -238,16 +234,18 @@
     await loadPosts();
   }
 
-  function navigateToPostReader(postId: string, type: Channel['type']) {
-    const query = type === 'community'
-      ? `type=community&slug=${encodeURIComponent(currentChannel)}&postId=${encodeURIComponent(postId)}`
-      : `type=channel&channelId=${encodeURIComponent(currentChannel)}&postId=${encodeURIComponent(postId)}`;
-
-    window.location.href = `/dashboard/comunidad/post?${query}`;
+  function openPostComments(postId: string) {
+    const post = findPostData(postId);
+    const channelType = post?.type === 'channel' ? 'channel' : 'community';
+    const channelSlug = post?.channelSlug || (channelType === 'community' ? currentChannel : '');
+    const channelId = post?.channelId || (channelType === 'channel' ? currentChannel : '');
+    document.dispatchEvent(new CustomEvent('comunidad:modal-open-post', {
+      detail: { postId, channelType, channelSlug, channelId },
+    }));
   }
 
   function shouldIgnorePostNavigation(target: HTMLElement): boolean {
-    return Boolean(target.closest('.btn-edit-post, .btn-open-comment-editor, .btn-open-comments, button, a, input, textarea, select, label'));
+    return Boolean(target.closest('.btn-edit-post, .btn-open-comments, button, a, input, textarea, select, label'));
   }
 
   function bindPostActions() {
@@ -269,24 +267,6 @@
       });
     });
 
-    postsContainer.querySelectorAll('.btn-open-comment-editor').forEach(button => {
-      if ((button as HTMLElement).dataset.bound) return;
-      (button as HTMLElement).dataset.bound = 'true';
-      button.addEventListener('click', () => {
-        const postId = (button as HTMLElement).dataset.postId;
-        if (!postId) {
-          return;
-        }
-
-        openEditorModal({
-          title: 'Comentar publicación',
-          placeholder: 'Escribí tu comentario...',
-          maxlength: 500,
-          context: `comment-${postId}`,
-        });
-      });
-    });
-
     postsContainer.querySelectorAll('.btn-open-comments').forEach(button => {
       if ((button as HTMLElement).dataset.bound) return;
       (button as HTMLElement).dataset.bound = 'true';
@@ -295,14 +275,7 @@
         if (!postId) {
           return;
         }
-
-        const post = findPostData(postId);
-        const channelType = post?.type === 'channel' ? 'channel' : 'community';
-        const channelSlug = post?.channelSlug || (channelType === 'community' ? currentChannel : '');
-        const channelId = post?.channelId || (channelType === 'channel' ? currentChannel : '');
-        document.dispatchEvent(new CustomEvent('comunidad:modal-open-post', {
-          detail: { postId, channelType, channelSlug, channelId },
-        }));
+        openPostComments(postId);
       });
     });
   }
@@ -322,8 +295,7 @@
       return;
     }
 
-    const type = card.dataset.postType === 'channel' ? 'channel' : 'community';
-    navigateToPostReader(card.dataset.postId, type);
+    openPostComments(card.dataset.postId);
   });
 
   postsContainer.addEventListener('keydown', (event) => {
@@ -343,8 +315,7 @@
     }
 
     keyboardEvent.preventDefault();
-    const type = card.dataset.postType === 'channel' ? 'channel' : 'community';
-    navigateToPostReader(card.dataset.postId, type);
+    openPostComments(card.dataset.postId);
   });
 
   document.addEventListener('editor-modal-submit', async event => {

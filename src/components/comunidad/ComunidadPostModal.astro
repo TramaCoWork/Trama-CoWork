@@ -3,10 +3,11 @@
 ---
 
 <!-- Comments Modal -->
-<div id="comments-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modal-post-author">
+<div id="comments-modal" class="fixed inset-0 z-50 flex items-end justify-center opacity-0 pointer-events-none transition-opacity duration-300" role="dialog" aria-modal="true" aria-labelledby="modal-post-author">
   <div id="modal-backdrop" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-  <div class="relative w-full max-w-lg max-h-[85vh] bg-surface-container rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-outline-variant/15">
-    <div class="shrink-0 px-5 py-4 border-b border-outline-variant/15">
+  <div id="comments-sheet" class="relative w-full max-w-lg max-h-[88vh] bg-surface-container rounded-t-2xl shadow-2xl flex flex-col overflow-hidden border border-outline-variant/15 translate-y-full transition-transform duration-300 ease-out">
+    <div class="shrink-0 px-5 pt-2.5 pb-4 border-b border-outline-variant/15">
+      <div class="mx-auto mb-3 h-1.5 w-10 rounded-full bg-outline-variant/40"></div>
       <div class="flex items-start justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
           <img id="modal-post-avatar" src="/images/default-avatar.svg" alt="" class="w-9 h-9 rounded-full object-cover bg-surface-container shrink-0" loading="lazy" onerror="this.onerror=null;this.src='/images/default-avatar.svg'" />
@@ -23,12 +24,27 @@
     </div>
     <div id="modal-comments-wrapper" class="flex-1 overflow-y-auto px-5 py-3 space-y-2 min-h-0">
       <div id="modal-comments-list" class="space-y-2"></div>
-      <div id="modal-load-more-wrapper" class="hidden text-center py-2">
-        <button id="modal-load-more-btn" class="text-xs text-primary hover:text-primary/80 font-semibold transition-colors">
-          Cargar más comentarios...
-        </button>
+      <div id="modal-comments-loader" class="hidden text-center py-3">
+        <span class="material-symbols-outlined text-xl text-primary animate-spin" aria-hidden="true">schedule</span>
       </div>
     </div>
+    <form id="modal-comment-form" class="shrink-0 flex items-center gap-2 border-t border-outline-variant/15 px-4 py-3 bg-surface-container">
+      <input
+        id="modal-comment-input"
+        type="text"
+        autocomplete="off"
+        placeholder="Escribí un comentario…"
+        class="flex-1 rounded-full border border-outline-variant/20 bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/70 focus:border-primary focus:outline-none"
+      />
+      <button
+        id="modal-comment-send"
+        type="submit"
+        class="shrink-0 w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center transition-all hover:brightness-110 active:scale-95 disabled:opacity-50"
+        aria-label="Enviar comentario"
+      >
+        <span class="material-symbols-outlined text-lg" aria-hidden="true">send</span>
+      </button>
+    </form>
   </div>
 </div>
 
@@ -46,7 +62,6 @@
     type Channel,
     type Comment,
   } from '../../services/communityService';
-  import { associateCommunityImages } from '../../services/uploadService';
   import { getUserIdFromToken } from '../../services/authService';
   import { getProfilePhotoUrl } from '../../services/profileService';
   import { escapeHtml, formatDate } from '../../utils/helpers';
@@ -62,6 +77,7 @@
   const userId = getUserIdFromToken();
 
   const commentsModal = document.getElementById('comments-modal')!;
+  const commentsSheet = document.getElementById('comments-sheet')!;
   const modalBackdrop = document.getElementById('modal-backdrop')!;
   const modalCloseBtn = document.getElementById('modal-close-btn')!;
   const modalPostAuthor = document.getElementById('modal-post-author')!;
@@ -69,9 +85,11 @@
   const modalPostDate = document.getElementById('modal-post-date')!;
   const modalPostContent = document.getElementById('modal-post-content')!;
   const modalCommentsList = document.getElementById('modal-comments-list')!;
-  const modalLoadMoreWrapper = document.getElementById('modal-load-more-wrapper')!;
-  const modalLoadMoreBtn = document.getElementById('modal-load-more-btn') as HTMLButtonElement;
+  const modalCommentsLoader = document.getElementById('modal-comments-loader')!;
   const modalCommentsWrapper = document.getElementById('modal-comments-wrapper')!;
+  const modalCommentForm = document.getElementById('modal-comment-form') as HTMLFormElement;
+  const modalCommentInput = document.getElementById('modal-comment-input') as HTMLInputElement;
+  const modalCommentSend = document.getElementById('modal-comment-send') as HTMLButtonElement;
 
   let modalPostId: string | null = null;
   let modalChannelType: Channel['type'] = 'community';
@@ -80,14 +98,7 @@
   let modalCurrentPage = 1;
   let modalTotalPages = 1;
   let isSubmittingComment = false;
-
-  function resolvePostChannelMeta(postId: string): { type: Channel['type']; slug: string; id: string } {
-    const article = document.querySelector<HTMLElement>(`article[data-post-id="${postId}"]`);
-    const type = article?.dataset.channelType === 'channel' ? 'channel' : 'community';
-    const slug = article?.dataset.channelSlug || '';
-    const id = article?.dataset.channelId || '';
-    return { type, slug, id };
-  }
+  let isLoadingComments = false;
 
   function renderCommentHtml(comment: Comment): string {
     const commenterName = comment.user?.profile?.name || comment.user?.email || 'Usuario';
@@ -140,7 +151,12 @@
   }
 
   async function loadModalComments(page: number) {
-    if (!modalPostId) return;
+    if (!modalPostId || isLoadingComments) return;
+
+    isLoadingComments = true;
+    if (page > 1) {
+      modalCommentsLoader.classList.remove('hidden');
+    }
 
     try {
       const result = modalChannelType === 'channel'
@@ -156,13 +172,14 @@
       } else {
         appendComments(comments);
       }
-
-      modalLoadMoreWrapper.classList.toggle('hidden', !(meta.page < meta.totalPages));
     } catch (err) {
       console.error('Error cargando comentarios:', err);
       if (page === 1) {
         modalCommentsList.innerHTML = '<p class="text-xs text-error text-center py-4">Error al cargar comentarios.</p>';
       }
+    } finally {
+      isLoadingComments = false;
+      modalCommentsLoader.classList.add('hidden');
     }
   }
 
@@ -180,9 +197,12 @@
       <div class="flex items-center justify-center py-6">
         <span class="material-symbols-outlined text-2xl text-primary animate-spin" aria-hidden="true">schedule</span>
       </div>`;
-    modalLoadMoreWrapper.classList.add('hidden');
+    modalCommentsLoader.classList.add('hidden');
+    modalCommentInput.value = '';
+    modalCommentsWrapper.scrollTop = 0;
 
-    commentsModal.classList.remove('hidden');
+    commentsModal.classList.remove('opacity-0', 'pointer-events-none');
+    commentsSheet.classList.remove('translate-y-full');
     document.body.style.overflow = 'hidden';
 
     try {
@@ -206,7 +226,8 @@
   }
 
   function closeCommentsModal() {
-    commentsModal.classList.add('hidden');
+    commentsModal.classList.add('opacity-0', 'pointer-events-none');
+    commentsSheet.classList.add('translate-y-full');
     document.body.style.overflow = '';
     modalPostId = null;
     modalChannelSlug = '';
@@ -262,30 +283,21 @@
     });
   }
 
-  async function handleCommentSubmit(content: string, imageIds: string[], context: string) {
-    if (!context.startsWith('comment-')) {
-      return;
-    }
+  async function submitComment() {
+    if (!modalPostId || isSubmittingComment) return;
 
-    const postId = context.slice('comment-'.length);
-    if (!postId) {
-      return;
-    }
+    const content = modalCommentInput.value.trim();
+    if (!content) return;
 
-    const sourceMeta = resolvePostChannelMeta(postId);
-    const isModalTarget = modalPostId === postId;
-    const channelType = isModalTarget ? modalChannelType : sourceMeta.type;
-    const channelId = isModalTarget ? (modalChannelId || modalChannelSlug) : (sourceMeta.id || sourceMeta.slug);
+    isSubmittingComment = true;
+    modalCommentSend.disabled = true;
 
-    const newComment = channelType === 'channel' && channelId
-      ? await createChannelComment(channelId, postId, content)
-      : await createComment(postId, content);
+    try {
+      const channelId = modalChannelId || modalChannelSlug;
+      const newComment = modalChannelType === 'channel' && channelId
+        ? await createChannelComment(channelId, modalPostId, content)
+        : await createComment(modalPostId, content);
 
-    if (imageIds.length > 0) {
-      await associateCommunityImages(imageIds, newComment.id, 'COMMENT');
-    }
-
-    if (isModalTarget) {
       const emptyMsg = modalCommentsList.querySelector('p.italic');
       if (emptyMsg) {
         emptyMsg.remove();
@@ -294,9 +306,15 @@
       modalCommentsList.insertAdjacentHTML('afterbegin', renderCommentHtml(newComment));
       bindModalDeleteButtons();
       modalCommentsWrapper.scrollTop = 0;
+      updateCommentCountLabel(modalPostId, 1);
+      modalCommentInput.value = '';
+    } catch (err) {
+      console.error('Error creando comentario:', err);
+    } finally {
+      isSubmittingComment = false;
+      modalCommentSend.disabled = false;
+      modalCommentInput.focus();
     }
-
-    updateCommentCountLabel(postId, 1);
   }
 
   document.addEventListener('comunidad:modal-open-post', async event => {
@@ -306,37 +324,23 @@
 
   modalCloseBtn.addEventListener('click', closeCommentsModal);
   modalBackdrop.addEventListener('click', closeCommentsModal);
-  modalLoadMoreBtn.addEventListener('click', async () => {
-    if (modalCurrentPage < modalTotalPages) {
-      await loadModalComments(modalCurrentPage + 1);
+
+  modalCommentsWrapper.addEventListener('scroll', () => {
+    if (isLoadingComments || modalCurrentPage >= modalTotalPages) return;
+    const { scrollTop, clientHeight, scrollHeight } = modalCommentsWrapper;
+    if (scrollTop + clientHeight >= scrollHeight - 80) {
+      void loadModalComments(modalCurrentPage + 1);
     }
+  });
+
+  modalCommentForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    void submitComment();
   });
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && modalPostId) {
       closeCommentsModal();
-    }
-  });
-
-  document.addEventListener('editor-modal-submit', async event => {
-    if (isSubmittingComment) return;
-
-    const customEvent = event as CustomEvent<{ content?: string; imageIds?: string[]; context?: string }>;
-    const content = customEvent.detail?.content?.trim() || '';
-    const imageIds = Array.isArray(customEvent.detail?.imageIds) ? customEvent.detail.imageIds : [];
-    const context = customEvent.detail?.context || '';
-
-    if (!content || !context.startsWith('comment-')) {
-      return;
-    }
-
-    isSubmittingComment = true;
-    try {
-      await handleCommentSubmit(content, imageIds, context);
-    } catch (err) {
-      console.error('Error procesando comentario desde editor modal:', err);
-    } finally {
-      isSubmittingComment = false;
     }
   });
 </script>

@@ -125,10 +125,6 @@
         </div>
         <div class="border-t border-outline-variant/10 pt-3 mt-3">
           <div class="flex items-center gap-4">
-            <button class="btn-open-comment-editor text-xs text-on-surface-variant hover:text-primary font-semibold flex items-center gap-1 transition-colors" data-post-id="${post.id}">
-              <span class="material-symbols-outlined text-sm" aria-hidden="true">edit</span>
-              Comentar
-            </button>
             <button class="btn-open-comments text-xs text-on-surface-variant hover:text-primary font-semibold flex items-center gap-1 transition-colors" data-post-id="${post.id}">
               <span class="material-symbols-outlined text-sm" aria-hidden="true">comment</span>
               <span class="comment-count-label">${commentCount} ${commentCount === 1 ? 'comentario recibido' : 'comentarios recibidos'}</span>
@@ -333,24 +329,6 @@
       });
     });
 
-    mypostsContainer.querySelectorAll('.btn-open-comment-editor').forEach(button => {
-      if ((button as HTMLElement).dataset.bound) return;
-      (button as HTMLElement).dataset.bound = 'true';
-      button.addEventListener('click', () => {
-        const postId = (button as HTMLElement).dataset.postId;
-        if (!postId) return;
-
-        document.dispatchEvent(new CustomEvent('open-editor-modal', {
-          detail: {
-            title: 'Comentar publicación',
-            placeholder: 'Escribí tu comentario...',
-            maxlength: 500,
-            context: `comment-${postId}`,
-          },
-        }));
-      });
-    });
-
     mypostsContainer.querySelectorAll('.btn-open-comments').forEach(button => {
       if ((button as HTMLElement).dataset.bound) return;
       (button as HTMLElement).dataset.bound = 'true';
@@ -372,21 +350,22 @@
   function shouldIgnorePostNavigation(target: HTMLElement): boolean {
     return Boolean(
       target.closest(
-        '.btn-edit-mypost, .btn-toggle-status, .btn-delete-mypost, .btn-open-comment-editor, .btn-open-comments, button, a, input, textarea, select, label',
+        '.btn-edit-mypost, .btn-toggle-status, .btn-delete-mypost, .btn-open-comments, button, a, input, textarea, select, label',
       ),
     );
   }
 
-  function navigateToPostReader(card: HTMLElement): void {
+  function openPostComments(card: HTMLElement): void {
     const postId = card.dataset.postId;
     if (!postId) return;
 
-    const type = card.dataset.postType === 'channel' ? 'channel' : 'community';
-    const query = type === 'community'
-      ? `type=community&slug=${encodeURIComponent(card.dataset.channelSlug || '')}&postId=${encodeURIComponent(postId)}`
-      : `type=channel&channelId=${encodeURIComponent(card.dataset.channelId || '')}&postId=${encodeURIComponent(postId)}`;
-
-    window.location.href = `/dashboard/comunidad/post?${query}`;
+    const post = allMyPosts.find((item) => item.id === postId);
+    const channelType = post?.type === 'channel' ? 'channel' : 'community';
+    const channelSlug = post?.channelSlug || card.dataset.channelSlug || '';
+    const channelId = post?.channelId || card.dataset.channelId || '';
+    document.dispatchEvent(new CustomEvent('comunidad:modal-open-post', {
+      detail: { postId, channelType, channelSlug, channelId },
+    }));
   }
 
   mypostsContainer.addEventListener('click', (event) => {
@@ -395,7 +374,7 @@
 
     const card = target.closest<HTMLElement>('article[data-post-id][data-post-type]');
     if (!card) return;
-    navigateToPostReader(card);
+    openPostComments(card);
   });
 
   mypostsContainer.addEventListener('keydown', (event) => {
@@ -409,7 +388,7 @@
     if (!card) return;
 
     keyboardEvent.preventDefault();
-    navigateToPostReader(card);
+    openPostComments(card);
   });
 
   mypostsChannelSelect.addEventListener('change', () => {
