@@ -236,7 +236,8 @@
 
   function openPostComments(postId: string) {
     const post = findPostData(postId);
-    const channelType = post?.type === 'channel' ? 'channel' : 'community';
+    // Los posts de canal no siempre traen `type`; caemos al tipo del canal actual.
+    const channelType = (post?.type || currentChannelObj?.type) === 'channel' ? 'channel' : 'community';
     const channelSlug = post?.channelSlug || (channelType === 'community' ? currentChannel : '');
     const channelId = post?.channelId || (channelType === 'channel' ? currentChannel : '');
     document.dispatchEvent(new CustomEvent('comunidad:modal-open-post', {

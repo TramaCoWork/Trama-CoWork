@@ -360,7 +360,7 @@
     if (!postId) return;
 
     const post = allMyPosts.find((item) => item.id === postId);
-    const channelType = post?.type === 'channel' ? 'channel' : 'community';
+    const channelType = (post?.type || card.dataset.postType) === 'channel' ? 'channel' : 'community';
     const channelSlug = post?.channelSlug || card.dataset.channelSlug || '';
     const channelId = post?.channelId || card.dataset.channelId || '';
     document.dispatchEvent(new CustomEvent('comunidad:modal-open-post', {

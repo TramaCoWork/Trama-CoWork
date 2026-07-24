@@ -3,24 +3,17 @@
 ---
 
 <!-- Comments Modal -->
-<div id="comments-modal" class="fixed inset-0 z-50 flex items-end justify-center opacity-0 pointer-events-none transition-opacity duration-300" role="dialog" aria-modal="true" aria-labelledby="modal-post-author">
+<div id="comments-modal" class="fixed inset-0 z-50 flex items-end justify-center opacity-0 pointer-events-none transition-opacity duration-300" role="dialog" aria-modal="true" aria-labelledby="comments-sheet-title">
   <div id="modal-backdrop" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
   <div id="comments-sheet" class="relative w-full max-w-lg max-h-[88vh] bg-surface-container rounded-t-2xl shadow-2xl flex flex-col overflow-hidden border border-outline-variant/15 translate-y-full transition-transform duration-300 ease-out">
-    <div class="shrink-0 px-5 pt-2.5 pb-4 border-b border-outline-variant/15">
+    <div class="shrink-0 px-5 pt-2.5 pb-3 border-b border-outline-variant/15">
       <div class="mx-auto mb-3 h-1.5 w-10 rounded-full bg-outline-variant/40"></div>
-      <div class="flex items-start justify-between gap-3">
-        <div class="flex items-center gap-3 min-w-0">
-          <img id="modal-post-avatar" src="/images/default-avatar.svg" alt="" class="w-9 h-9 rounded-full object-cover bg-surface-container shrink-0" loading="lazy" onerror="this.onerror=null;this.src='/images/default-avatar.svg'" />
-          <div class="min-w-0">
-            <p id="modal-post-author" class="text-sm font-bold text-on-surface truncate"></p>
-            <p id="modal-post-date" class="text-[10px] text-on-surface-variant"></p>
-          </div>
-        </div>
+      <div class="flex items-center justify-between gap-3">
+        <h3 id="comments-sheet-title" class="text-base font-bold text-on-surface">Comentarios</h3>
         <button id="modal-close-btn" class="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors" aria-label="Cerrar">
           <span class="material-symbols-outlined text-xl" aria-hidden="true">close</span>
         </button>
       </div>
-      <div id="modal-post-content" class="markdown-content text-sm text-on-surface leading-relaxed mt-3"></div>
     </div>
     <div id="modal-comments-wrapper" class="flex-1 overflow-y-auto px-5 py-3 space-y-2 min-h-0">
       <div id="modal-comments-list" class="space-y-2"></div>
@@ -52,10 +45,8 @@
 
 <script>
   import {
-    fetchChannelPost,
     fetchChannelPostComments,
     fetchPostComments,
-    fetchCommunityPost,
     createComment,
     createChannelComment,
     deleteComment,
@@ -80,10 +71,6 @@
   const commentsSheet = document.getElementById('comments-sheet')!;
   const modalBackdrop = document.getElementById('modal-backdrop')!;
   const modalCloseBtn = document.getElementById('modal-close-btn')!;
-  const modalPostAuthor = document.getElementById('modal-post-author')!;
-  const modalPostAvatar = document.getElementById('modal-post-avatar') as HTMLImageElement;
-  const modalPostDate = document.getElementById('modal-post-date')!;
-  const modalPostContent = document.getElementById('modal-post-content')!;
   const modalCommentsList = document.getElementById('modal-comments-list')!;
   const modalCommentsLoader = document.getElementById('modal-comments-loader')!;
   const modalCommentsWrapper = document.getElementById('modal-comments-wrapper')!;
@@ -119,10 +106,18 @@
       </div>`;
   }
 
+  function renderCommentsEmpty() {
+    modalCommentsList.innerHTML = `
+      <div data-empty-state class="flex flex-col items-center justify-center gap-3 py-14 text-center">
+        <span class="text-5xl" aria-hidden="true">💬</span>
+        <p class="text-sm font-medium text-on-surface-variant">Todavía no hay comentarios.<br />¡Sé el primero en comentar!</p>
+      </div>`;
+  }
+
   function renderComments(comments: Comment[]) {
     modalCommentsList.innerHTML = '';
     if (comments.length === 0) {
-      modalCommentsList.innerHTML = '<p class="text-xs text-on-surface-variant italic text-center py-4">Sin comentarios aún. Sé el primero en comentar.</p>';
+      renderCommentsEmpty();
       return;
     }
 
@@ -205,23 +200,6 @@
     commentsSheet.classList.remove('translate-y-full');
     document.body.style.overflow = 'hidden';
 
-    try {
-      const post = modalChannelType === 'channel'
-        ? await fetchChannelPost(modalChannelId || modalChannelSlug, modalPostId)
-        : await fetchCommunityPost(modalPostId);
-      const authorName = post.user?.profile?.name || post.user?.email || 'Usuario';
-      modalPostAuthor.textContent = authorName;
-      modalPostAvatar.src = getProfilePhotoUrl(post.user?.photoUrl, post.user?.id || '');
-      modalPostDate.textContent = formatDate(post.createdAt);
-      modalPostContent.innerHTML = post.content ? renderMarkdown(post.content) : '';
-    } catch (err) {
-      console.error('Error cargando detalle del post:', err);
-      modalPostAuthor.textContent = 'Usuario';
-      modalPostAvatar.src = '/images/default-avatar.svg';
-      modalPostDate.textContent = '';
-      modalPostContent.innerHTML = '<p class="text-xs text-error">No se pudo cargar el contenido del post.</p>';
-    }
-
     await loadModalComments(1);
   }
 
@@ -269,7 +247,7 @@
                   }
                   updateCommentCountLabel(modalPostId, -1);
                   if (modalCommentsList.children.length === 0) {
-                    modalCommentsList.innerHTML = '<p class="text-xs text-on-surface-variant italic text-center py-4">Sin comentarios aún. Sé el primero en comentar.</p>';
+                    renderCommentsEmpty();
                   }
                 } catch (err) {
                   console.error('Error eliminando comentario:', err);
@@ -298,9 +276,9 @@
         ? await createChannelComment(channelId, modalPostId, content)
         : await createComment(modalPostId, content);
 
-      const emptyMsg = modalCommentsList.querySelector('p.italic');
-      if (emptyMsg) {
-        emptyMsg.remove();
+      const emptyState = modalCommentsList.querySelector('[data-empty-state]');
+      if (emptyState) {
+        modalCommentsList.innerHTML = '';
       }
 
       modalCommentsList.insertAdjacentHTML('afterbegin', renderCommentHtml(newComment));
