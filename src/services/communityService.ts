@@ -209,6 +209,16 @@ export async function deleteComment(commentId: string): Promise<void> {
   return api.del<void>(`/community/comments/${commentId}`);
 }
 
+/** Eliminar un comentario de canal (owner o admin) */
+export async function deleteChannelComment(
+  channelId: string,
+  postId: string,
+  commentId: string,
+): Promise<void> {
+  setAuthHeader();
+  await api.del<void>(`${CHANNELS_PATH}/${channelId}/posts/${postId}/comments/${commentId}`);
+}
+
 /** Comentarios paginados de un post */
 export async function fetchPostComments(postId: string, page = 1, limit = 10): Promise<PaginatedComments> {
   return api.get<PaginatedComments>(`/community/posts/${postId}/comments`, { page, limit });
