@@ -35,11 +35,16 @@ export interface ProfessionalItem {
   professionCategories?: { id: number; slug: string; name: string }[];
 }
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 export interface PaginatedProfessionals {
   data: ProfessionalItem[];
-  total: number;
-  page: number;
-  sizePage: number;
+  meta: PaginationMeta;
 }
 
 // ─── Filtros de búsqueda ───────────────────────────────────────
@@ -54,8 +59,8 @@ export interface SearchFilters {
 
 // ─── Fetch ─────────────────────────────────────────────────────
 
-export async function fetchProfessionals(page = 1, sizePage = 10): Promise<PaginatedProfessionals> {
-  return api.get<PaginatedProfessionals>('/professionals', { page, sizePage });
+export async function fetchProfessionals(page = 1, limit = 10): Promise<PaginatedProfessionals> {
+  return api.get<PaginatedProfessionals>('/professionals', { page, limit });
 }
 
 type ProfessionalDetailResponse = {
@@ -113,7 +118,7 @@ export async function searchProfessionalsByName(query: string): Promise<Professi
 
   const response = await api.get<PaginatedProfessionals | DataWrapper<ProfessionalItem[]>>('/professionals', {
     page: 1,
-    sizePage: 50,
+    limit: 50,
     search: normalizedQuery,
   });
 
@@ -264,7 +269,7 @@ export async function renderProfessionalsList(
   loadingId: string,
   errorId: string,
   page = 1,
-  sizePage = 10,
+  limit = 10,
 ): Promise<void> {
   const listEl = document.getElementById(listId);
   const countEl = document.getElementById(countId);
@@ -277,27 +282,26 @@ export async function renderProfessionalsList(
   if (errorEl) errorEl.classList.add('hidden');
 
   try {
-    const result = await fetchProfessionals(page, sizePage);
-    const totalPages = Math.ceil(result.total / result.sizePage);
+    const { data, meta } = await fetchProfessionals(page, limit);
 
     if (loadingEl) loadingEl.classList.add('hidden');
 
     if (countEl) {
-      countEl.innerHTML = `<span class="font-bold text-on-surface">${result.total}</span> profesionales encontrados`;
+      countEl.innerHTML = `<span class="font-bold text-on-surface">${meta.total}</span> profesionales encontrados`;
     }
 
     if (listEl) {
-      listEl.innerHTML = result.data.map(renderCard).join('');
+      listEl.innerHTML = data.map(renderCard).join('');
     }
 
     if (paginationEl) {
-      paginationEl.innerHTML = renderPagination(result.page, totalPages);
+      paginationEl.innerHTML = renderPagination(meta.page, meta.totalPages);
 
       // Bind pagination clicks
       paginationEl.querySelectorAll('.pagination-btn').forEach((btn) => {
         btn.addEventListener('click', () => {
           const targetPage = Number((btn as HTMLElement).dataset.page);
-          renderProfessionalsList(listId, countId, paginationId, loadingId, errorId, targetPage, sizePage);
+          renderProfessionalsList(listId, countId, paginationId, loadingId, errorId, targetPage, limit);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         });
       });

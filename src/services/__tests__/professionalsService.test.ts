@@ -14,23 +14,23 @@ describe('ProfessionalsService', () => {
     vi.clearAllMocks();
   });
 
-  it('llama a /professionals con page y sizePage por defecto', async () => {
-    const mockData = { data: [], total: 0, page: 1, sizePage: 10 };
+  it('llama a /professionals con page y limit por defecto', async () => {
+    const mockData = { data: [], meta: { page: 1, limit: 10, total: 0, totalPages: 0 } };
     (api.get as any).mockResolvedValue(mockData);
 
     const result = await fetchProfessionals();
 
-    expect(api.get).toHaveBeenCalledWith('/professionals', { page: 1, sizePage: 10 });
+    expect(api.get).toHaveBeenCalledWith('/professionals', { page: 1, limit: 10 });
     expect(result).toEqual(mockData);
   });
 
-  it('llama a /professionals con page y sizePage personalizados', async () => {
-    const mockData = { data: [], total: 50, page: 3, sizePage: 20 };
+  it('llama a /professionals con page y limit personalizados', async () => {
+    const mockData = { data: [], meta: { page: 3, limit: 20, total: 50, totalPages: 3 } };
     (api.get as any).mockResolvedValue(mockData);
 
     const result = await fetchProfessionals(3, 20);
 
-    expect(api.get).toHaveBeenCalledWith('/professionals', { page: 3, sizePage: 20 });
+    expect(api.get).toHaveBeenCalledWith('/professionals', { page: 3, limit: 20 });
     expect(result).toEqual(mockData);
   });
 
