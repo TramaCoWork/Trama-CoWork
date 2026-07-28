@@ -282,7 +282,14 @@ export async function renderProfessionalsList(
   if (errorEl) errorEl.classList.add('hidden');
 
   try {
-    const { data, meta } = await fetchProfessionals(page, limit);
+    const result = await fetchProfessionals(page, limit);
+    const data = Array.isArray(result?.data) ? result.data : [];
+    const meta = result?.meta ?? {
+      page,
+      limit,
+      total: data.length,
+      totalPages: 1,
+    };
 
     if (loadingEl) loadingEl.classList.add('hidden');
 
