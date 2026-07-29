@@ -26,6 +26,7 @@ export interface ProfessionalProfile {
   emailContact: string | null;
   isActive: boolean;
   profileStatus: string;
+  trialEndDate?: string | null;
   completionPct: number;
   rubroId: number | null;
   countryId: number | null;

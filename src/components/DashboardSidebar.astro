@@ -144,14 +144,20 @@ const mockUser = {
           : `/profesionales/perfil?id=${data.id}`;
       }
 
-      // Show/hide menu items & public profile link based on profile status
+      // Show/hide menu items & public profile link based on access:
+      // plan activo (profileStatus === 'active') o trial vigente (trialEndDate futuro).
       const isProfileActive = data.profileStatus === 'active';
-      if (isProfileActive) {
+      const onTrial = data.trialEndDate
+        ? new Date(data.trialEndDate).getTime() > Date.now()
+        : false;
+      const hasAccess = isProfileActive || onTrial;
+      if (hasAccess) {
         document.querySelectorAll('[data-requires-active]').forEach(el => {
           el.classList.remove('hidden');
         });
-      } else {
-        // Hide "Ver perfil público" button
+      }
+      if (!isProfileActive) {
+        // Hide "Ver perfil público" button (solo para perfiles no activos)
         if (link) link.classList.add('hidden');
       }
     } catch (err: unknown) {
