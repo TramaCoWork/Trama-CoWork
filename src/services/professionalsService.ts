@@ -42,9 +42,18 @@ export interface PaginationMeta {
   totalPages: number;
 }
 
+/**
+ * El backend puede devolver dos shapes de paginación:
+ *  - { data, meta: { page, limit, total, totalPages } }
+ *  - { data, total, page, sizePage }  (plano)
+ * Soportamos ambos.
+ */
 export interface PaginatedProfessionals {
   data: ProfessionalItem[];
-  meta: PaginationMeta;
+  meta?: PaginationMeta;
+  total?: number;
+  page?: number;
+  sizePage?: number;
 }
 
 // ─── Filtros de búsqueda ───────────────────────────────────────
@@ -60,7 +69,8 @@ export interface SearchFilters {
 // ─── Fetch ─────────────────────────────────────────────────────
 
 export async function fetchProfessionals(page = 1, limit = 10): Promise<PaginatedProfessionals> {
-  return api.get<PaginatedProfessionals>('/professionals', { page, limit });
+  // Enviamos `limit` y `sizePage` porque el backend ha usado ambos nombres.
+  return api.get<PaginatedProfessionals>('/professionals', { page, limit, sizePage: limit });
 }
 
 type ProfessionalDetailResponse = {
@@ -138,16 +148,44 @@ export async function searchProfessionalsByName(query: string): Promise<Professi
   return enrichedMatches.filter((professional) => typeof professional.userId === 'string' && professional.userId.length > 0);
 }
 
-/** Buscar profesionales con filtros avanzados (GET /search) */
-export async function searchProfessionals(filters: SearchFilters): Promise<ProfessionalItem[]> {
-  const params: Record<string, string | number> = {};
+/** Buscar profesionales con filtros avanzados + paginación (GET /search) */
+export async function searchProfessionals(
+  filters: SearchFilters,
+  page = 1,
+  limit = 10,
+): Promise<PaginatedProfessionals> {
+  const params: Record<string, string | number> = { page, limit, sizePage: limit };
   if (filters.q) params.q = filters.q;
   if (filters.rubro) params.rubro = filters.rubro;
   if (filters.sub_rubro) params.sub_rubro = filters.sub_rubro;
   if (filters.countryId) params.countryId = filters.countryId;
   if (filters.provinceId) params.provinceId = filters.provinceId;
-  const response = await api.get<ProfessionalItem[] | DataWrapper<ProfessionalItem[]>>('/search', params);
-  return unwrapData(response);
+
+  const response = await api.get<
+    PaginatedProfessionals | ProfessionalItem[] | DataWrapper<ProfessionalItem[]>
+  >('/search', params);
+
+  // /search puede devolver { data, meta }, plano { data, total,... } o (legacy) un array pelado.
+  if (Array.isArray(response)) {
+    return { data: response, total: response.length, page, sizePage: limit };
+  }
+  return response as PaginatedProfessionals;
+}
+
+/**
+ * Normaliza la paginación soportando `{ meta:{...} }` y el plano `{ total, page, sizePage }`.
+ */
+export function normalizePagination(
+  result: PaginatedProfessionals,
+  fallbackPage: number,
+  fallbackLimit: number,
+): { data: ProfessionalItem[]; total: number; page: number; pageSize: number; totalPages: number } {
+  const data = Array.isArray(result?.data) ? result.data : [];
+  const total = result?.meta?.total ?? result?.total ?? data.length;
+  const page = result?.meta?.page ?? result?.page ?? fallbackPage;
+  const pageSize = result?.meta?.limit ?? result?.sizePage ?? fallbackLimit;
+  const totalPages = result?.meta?.totalPages ?? Math.max(1, Math.ceil(total / pageSize));
+  return { data, total, page, pageSize, totalPages };
 }
 
 // ─── Render helpers (vanilla JS) ───────────────────────────────
@@ -225,7 +263,7 @@ function renderCard(pro: ProfessionalItem): string {
   `;
 }
 
-function renderPagination(page: number, totalPages: number): string {
+export function renderPagination(page: number, totalPages: number): string {
   if (totalPages <= 1) return '';
 
   const prevDisabled = page <= 1;
@@ -283,18 +321,12 @@ export async function renderProfessionalsList(
 
   try {
     const result = await fetchProfessionals(page, limit);
-    const data = Array.isArray(result?.data) ? result.data : [];
-    const meta = result?.meta ?? {
-      page,
-      limit,
-      total: data.length,
-      totalPages: 1,
-    };
+    const { data, total, page: currentPage, totalPages } = normalizePagination(result, page, limit);
 
     if (loadingEl) loadingEl.classList.add('hidden');
 
     if (countEl) {
-      countEl.innerHTML = `<span class="font-bold text-on-surface">${meta.total}</span> profesionales encontrados`;
+      countEl.innerHTML = `<span class="font-bold text-on-surface">${total}</span> profesionales encontrados`;
     }
 
     if (listEl) {
@@ -302,7 +334,7 @@ export async function renderProfessionalsList(
     }
 
     if (paginationEl) {
-      paginationEl.innerHTML = renderPagination(meta.page, meta.totalPages);
+      paginationEl.innerHTML = renderPagination(currentPage, totalPages);
 
       // Bind pagination clicks
       paginationEl.querySelectorAll('.pagination-btn').forEach((btn) => {

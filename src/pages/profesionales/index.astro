@@ -35,7 +35,14 @@ import SearchHeader from '../../components/SearchHeader.astro';
 </Layout>
 
 <script>
-  import { renderProfessionalsList, searchProfessionals, type SearchFilters } from '../../services/professionalsService';
+  import {
+    renderProfessionalsList,
+    searchProfessionals,
+    renderPagination,
+    normalizePagination,
+    type SearchFilters,
+    type ProfessionalItem,
+  } from '../../services/professionalsService';
   import { buildProfileSlug } from '../../utils/helpers';
   const API_BASE = (import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
@@ -47,11 +54,10 @@ import SearchHeader from '../../components/SearchHeader.astro';
   const searchForm = document.getElementById('search-form') as HTMLFormElement;
 
   // ─── Render search results (no pagination) ────────────────────
-  function renderSearchResults(results: Awaited<ReturnType<typeof searchProfessionals>>) {
+  function renderSearchResults(results: ProfessionalItem[], total: number) {
     loadingEl.classList.add('hidden');
     errorEl.classList.add('hidden');
-    countEl.innerHTML = `<span class="font-bold text-on-surface">${results.length}</span> profesionales encontrados`;
-    paginationEl.innerHTML = '';
+    countEl.innerHTML = `<span class="font-bold text-on-surface">${total}</span> profesionales encontrados`;
 
     if (results.length === 0) {
       listEl.innerHTML = `
@@ -132,7 +138,11 @@ import SearchHeader from '../../components/SearchHeader.astro';
   }
 
   // ─── Ejecutar búsqueda con filtros ────────────────────────────
-  async function doSearch(filters: SearchFilters) {
+  const SEARCH_PAGE_SIZE = 10;
+  let activeFilters: SearchFilters = {};
+
+  async function doSearch(filters: SearchFilters, page = 1) {
+    activeFilters = filters;
     loadingEl.classList.remove('hidden');
     listEl.innerHTML = '';
     errorEl.classList.add('hidden');
@@ -140,8 +150,19 @@ import SearchHeader from '../../components/SearchHeader.astro';
     paginationEl.innerHTML = '';
 
     try {
-      const results = await searchProfessionals(filters);
-      renderSearchResults(results);
+      const result = await searchProfessionals(filters, page, SEARCH_PAGE_SIZE);
+      const { data, total, page: currentPage, totalPages } = normalizePagination(result, page, SEARCH_PAGE_SIZE);
+
+      renderSearchResults(data, total);
+
+      paginationEl.innerHTML = renderPagination(currentPage, totalPages);
+      paginationEl.querySelectorAll('.pagination-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const targetPage = Number((btn as HTMLElement).dataset.page);
+          doSearch(activeFilters, targetPage);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
     } catch (err) {
       console.error('Error buscando profesionales:', err);
       loadingEl.classList.add('hidden');

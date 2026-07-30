@@ -20,7 +20,7 @@ describe('ProfessionalsService', () => {
 
     const result = await fetchProfessionals();
 
-    expect(api.get).toHaveBeenCalledWith('/professionals', { page: 1, limit: 10 });
+    expect(api.get).toHaveBeenCalledWith('/professionals', { page: 1, limit: 10, sizePage: 10 });
     expect(result).toEqual(mockData);
   });
 
@@ -30,7 +30,7 @@ describe('ProfessionalsService', () => {
 
     const result = await fetchProfessionals(3, 20);
 
-    expect(api.get).toHaveBeenCalledWith('/professionals', { page: 3, limit: 20 });
+    expect(api.get).toHaveBeenCalledWith('/professionals', { page: 3, limit: 20, sizePage: 20 });
     expect(result).toEqual(mockData);
   });
 
