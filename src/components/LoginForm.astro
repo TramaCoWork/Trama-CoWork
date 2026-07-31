@@ -157,7 +157,7 @@
 
     try {
       await login({ email, password });
-      window.location.href = '/dashboard';
+      window.location.href = '/dashboard/comunidad';
     } catch (err: any) {
       const message = err?.body?.error || 'Verifique sus datos e intente nuevamente.';
       showToast(message);
