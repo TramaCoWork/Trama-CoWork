@@ -142,8 +142,9 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       <form id="member-search-form" class="mb-3 flex flex-wrap items-center gap-2">
         <input
           id="member-search-input"
-          type="email"
-          placeholder="Email del usuario"
+          type="text"
+          autocomplete="off"
+          placeholder="Buscá por email o nombre (mín. 3 caracteres)"
           class="w-full flex-1 rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-3 py-2 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
         <button id="member-search-submit" type="submit" class="rounded-xl bg-primary px-4 py-2 text-xs font-bold uppercase tracking-widest text-on-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60">Buscar</button>
@@ -302,6 +303,9 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     const postsTableBody = document.getElementById('posts-table-body') as HTMLTableSectionElement;
     const postsLoadMore = document.getElementById('posts-load-more') as HTMLButtonElement;
     let memberSearchLoading = false;
+    let memberSearchDebounce: ReturnType<typeof setTimeout> | null = null;
+    let memberSearchSeq = 0;
+    const MEMBER_SEARCH_MIN_CHARS = 3;
 
     function showDetailError(message: string): void {
       detailError.textContent = message;
@@ -485,10 +489,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     function openMemberSearchModal(): void {
       memberSearchError.classList.add('hidden');
       memberSearchError.textContent = '';
-      memberSearchResultsBody.innerHTML = `
-        <tr>
-          <td colspan="3" class="px-4 py-6 text-center text-sm text-on-surface-variant">No se encontraron usuarios</td>
-        </tr>`;
+      showMemberSearchHint(`Escribí al menos ${MEMBER_SEARCH_MIN_CHARS} caracteres para buscar`);
       memberSearchModal.classList.remove('hidden');
       memberSearchModal.classList.add('flex');
       memberSearchModal.setAttribute('aria-hidden', 'false');
@@ -542,28 +543,32 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
         .join('');
     }
 
-    async function searchUsersByEmail(search: string): Promise<void> {
-      memberSearchError.classList.add('hidden');
-      memberSearchError.textContent = '';
+    function showMemberSearchHint(text: string): void {
       memberSearchResultsBody.innerHTML = `
         <tr>
-          <td colspan="3" class="px-4 py-6 text-center text-sm text-on-surface-variant">Buscando usuarios...</td>
+          <td colspan="3" class="px-4 py-6 text-center text-sm text-on-surface-variant">${text}</td>
         </tr>`;
+    }
+
+    async function searchUsersByEmail(search: string): Promise<void> {
+      const seq = ++memberSearchSeq;
+      memberSearchError.classList.add('hidden');
+      memberSearchError.textContent = '';
+      showMemberSearchHint('Buscando usuarios...');
 
       setMemberSearchLoading(true);
       try {
         const response = await fetchAdminUsers(1, 10, search);
+        if (seq !== memberSearchSeq) return; // llegó un resultado viejo, lo ignoramos
         const users = Array.isArray(response.data) ? response.data : [];
         renderMemberSearchResults(users);
       } catch (error) {
+        if (seq !== memberSearchSeq) return;
         memberSearchError.textContent = getErrorMessage(error, 'No se pudo buscar usuarios.');
         memberSearchError.classList.remove('hidden');
-        memberSearchResultsBody.innerHTML = `
-          <tr>
-            <td colspan="3" class="px-4 py-6 text-center text-sm text-on-surface-variant">No se encontraron usuarios</td>
-          </tr>`;
+        showMemberSearchHint('No se encontraron usuarios');
       } finally {
-        setMemberSearchLoading(false);
+        if (seq === memberSearchSeq) setMemberSearchLoading(false);
       }
     }
 
@@ -772,15 +777,34 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
       }
     });
 
+    // Búsqueda en vivo: al 3er carácter, con debounce (sin tocar "Buscar").
+    memberSearchInput.addEventListener('input', () => {
+      const search = memberSearchInput.value.trim();
+      if (memberSearchDebounce) clearTimeout(memberSearchDebounce);
+      memberSearchError.classList.add('hidden');
+      memberSearchError.textContent = '';
+
+      if (search.length < MEMBER_SEARCH_MIN_CHARS) {
+        memberSearchSeq++; // cancela cualquier búsqueda en vuelo
+        showMemberSearchHint(`Escribí al menos ${MEMBER_SEARCH_MIN_CHARS} caracteres para buscar`);
+        return;
+      }
+
+      memberSearchDebounce = setTimeout(() => {
+        void searchUsersByEmail(search);
+      }, 300);
+    });
+
     memberSearchForm.addEventListener('submit', async (event) => {
       event.preventDefault();
+      if (memberSearchDebounce) clearTimeout(memberSearchDebounce);
       if (memberSearchLoading) return;
       memberSearchError.classList.add('hidden');
       memberSearchError.textContent = '';
 
       const search = memberSearchInput.value.trim();
-      if (!search) {
-        memberSearchError.textContent = 'Ingresá un email para buscar.';
+      if (search.length < MEMBER_SEARCH_MIN_CHARS) {
+        memberSearchError.textContent = `Escribí al menos ${MEMBER_SEARCH_MIN_CHARS} caracteres para buscar.`;
         memberSearchError.classList.remove('hidden');
         return;
       }
