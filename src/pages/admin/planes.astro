@@ -20,8 +20,14 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     </button>
   </header>
 
+  <!-- Alert banner: active plans with 0 capabilities -->
+  <div id="capabilities-alert" class="hidden mb-6 px-5 py-4 rounded-2xl bg-error-container text-on-error-container text-sm font-semibold flex items-center gap-3">
+    <span class="material-symbols-outlined text-xl shrink-0" aria-hidden="true">warning</span>
+    <span id="capabilities-alert-msg"></span>
+  </div>
+
   <div class="bg-surface-container-low rounded-2xl p-6 mb-6">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div>
         <label for="f-is-active" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Estado</label>
         <select id="f-is-active" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
@@ -44,6 +50,15 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
           <option value="">Todos</option>
           <option value="true">Con trial</option>
           <option value="false">Sin trial</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="f-visible" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Visibilidad</label>
+        <select id="f-visible" class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+          <option value="true">Activos visibles</option>
+          <option value="false">Solo ocultos</option>
+          <option value="all">Todos</option>
         </select>
       </div>
     </div>
@@ -69,12 +84,14 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
             <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Frecuencia</th>
             <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Trial</th>
             <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Activo</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Visible</th>
+            <th class="text-left px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Capabilities</th>
             <th class="text-center px-5 py-3.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant">Acciones</th>
           </tr>
         </thead>
         <tbody id="plans-table-body">
           <tr>
-            <td colspan="7" class="text-center py-12 text-on-surface-variant">
+            <td colspan="9" class="text-center py-12 text-on-surface-variant">
               <div class="flex flex-col items-center gap-3">
                 <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
                 <span class="text-sm font-medium">Cargando planes...</span>
@@ -144,10 +161,16 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
           <input id="plan-trial-days" name="trialDays" type="number" min="0" required class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-4 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
         </div>
 
-        <label class="flex items-center gap-2 mt-6 text-sm font-semibold text-on-surface">
-          <input id="plan-is-active" name="isActive" type="checkbox" class="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20" />
-          Activo
-        </label>
+        <div class="flex items-center gap-6 mt-2">
+          <label class="flex items-center gap-2 text-sm font-semibold text-on-surface">
+            <input id="plan-is-active" name="isActive" type="checkbox" class="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20" />
+            Activo
+          </label>
+          <label class="flex items-center gap-2 text-sm font-semibold text-on-surface">
+            <input id="plan-visible" name="visible" type="checkbox" class="h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20" />
+            Visible
+          </label>
+        </div>
 
         <div class="md:col-span-2 flex justify-end gap-3 mt-2">
           <button id="btn-cancel-form" type="button" class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest text-on-surface-variant bg-surface-container hover:bg-surface-container-high transition-colors">Cancelar</button>
@@ -205,6 +228,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     const frequencyTypeInput = document.getElementById('plan-frequency-type') as HTMLSelectElement;
     const trialDaysInput = document.getElementById('plan-trial-days') as HTMLInputElement;
     const isActiveInput = document.getElementById('plan-is-active') as HTMLInputElement;
+    const visibleInput = document.getElementById('plan-visible') as HTMLInputElement;
     const toast = document.getElementById('toast') as HTMLDivElement;
     const toastInner = document.getElementById('toast-inner') as HTMLDivElement;
     const toastIcon = document.getElementById('toast-icon') as HTMLSpanElement;
@@ -212,6 +236,9 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     const filterIsActive = document.getElementById('f-is-active') as HTMLSelectElement;
     const filterFrequencyType = document.getElementById('f-frequency-type') as HTMLSelectElement;
     const filterHasTrial = document.getElementById('f-has-trial') as HTMLSelectElement;
+    const filterVisible = document.getElementById('f-visible') as HTMLSelectElement;
+    const capabilitiesAlert = document.getElementById('capabilities-alert') as HTMLDivElement;
+    const capabilitiesAlertMsg = document.getElementById('capabilities-alert-msg') as HTMLSpanElement;
 
     function showToast(message: string, type: 'success' | 'error' = 'success') {
       toastMsg.textContent = message;
@@ -243,6 +270,37 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       return '<span class="inline-block px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-error-container text-on-error-container">No</span>';
     }
 
+    function renderVisibleBadge(visible: boolean): string {
+      if (visible) {
+        return '<span class="inline-block px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-primary-container text-on-primary-container">Sí</span>';
+      }
+      return '<span class="inline-block px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant">Oculto</span>';
+    }
+
+    function renderCapabilitiesBadge(plan: Plan): string {
+      const count = plan.capabilitiesCount;
+      if (count === undefined || count === null) {
+        return '<span class="text-on-surface-variant text-xs">—</span>';
+      }
+      if (plan.isActive && count === 0) {
+        return `<span class="inline-block px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-error-container text-on-error-container">${count}</span>`;
+      }
+      if (plan.isActive && count > 0) {
+        return `<span class="inline-block px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-primary-container text-on-primary-container">${count}</span>`;
+      }
+      return `<span class="text-on-surface-variant text-xs">${count}</span>`;
+    }
+
+    function updateCapabilitiesAlert(plans: Plan[]) {
+      const activePlansWithZeroCaps = plans.filter(p => p.isActive && (p.capabilitiesCount ?? undefined) === 0);
+      if (activePlansWithZeroCaps.length > 0) {
+        capabilitiesAlertMsg.textContent = `Atención: ${activePlansWithZeroCaps.length} plan(es) activo(s) tienen 0 capabilities asignadas.`;
+        capabilitiesAlert.classList.remove('hidden');
+      } else {
+        capabilitiesAlert.classList.add('hidden');
+      }
+    }
+
     function formatFrequency(plan: Plan): string {
       return `${plan.frequency} ${plan.frequencyType}`;
     }
@@ -250,7 +308,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     function setLoadingTable(message: string) {
       tableBody.innerHTML = `
         <tr>
-          <td colspan="7" class="text-center py-12 text-on-surface-variant">
+          <td colspan="9" class="text-center py-12 text-on-surface-variant">
             <div class="flex flex-col items-center gap-3">
               <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
               <span class="text-sm font-medium">${message}</span>
@@ -263,7 +321,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       if (plans.length === 0) {
         tableBody.innerHTML = `
           <tr>
-            <td colspan="7" class="text-center py-16 text-on-surface-variant">
+            <td colspan="9" class="text-center py-16 text-on-surface-variant">
               <span class="material-symbols-outlined text-4xl mb-3 block text-outline" aria-hidden="true">inventory_2</span>
               <p class="text-sm font-medium">No hay planes cargados.</p>
             </td>
@@ -285,8 +343,17 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
             <td class="px-5 py-3.5 text-on-surface-variant text-xs">${escapeHtml(formatFrequency(plan))}</td>
             <td class="px-5 py-3.5 text-on-surface-variant text-xs">${plan.trialDays} días</td>
             <td class="px-5 py-3.5">${renderActiveBadge(plan.isActive)}</td>
+            <td class="px-5 py-3.5">${renderVisibleBadge(plan.visible)}</td>
+            <td class="px-5 py-3.5">${renderCapabilitiesBadge(plan)}</td>
             <td class="px-5 py-3.5 text-center">
               <div class="flex items-center justify-center gap-2">
+                <a
+                  href="/admin/planes/detalle?id=${plan.id}"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors"
+                >
+                  <span class="material-symbols-outlined text-sm">open_in_new</span>
+                  Detalle
+                </a>
                 <button
                   type="button"
                   data-action="edit"
@@ -346,6 +413,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       const filters: AdminPlansFilters = {
         page: currentPage,
         sizePage: PAGE_SIZE,
+        visible: (filterVisible.value as AdminPlansFilters['visible']) || 'true',
       };
 
       if (filterIsActive.value) {
@@ -369,6 +437,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         const response = await getAdminPlans(getFilters());
         currentPlans = response.data;
         renderTable(currentPlans);
+        updateCapabilitiesAlert(currentPlans);
 
         const totalPages = Math.max(1, Math.ceil(response.total / response.sizePage));
         const start = response.total > 0 ? (response.page - 1) * response.sizePage + 1 : 0;
@@ -383,7 +452,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         paginationBottom.innerHTML = '';
         tableBody.innerHTML = `
           <tr>
-            <td colspan="7" class="text-center py-12 text-error">
+            <td colspan="9" class="text-center py-12 text-error">
               <span class="material-symbols-outlined text-3xl mb-2 block" aria-hidden="true">error</span>
               <p class="text-sm font-bold">Error al cargar planes</p>
               <p class="text-xs mt-1">${escapeHtml(error?.message || 'Error desconocido')}</p>
@@ -423,6 +492,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       frequencyTypeInput.value = plan?.frequencyType || '';
       trialDaysInput.value = String(plan?.trialDays || 0);
       isActiveInput.checked = Boolean(plan?.isActive ?? true);
+      visibleInput.checked = Boolean(plan?.visible ?? true);
 
       modal.classList.remove('hidden');
       modal.classList.add('flex');
@@ -436,6 +506,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       form.reset();
       frequencyTypeInput.value = '';
       isActiveInput.checked = true;
+      visibleInput.checked = true;
       editingPlanId = null;
       currentMode = 'create';
     }
@@ -450,6 +521,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         frequencyType: frequencyTypeInput.value,
         trialDays: Number(trialDaysInput.value),
         isActive: isActiveInput.checked,
+        visible: visibleInput.checked,
       };
     }
 
@@ -519,22 +591,15 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     document.getElementById('btn-cancel-form')?.addEventListener('click', closeModal);
     form.addEventListener('submit', handleSubmit);
     tableBody.addEventListener('click', onTableClick);
-    filterIsActive.addEventListener('change', () => {
-      currentPage = 1;
-      loadPlansList();
-    });
-    filterFrequencyType.addEventListener('change', () => {
-      currentPage = 1;
-      loadPlansList();
-    });
-    filterHasTrial.addEventListener('change', () => {
-      currentPage = 1;
-      loadPlansList();
-    });
+    filterIsActive.addEventListener('change', () => { currentPage = 1; loadPlansList(); });
+    filterFrequencyType.addEventListener('change', () => { currentPage = 1; loadPlansList(); });
+    filterHasTrial.addEventListener('change', () => { currentPage = 1; loadPlansList(); });
+    filterVisible.addEventListener('change', () => { currentPage = 1; loadPlansList(); });
     document.getElementById('btn-clear-filters')?.addEventListener('click', () => {
       filterIsActive.value = '';
       filterFrequencyType.value = '';
       filterHasTrial.value = '';
+      filterVisible.value = 'true';
       currentPage = 1;
       loadPlansList();
     });

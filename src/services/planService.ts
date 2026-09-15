@@ -10,6 +10,9 @@ export interface Plan {
   frequencyType: string;
   trialDays: number;
   isActive: boolean;
+  visible: boolean;
+  capabilitiesCount?: number;
+  capabilities?: Array<{ id: string; name: string }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -23,6 +26,7 @@ export interface CreatePlanDto {
   frequencyType: string;
   trialDays: number;
   isActive: boolean;
+  visible: boolean;
 }
 
 export type UpdatePlanDto = Partial<CreatePlanDto>;
@@ -33,6 +37,7 @@ export interface AdminPlansFilters {
   hasTrial?: boolean;
   page?: number;
   sizePage?: number;
+  visible?: 'true' | 'false' | 'all';
 }
 
 export interface AdminPlansResponse {
@@ -46,6 +51,10 @@ export function getPlans(): Promise<Plan[]> {
   return api.get<Plan[]>('/subscription-plans');
 }
 
+export function getAdminPlanById(id: string): Promise<Plan> {
+  return api.get<Plan>(`/admin/subscription-plans/${id}`);
+}
+
 export function getAdminPlans(filters: AdminPlansFilters = {}): Promise<AdminPlansResponse> {
   const params = new URLSearchParams();
 
@@ -54,10 +63,11 @@ export function getAdminPlans(filters: AdminPlansFilters = {}): Promise<AdminPla
   if (filters.hasTrial !== undefined) params.set('hasTrial', String(filters.hasTrial));
   if (filters.page !== undefined) params.set('page', String(filters.page));
   if (filters.sizePage !== undefined) params.set('sizePage', String(filters.sizePage));
+  // Default to visible=true; pass 'all' to include hidden plans, 'false' for hidden-only
+  params.set('visible', filters.visible ?? 'true');
 
   const query = params.toString();
-  const path = query ? `/admin/subscription-plans?${query}` : '/admin/subscription-plans';
-  return api.get<AdminPlansResponse>(path);
+  return api.get<AdminPlansResponse>(`/admin/subscription-plans?${query}`);
 }
 
 export function createPlan(dto: CreatePlanDto): Promise<Plan> {

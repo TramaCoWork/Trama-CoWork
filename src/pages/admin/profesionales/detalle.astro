@@ -304,6 +304,49 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       </div>
     </div>
 
+    <!-- Suscripción -->
+    <div class="bg-surface-container-low rounded-2xl p-6 mb-6">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="material-symbols-outlined text-primary" aria-hidden="true">credit_card</span>
+        <h2 class="text-lg font-extrabold text-on-surface tracking-tight">Suscripción</h2>
+      </div>
+      <div id="subscription-loading" class="flex items-center gap-3 py-4">
+        <div class="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+        <span class="text-sm text-on-surface-variant font-medium">Cargando suscripción...</span>
+      </div>
+      <div id="subscription-content" class="hidden space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Plan actual</span>
+            <p id="d-current-plan" class="text-on-surface font-medium">—</p>
+          </div>
+          <div>
+            <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Estado</span>
+            <span id="d-subscription-status"></span>
+          </div>
+        </div>
+        <div>
+          <label for="subscription-plan-select" class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1.5 block">Asignar plan</label>
+          <div class="flex gap-3 items-end">
+            <select
+              id="subscription-plan-select"
+              class="flex-1 bg-surface-container-lowest border border-outline-variant/20 rounded-xl px-3 py-2.5 text-sm text-on-surface font-medium focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer"
+            >
+              <option value="">Sin plan asignado</option>
+            </select>
+            <button
+              id="subscription-plan-save"
+              type="button"
+              class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest bg-primary text-on-primary hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              Asignar
+            </button>
+          </div>
+          <p id="subscription-plan-error" class="hidden mt-2 text-sm font-medium text-error"></p>
+        </div>
+      </div>
+    </div>
+
     <!-- Validation panel (only for pending_review) -->
     <div id="validation-panel" class="hidden bg-surface-container-low rounded-2xl p-6 mb-6 border-2 border-secondary/30">
       <div class="flex items-center gap-2 mb-4">
@@ -493,7 +536,8 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
   <script>
     import { restoreSession, getToken } from '../../../services/authService';
     import { api } from '../../../services/apiClient';
-    import { formatDate } from '../../../utils/helpers';
+    import { formatDate, escapeHtml } from '../../../utils/helpers';
+    import { getAdminPlans } from '../../../services/planService';
     import {
       fetchProfessionalDetail,
       fetchProfessionalDocuments,
@@ -1654,7 +1698,106 @@ import ConfirmModal from '../../../components/ConfirmModal.astro';
       }
     }
 
+    // ─── Subscription section ────────────────────────────────────
+    const subscriptionPlanSelect = document.getElementById('subscription-plan-select') as HTMLSelectElement;
+    const subscriptionPlanSave = document.getElementById('subscription-plan-save') as HTMLButtonElement;
+    const subscriptionPlanError = document.getElementById('subscription-plan-error') as HTMLParagraphElement;
+
+    let currentSubscriptionPlanId = '';
+
+    function renderSubscriptionPlanError(msg: string) {
+      subscriptionPlanError.textContent = msg;
+      subscriptionPlanError.classList.toggle('hidden', !msg);
+    }
+
+    async function loadSubscription() {
+      const loadingEl = document.getElementById('subscription-loading')!;
+      const contentEl = document.getElementById('subscription-content')!;
+
+      try {
+        // Load all plans (visible + hidden) and current subscription in parallel
+        const [plansResponse, subscription] = await Promise.all([
+          getAdminPlans({ visible: 'all', sizePage: 200 }),
+          fetch(`${(import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '')}/admin/users/${profileId}/subscription`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          }).then(res => res.ok ? res.json() : null).catch(() => null),
+        ]);
+
+        const currentPlanEl = document.getElementById('d-current-plan')!;
+        const statusEl = document.getElementById('d-subscription-status')!;
+
+        // Populate plan selector
+        subscriptionPlanSelect.innerHTML = '<option value="">Sin plan asignado</option>';
+        plansResponse.data.forEach(plan => {
+          const option = document.createElement('option');
+          option.value = plan.id;
+          const visibleLabel = plan.visible ? '' : ' [Oculto]';
+          option.textContent = `${plan.name}${visibleLabel}`;
+          subscriptionPlanSelect.appendChild(option);
+        });
+
+        if (subscription?.plan) {
+          currentPlanEl.textContent = subscription.plan.name || '—';
+          statusEl.innerHTML = `<span class="inline-block px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-primary-container text-on-primary-container">${escapeHtml(subscription.status || 'activa')}</span>`;
+          currentSubscriptionPlanId = subscription.plan.id || '';
+          subscriptionPlanSelect.value = currentSubscriptionPlanId;
+        } else {
+          currentPlanEl.textContent = 'Sin plan asignado';
+          statusEl.innerHTML = '<span class="text-on-surface-variant text-sm">—</span>';
+          currentSubscriptionPlanId = '';
+        }
+
+        loadingEl.classList.add('hidden');
+        contentEl.classList.remove('hidden');
+      } catch {
+        loadingEl.innerHTML = '<p class="text-sm text-error font-medium">Error al cargar la suscripción.</p>';
+      }
+    }
+
+    subscriptionPlanSave?.addEventListener('click', async () => {
+      const newPlanId = subscriptionPlanSelect.value;
+      const previousPlanId = currentSubscriptionPlanId;
+      renderSubscriptionPlanError('');
+      subscriptionPlanSave.disabled = true;
+
+      try {
+        const body = newPlanId
+          ? JSON.stringify({ subscriptionPlanId: newPlanId })
+          : JSON.stringify({ subscriptionPlanId: null });
+
+        const res = await fetch(
+          `${(import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '')}/admin/users/${profileId}/subscription`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body,
+          },
+        );
+
+        if (!res.ok) {
+          const errBody = await res.json().catch(() => null);
+          throw new Error(errBody?.message || `Error ${res.status}`);
+        }
+
+        currentSubscriptionPlanId = newPlanId;
+        const selectedText = subscriptionPlanSelect.options[subscriptionPlanSelect.selectedIndex]?.text || '';
+        document.getElementById('d-current-plan')!.textContent = newPlanId ? selectedText.replace(' [Oculto]', '') : 'Sin plan asignado';
+        showToast('Plan de suscripción actualizado.', 'success');
+      } catch (err: any) {
+        // Rollback
+        subscriptionPlanSelect.value = previousPlanId;
+        renderSubscriptionPlanError(err?.message || 'No se pudo actualizar el plan.');
+        showToast(err?.message || 'Error al actualizar el plan.', 'error');
+      } finally {
+        subscriptionPlanSave.disabled = false;
+      }
+    });
+
     wirePhotoUpload();
     init();
+    if (profileId) loadSubscription();
   </script>
 </AdminLayout>

@@ -613,7 +613,8 @@ const columns = [
     }
 
     async function loadActiveSubscriptionPlans(): Promise<void> {
-      const response = await getAdminPlans({ isActive: true });
+      // visible: 'all' — discount form must show all plans including hidden ones
+      const response = await getAdminPlans({ isActive: true, visible: 'all' });
       subscriptionPlans.clear();
       subscriptionPlanFilter.innerHTML = '<option value="">Todos</option>';
       modalSubscriptionPlanInput.innerHTML = '<option value="">Seleccionar...</option>';

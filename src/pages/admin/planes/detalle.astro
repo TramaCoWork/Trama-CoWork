@@ -1,0 +1,286 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="TRAMA Admin - Detalle de plan">
+
+  <!-- Breadcrumb -->
+  <nav class="mb-6 flex items-center gap-2 text-sm text-on-surface-variant">
+    <a href="/admin/planes" class="hover:text-on-surface transition-colors font-medium">Planes</a>
+    <span class="material-symbols-outlined text-base" aria-hidden="true">chevron_right</span>
+    <span class="font-semibold text-on-surface">Detalle</span>
+  </nav>
+
+  <!-- Loading -->
+  <div id="detail-loading" class="flex items-center justify-center py-24">
+    <div class="flex flex-col items-center gap-4">
+      <div class="w-10 h-10 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+      <p class="text-sm font-medium text-on-surface-variant">Cargando plan...</p>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div id="detail-error" class="hidden">
+    <div class="bg-error-container text-on-error-container rounded-3xl p-8 text-center">
+      <span class="material-symbols-outlined text-4xl mb-4 block" aria-hidden="true">error</span>
+      <h2 class="text-xl font-bold mb-2">Error al cargar el plan</h2>
+      <p id="detail-error-msg" class="text-sm opacity-80">No se pudo obtener la información.</p>
+      <a href="/admin/planes" class="mt-6 inline-block bg-error text-on-error px-6 py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity">Volver al listado</a>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div id="detail-content" class="hidden space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h1 id="plan-name-heading" class="text-3xl font-black text-on-surface tracking-tighter">—</h1>
+        <p class="text-sm text-on-surface-variant mt-1 font-medium">ID: <span id="plan-id-display" class="font-mono font-bold">—</span></p>
+      </div>
+      <a
+        href="/admin/planes"
+        class="inline-flex items-center gap-1 rounded-xl bg-surface-container px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-on-surface-variant transition-colors hover:bg-surface-container-high"
+      >
+        <span class="material-symbols-outlined text-sm" aria-hidden="true">arrow_back</span>
+        Volver
+      </a>
+    </div>
+
+    <!-- Plan info -->
+    <section class="bg-surface-container-low rounded-2xl p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="material-symbols-outlined text-primary" aria-hidden="true">credit_card</span>
+        <h2 class="text-lg font-extrabold text-on-surface tracking-tight">Información del plan</h2>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+        <div>
+          <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Descripción</span>
+          <p id="d-description" class="text-on-surface font-medium">—</p>
+        </div>
+        <div>
+          <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Monto</span>
+          <p id="d-amount" class="text-on-surface font-medium">—</p>
+        </div>
+        <div>
+          <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Moneda</span>
+          <p id="d-currency" class="text-on-surface font-medium">—</p>
+        </div>
+        <div>
+          <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Frecuencia</span>
+          <p id="d-frequency" class="text-on-surface font-medium">—</p>
+        </div>
+        <div>
+          <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Trial</span>
+          <p id="d-trial" class="text-on-surface font-medium">—</p>
+        </div>
+        <div>
+          <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Activo</span>
+          <span id="d-active-badge"></span>
+        </div>
+        <div>
+          <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Visible</span>
+          <span id="d-visible-badge"></span>
+        </div>
+        <div>
+          <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Creado</span>
+          <p id="d-created-at" class="text-on-surface font-medium">—</p>
+        </div>
+        <div>
+          <span class="text-on-surface-variant text-xs font-bold uppercase tracking-widest block mb-1">Actualizado</span>
+          <p id="d-updated-at" class="text-on-surface font-medium">—</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Capabilities -->
+    <section class="bg-surface-container-low rounded-2xl p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="material-symbols-outlined text-primary" aria-hidden="true">verified</span>
+        <h2 class="text-lg font-extrabold text-on-surface tracking-tight">Capabilities</h2>
+      </div>
+      <p class="text-xs text-on-surface-variant mb-4 font-medium">Los cambios se aplican inmediatamente al marcar o desmarcar.</p>
+      <div id="capabilities-loading" class="flex items-center gap-3 py-6">
+        <div class="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+        <span class="text-sm text-on-surface-variant font-medium">Cargando capabilities...</span>
+      </div>
+      <div id="capabilities-empty" class="hidden py-6 text-center text-sm text-on-surface-variant border border-dashed border-outline-variant/20 rounded-xl">
+        No hay capabilities definidas en el catálogo.
+      </div>
+      <div id="capabilities-list" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+    </section>
+
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed top-6 right-6 z-[80] hidden transition-all duration-300 translate-y-[-1rem] opacity-0">
+    <div id="toast-inner" class="flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm">
+      <span id="toast-icon" class="material-symbols-outlined text-xl" aria-hidden="true"></span>
+      <span id="toast-msg"></span>
+    </div>
+  </div>
+
+  <script>
+    import { restoreSession, getToken } from '../../../services/authService';
+    import { api } from '../../../services/apiClient';
+    import { escapeHtml, formatDate } from '../../../utils/helpers';
+    import { getAdminPlanById, type Plan } from '../../../services/planService';
+    import { getCapabilities, assignCapability, removeCapability, type Capability } from '../../../services/capabilityAdminService';
+
+    restoreSession();
+    const token = getToken();
+    if (token) api.setHeader('Authorization', `Bearer ${token}`);
+
+    const planId = new URLSearchParams(window.location.search).get('id') || '';
+
+    let toastTimeout: ReturnType<typeof setTimeout>;
+
+    function showToast(message: string, type: 'success' | 'error' = 'success') {
+      const toast = document.getElementById('toast')!;
+      const inner = document.getElementById('toast-inner')!;
+      const icon = document.getElementById('toast-icon')!;
+      const msg = document.getElementById('toast-msg')!;
+
+      inner.className = type === 'success'
+        ? 'flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm bg-primary-container text-on-primary-container'
+        : 'flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl font-bold text-sm bg-error-container text-on-error-container';
+      icon.textContent = type === 'success' ? 'check_circle' : 'error';
+      msg.textContent = message;
+
+      toast.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-[-1rem]', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+      });
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('translate-y-[-1rem]', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+      }, 3500);
+    }
+
+    function renderStatusBadge(value: boolean, trueLabel: string, trueClass: string, falseLabel: string, falseClass: string): string {
+      const label = value ? trueLabel : falseLabel;
+      const cls = value ? trueClass : falseClass;
+      return `<span class="inline-block px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider ${cls}">${label}</span>`;
+    }
+
+    function populatePlan(plan: Plan) {
+      document.getElementById('plan-name-heading')!.textContent = plan.name;
+      document.getElementById('plan-id-display')!.textContent = plan.id;
+      document.getElementById('d-description')!.textContent = plan.description || 'Sin descripción';
+      document.getElementById('d-amount')!.textContent = plan.amount;
+      document.getElementById('d-currency')!.textContent = plan.currency;
+      document.getElementById('d-frequency')!.textContent = `${plan.frequency} ${plan.frequencyType}`;
+      document.getElementById('d-trial')!.textContent = `${plan.trialDays} días`;
+      document.getElementById('d-active-badge')!.innerHTML = renderStatusBadge(
+        plan.isActive, 'Sí', 'bg-primary-container text-on-primary-container',
+        'No', 'bg-error-container text-on-error-container',
+      );
+      document.getElementById('d-visible-badge')!.innerHTML = renderStatusBadge(
+        plan.visible, 'Sí', 'bg-primary-container text-on-primary-container',
+        'Oculto', 'bg-surface-container text-on-surface-variant',
+      );
+      document.getElementById('d-created-at')!.textContent = formatDate(plan.createdAt);
+      document.getElementById('d-updated-at')!.textContent = formatDate(plan.updatedAt);
+    }
+
+    function renderCapabilities(allCapabilities: Capability[], assignedIds: Set<string>) {
+      const loadingEl = document.getElementById('capabilities-loading')!;
+      const emptyEl = document.getElementById('capabilities-empty')!;
+      const listEl = document.getElementById('capabilities-list')!;
+
+      loadingEl.classList.add('hidden');
+
+      if (allCapabilities.length === 0) {
+        emptyEl.classList.remove('hidden');
+        return;
+      }
+
+      listEl.classList.remove('hidden');
+      listEl.innerHTML = allCapabilities.map(cap => {
+        const checked = assignedIds.has(cap.id);
+        return `
+          <label
+            class="flex items-start gap-3 p-3 rounded-xl bg-surface-container-lowest border border-outline-variant/15 hover:bg-surface-container cursor-pointer transition-colors select-none"
+            data-cap-label="${cap.id}"
+          >
+            <input
+              type="checkbox"
+              class="capability-cb mt-0.5 h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20 shrink-0"
+              data-cap-id="${cap.id}"
+              ${checked ? 'checked' : ''}
+            />
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-on-surface leading-snug">${escapeHtml(cap.name)}</p>
+              ${cap.description ? `<p class="text-xs text-on-surface-variant mt-0.5">${escapeHtml(cap.description)}</p>` : ''}
+            </div>
+          </label>`;
+      }).join('');
+
+      listEl.querySelectorAll<HTMLInputElement>('.capability-cb').forEach(cb => {
+        cb.addEventListener('change', () => handleCapabilityToggle(cb));
+      });
+    }
+
+    async function handleCapabilityToggle(cb: HTMLInputElement) {
+      const capId = cb.dataset.capId!;
+      const adding = cb.checked;
+
+      // Disable while in-flight to prevent double-click
+      cb.disabled = true;
+
+      try {
+        if (adding) {
+          await assignCapability(planId, capId);
+        } else {
+          await removeCapability(planId, capId);
+        }
+      } catch (err: any) {
+        // Rollback optimistic state
+        cb.checked = !adding;
+        const msg = adding
+          ? (err?.body?.message || err?.message || 'No se pudo asignar la capability.')
+          : (err?.body?.message || err?.message || 'No se pudo remover la capability.');
+        showToast(msg, 'error');
+      } finally {
+        cb.disabled = false;
+      }
+    }
+
+    async function init() {
+      if (!planId) {
+        document.getElementById('detail-loading')!.classList.add('hidden');
+        document.getElementById('detail-error')!.classList.remove('hidden');
+        document.getElementById('detail-error-msg')!.textContent = 'ID de plan no encontrado en la URL.';
+        return;
+      }
+
+      try {
+        const [plan, allCapabilities] = await Promise.all([
+          getAdminPlanById(planId),
+          getCapabilities().catch(() => [] as Capability[]),
+        ]);
+
+        populatePlan(plan);
+
+        // Assigned IDs from plan.capabilities array (if backend includes it) or empty
+        const assignedIds = new Set<string>(
+          (plan.capabilities || []).map(c => c.id),
+        );
+
+        renderCapabilities(allCapabilities, assignedIds);
+
+        document.getElementById('detail-loading')!.classList.add('hidden');
+        document.getElementById('detail-content')!.classList.remove('hidden');
+      } catch (err: any) {
+        document.getElementById('detail-loading')!.classList.add('hidden');
+        document.getElementById('detail-error')!.classList.remove('hidden');
+        document.getElementById('detail-error-msg')!.textContent = err?.message || 'Error desconocido';
+      }
+    }
+
+    init();
+  </script>
+</AdminLayout>
