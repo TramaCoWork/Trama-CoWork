@@ -2,9 +2,9 @@ import { api } from './apiClient';
 import { getToken } from './authService';
 
 export interface Capability {
-  id: string;
-  name: string;
-  description: string | null;
+  key: string;
+  description: string;
+  createdAt: string;
 }
 
 function setAuthHeader(): void {
@@ -19,14 +19,14 @@ export function getCapabilities(): Promise<Capability[]> {
   return api.get<Capability[]>('/admin/capabilities');
 }
 
-export function assignCapability(planId: string, capabilityId: string): Promise<void> {
+export function assignCapability(planId: string, key: string): Promise<void> {
   setAuthHeader();
-  return api.post<void>(`/admin/subscription-plans/${planId}/capabilities`, { capabilityId });
+  return api.post<void>(`/admin/subscription-plans/${planId}/capabilities`, { key });
 }
 
-export function removeCapability(planId: string, capabilityId: string): Promise<void> {
+export function removeCapability(planId: string, key: string): Promise<void> {
   setAuthHeader();
-  return api.del<void>(`/admin/subscription-plans/${planId}/capabilities`, { capabilityId });
+  return api.del<void>(`/admin/subscription-plans/${planId}/capabilities/${key}`);
 }
 
 // Traceability: implementation by Programmer at 2026-09-15

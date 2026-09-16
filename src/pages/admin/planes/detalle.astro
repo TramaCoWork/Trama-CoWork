@@ -200,21 +200,20 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
       listEl.classList.remove('hidden');
       listEl.innerHTML = allCapabilities.map(cap => {
-        const checked = assignedIds.has(cap.id);
+        const checked = assignedIds.has(cap.key);
         return `
           <label
             class="flex items-start gap-3 p-3 rounded-xl bg-surface-container-lowest border border-outline-variant/15 hover:bg-surface-container cursor-pointer transition-colors select-none"
-            data-cap-label="${cap.id}"
+            data-cap-label="${cap.key}"
           >
             <input
               type="checkbox"
               class="capability-cb mt-0.5 h-4 w-4 rounded border-outline-variant/30 text-primary focus:ring-primary/20 shrink-0"
-              data-cap-id="${cap.id}"
+              data-cap-key="${cap.key}"
               ${checked ? 'checked' : ''}
             />
             <div class="min-w-0">
-              <p class="text-sm font-semibold text-on-surface leading-snug">${escapeHtml(cap.name)}</p>
-              ${cap.description ? `<p class="text-xs text-on-surface-variant mt-0.5">${escapeHtml(cap.description)}</p>` : ''}
+              <p class="text-sm font-semibold text-on-surface leading-snug">${escapeHtml(cap.description)}</p>
             </div>
           </label>`;
       }).join('');
@@ -225,7 +224,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
     }
 
     async function handleCapabilityToggle(cb: HTMLInputElement) {
-      const capId = cb.dataset.capId!;
+      const capId = cb.dataset.capKey!;
       const adding = cb.checked;
 
       // Disable while in-flight to prevent double-click
@@ -267,7 +266,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 
         // Assigned IDs from plan.capabilities array (if backend includes it) or empty
         const assignedIds = new Set<string>(
-          (plan.capabilities || []).map(c => c.id),
+          (plan.capabilities || []).map(c => c.key),
         );
 
         renderCapabilities(allCapabilities, assignedIds);

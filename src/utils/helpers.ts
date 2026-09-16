@@ -1,4 +1,5 @@
-export function escapeHtml(value: string): string {
+export function escapeHtml(value: string | null | undefined): string {
+  if (value == null) return '';
   return value
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
