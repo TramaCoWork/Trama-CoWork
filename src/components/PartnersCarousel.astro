@@ -1,27 +1,28 @@
 ---
 import partners from "../data/partners.json";
 
-const partnerImages = import.meta.glob<{ default: string }>(
+import type { ImageMetadata } from "astro";
+
+const partnerImages = import.meta.glob<ImageMetadata>(
   "/src/assets/partners/*.{png,svg,jpg,jpeg,webp}",
-  { eager: true }
+  { eager: true, import: "default" }
 );
 
 function resolveLogoSrc(filename: string): string {
   const key = `/src/assets/partners/${filename}`;
-  return partnerImages[key]?.default ?? "";
+  return partnerImages[key]?.src ?? "";
 }
 ---
 
-<section style="padding:48px 0; background:white; overflow:hidden;">
-  <div style="max-width:1200px; margin:0 auto; padding:0 24px 24px;">
+<section style="padding:48px 0; background:white;">
+  <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
     <h2
       style="font-size:22px; font-weight:700; color:#111827; text-align:center; border-bottom:3px solid #087781; padding-bottom:6px; display:inline-block; width:100%;"
     >
       Empresas que confían en nosotros
     </h2>
-  </div>
 
-  <div class="carousel-container" aria-label="Logos de empresas partners" role="region">
+    <div class="carousel-container" style="margin-top:24px;" aria-label="Logos de empresas partners" role="region">
     <ul class="carousel-track" aria-hidden="true">
       {partners.map((partner) => (
         <li class="carousel-item">
@@ -48,6 +49,7 @@ function resolveLogoSrc(filename: string): string {
         </li>
       ))}
     </ul>
+    </div>
   </div>
 </section>
 
