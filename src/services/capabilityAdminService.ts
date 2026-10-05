@@ -1,5 +1,6 @@
 import { api } from './apiClient';
 import { getToken } from './authService';
+import type { Plan } from './planService';
 
 export interface Capability {
   key: string;
@@ -29,4 +30,9 @@ export function removeCapability(planId: string, key: string): Promise<void> {
   return api.del<void>(`/admin/subscription-plans/${planId}/capabilities/${key}`);
 }
 
-// Traceability: implementation by Programmer at 2026-09-15
+export function putPlanCapabilities(planId: string, keys: string[]): Promise<Plan> {
+  setAuthHeader();
+  return api.put<Plan>(`/admin/subscription-plans/${planId}/capabilities`, { keys });
+}
+
+// Traceability: implementation by Programmer at 2026-10-05

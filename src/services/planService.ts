@@ -12,7 +12,7 @@ export interface Plan {
   isActive: boolean;
   visible: boolean;
   capabilitiesCount?: number;
-  capabilities?: Array<{ key: string; description: string; createdAt?: string }>;
+  capabilities?: string[];
   createdAt: string;
   updatedAt: string;
 }
